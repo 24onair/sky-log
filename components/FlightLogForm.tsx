@@ -24,7 +24,7 @@ export function FlightLogForm({
     initialData || {
       flight_date: new Date(),
       duration_sec: 0,
-      site_id: "",
+      site_id: null,
       distance_straight_km: null,
       distance_track_km: null,
       distance_xcontest_km: null,
@@ -45,13 +45,10 @@ export function FlightLogForm({
     const newErrors: Record<string, string> = {};
 
     if (!formData.flight_date) {
-      newErrors.flight_date = "Flight date is required";
+      newErrors.flight_date = "비행 날짜를 입력해주세요";
     }
     if (!formData.duration_sec || formData.duration_sec <= 0) {
-      newErrors.duration_sec = "Flight duration must be greater than 0";
-    }
-    if (!formData.site_id) {
-      newErrors.site_id = "Takeoff site is required";
+      newErrors.duration_sec = "비행 시간을 입력해주세요";
     }
 
     setErrors(newErrors);
@@ -158,27 +155,21 @@ export function FlightLogForm({
         {/* 이륙장 선택 */}
         <div>
           <label className="block text-sm font-medium text-gray-900 mb-1">
-            Takeoff Site *
+            이륙장
           </label>
           <select
             value={formData.site_id || ""}
-            onChange={(e) => handleInputChange("site_id", e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.site_id ? "border-red-500" : "border-gray-300"
-            }`}
+            onChange={(e) => handleInputChange("site_id", e.target.value || null)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isSubmitting}
-            required
           >
-            <option value="">Select a site...</option>
+            <option value="">선택 안 함</option>
             {sites.map((site) => (
               <option key={site.id} value={site.id}>
                 {site.name}
               </option>
             ))}
           </select>
-          {errors.site_id && (
-            <p className="text-sm text-red-600 mt-1">{errors.site_id}</p>
-          )}
         </div>
       </fieldset>
 

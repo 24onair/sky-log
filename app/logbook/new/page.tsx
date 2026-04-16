@@ -21,15 +21,14 @@ export default function NewFlightPage() {
   }, [router]);
 
   const handleSubmit = async (data: FlightLogInsert) => {
-    if (!userId) return;
+    if (!userId) {
+      router.push("/auth/login");
+      return;
+    }
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
       await createFlightLog(userId, data);
-
-      // 성공 후 목록으로 이동
       router.push("/logbook");
-    } catch (error) {
-      throw error;
     } finally {
       setIsSubmitting(false);
     }
