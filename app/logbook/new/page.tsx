@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createFlightLog } from "@/lib/supabase/logbook";
+import { getUser } from "@/lib/supabase/auth";
 import { FlightLogForm } from "@/components/FlightLogForm";
 import { FlightLogInsert } from "@/lib/schemas/logbook";
 import Link from "next/link";
@@ -10,14 +11,19 @@ import Link from "next/link";
 export default function NewFlightPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    getUser().then((user) => {
+      if (!user) router.push("/auth/login");
+      else setUserId(user.id);
+    });
+  }, [router]);
 
   const handleSubmit = async (data: FlightLogInsert) => {
+    if (!userId) return;
     try {
       setIsSubmitting(true);
-
-      // TODO: 실제 user_id 가져오기 (auth context 필요)
-      const userId = "placeholder-user-id";
-
       await createFlightLog(userId, data);
 
       // 성공 후 목록으로 이동

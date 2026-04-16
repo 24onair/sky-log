@@ -9,7 +9,7 @@ import {
   deleteFlightLog,
 } from "@/lib/supabase/logbook";
 import { FlightLog, FlightLogUpdate, FlightLogInsert } from "@/lib/schemas/logbook";
-
+import { getUser } from "@/lib/supabase/auth";
 import { FlightLogForm } from "@/components/FlightLogForm";
 import { formatDate, formatTime, formatDuration } from "@/lib/utils/format";
 
@@ -20,6 +20,7 @@ interface PageProps {
 export default function FlightDetailPage({ params }: PageProps) {
   const router = useRouter();
   const [id, setId] = useState<string>("");
+  const [currentUserId, setCurrentUserId] = useState<string>("");
   const [log, setLog] = useState<FlightLog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,10 +37,11 @@ export default function FlightDetailPage({ params }: PageProps) {
         setLoading(true);
         setError(null);
 
-        // TODO: 실제 user_id 가져오기 (auth context 필요)
-        const userId = "placeholder-user-id";
+        const user = await getUser();
+        if (!user) { router.push("/auth/login"); return; }
+        setCurrentUserId(user.id);
 
-        const data = await getFlightLogById(userId, p.id);
+        const data = await getFlightLogById(user.id, p.id);
         if (!data) {
           setError("Flight not found");
         } else {
@@ -64,10 +66,7 @@ export default function FlightDetailPage({ params }: PageProps) {
       setIsSubmitting(true);
       setError(null);
 
-      // TODO: 실제 user_id 가져오기 (auth context 필요)
-      const userId = "placeholder-user-id";
-
-      const updated = await updateFlightLog(userId, id, data);
+      const updated = await updateFlightLog(currentUserId, id, data);
       setLog(updated);
       setIsEditing(false);
     } catch (err) {
@@ -88,10 +87,7 @@ export default function FlightDetailPage({ params }: PageProps) {
       setIsDeleting(true);
       setError(null);
 
-      // TODO: 실제 user_id 가져오기 (auth context 필요)
-      const userId = "placeholder-user-id";
-
-      await deleteFlightLog(userId, id);
+      await deleteFlightLog(currentUserId, id);
       router.push("/logbook");
     } catch (err) {
       setError(
