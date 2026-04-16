@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { FlightLogInsert, FlightLogUpdate } from "@/lib/schemas/logbook";
+import { FlightLogInsert } from "@/lib/schemas/logbook";
 import { IGCUploader } from "./IGCUploader";
 import { formatDate, formatTime } from "@/lib/utils/format";
 
 interface FlightLogFormProps {
   initialData?: FlightLogInsert;
   isSubmitting?: boolean;
-  onSubmit: (data: FlightLogInsert | FlightLogUpdate) => Promise<void>;
+  onSubmit: (data: FlightLogInsert) => Promise<void>;
   sites?: Array<{ id: string; name: string }>;
   isEditing?: boolean;
 }

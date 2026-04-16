@@ -9,6 +9,7 @@ import {
   deleteFlightLog,
 } from "@/lib/supabase/logbook";
 import { FlightLog, FlightLogUpdate, FlightLogInsert } from "@/lib/schemas/logbook";
+
 import { FlightLogForm } from "@/components/FlightLogForm";
 import { formatDate, formatTime, formatDuration } from "@/lib/utils/format";
 
@@ -56,7 +57,7 @@ export default function FlightDetailPage({ params }: PageProps) {
     resolveParams();
   }, [params]);
 
-  const handleUpdate = async (data: FlightLogInsert | FlightLogUpdate) => {
+  const handleUpdate = async (data: FlightLogInsert) => {
     if (!log) return;
 
     try {
@@ -66,7 +67,7 @@ export default function FlightDetailPage({ params }: PageProps) {
       // TODO: 실제 user_id 가져오기 (auth context 필요)
       const userId = "placeholder-user-id";
 
-      const updated = await updateFlightLog(userId, id, data as FlightLogUpdate);
+      const updated = await updateFlightLog(userId, id, data);
       setLog(updated);
       setIsEditing(false);
     } catch (err) {
