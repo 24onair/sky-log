@@ -7,7 +7,7 @@ export const flightLogSchema = z.object({
   // 필수 필드
   flight_date: z.coerce.date(),
   duration_sec: z.number().int().positive(),
-  site_id: z.string().uuid(),
+  site_id: z.string().uuid().nullable(),
   
   // 비행 거리
   distance_straight_km: z.number().positive().max(999.999).nullable(),

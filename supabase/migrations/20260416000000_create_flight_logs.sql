@@ -1,3 +1,15 @@
+-- Create sites table
+create table sites (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  country     text,
+  region      text,
+  latitude    numeric(9,6),
+  longitude   numeric(9,6),
+  altitude_m  integer,
+  created_at  timestamptz default now()
+);
+
 -- Create flight_logs table
 create table flight_logs (
   id            uuid primary key default gen_random_uuid(),
@@ -6,7 +18,7 @@ create table flight_logs (
   -- 필수 필드
   flight_date   timestamptz not null,        -- 이륙 날짜/시간
   duration_sec  integer not null,            -- 비행시간 (초)
-  site_id       uuid references sites(id) not null,  -- 이륙장
+  site_id       uuid references sites(id),   -- 이륙장 (nullable)
 
   -- 비행 거리 (nullable, IGC 또는 수동)
   distance_straight_km  numeric(7,3),        -- 직선 거리
