@@ -2,7 +2,7 @@
  * IGC 파서 - 패러글라이딩 비행 데이터 추출
  */
 
-interface IGCParseResult {
+export interface IGCParseResult {
   flightDate: Date;
   takeoffTime: string;
   landingTime: string;
@@ -12,6 +12,10 @@ interface IGCParseResult {
   distanceStraightKm: number;
   distanceTrackKm: number;
   distanceXcontestKm: number;
+  /** [lon, lat, alt] — sampled for map display (max 400 pts) */
+  trackPoints: [number, number, number][];
+  /** altitude values sampled for profile chart (max 200 pts) */
+  altitudeProfile: number[];
 }
 
 interface Point {
@@ -162,6 +166,28 @@ export function parseIGC(content: string): IGCParseResult {
   const distanceStraight = getStraightDistance(points);
   const distanceTrack = getTrackDistance(points);
 
+  // Track points for map (max 400 pts)
+  const mapStep = Math.max(1, Math.floor(points.length / 400));
+  const trackPoints: [number, number, number][] = [];
+  for (let i = 0; i < points.length; i += mapStep) {
+    trackPoints.push([points[i].lon, points[i].lat, points[i].altitude]);
+  }
+  // Always include last point
+  const last = points[points.length - 1];
+  if (trackPoints.length > 0) {
+    const prev = trackPoints[trackPoints.length - 1];
+    if (prev[0] !== last.lon || prev[1] !== last.lat) {
+      trackPoints.push([last.lon, last.lat, last.altitude]);
+    }
+  }
+
+  // Altitude profile for chart (max 200 pts)
+  const altStep = Math.max(1, Math.floor(points.length / 200));
+  const altitudeProfile: number[] = [];
+  for (let i = 0; i < points.length; i += altStep) {
+    altitudeProfile.push(points[i].altitude);
+  }
+
   return {
     flightDate,
     takeoffTime,
@@ -172,5 +198,7 @@ export function parseIGC(content: string): IGCParseResult {
     distanceStraightKm: Math.round(distanceStraight * 1000) / 1000,
     distanceTrackKm: Math.round(distanceTrack * 1000) / 1000,
     distanceXcontestKm: Math.round(distanceStraight * 1000) / 1000,
+    trackPoints,
+    altitudeProfile,
   };
 }
