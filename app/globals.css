@@ -1,26 +1,134 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Apple Design System */
+  --sk-bg-light: #f5f5f7;
+  --sk-bg-dark: #000000;
+  --sk-text-primary-light: #1d1d1f;
+  --sk-text-primary-dark: #f5f5f7;
+  --sk-text-secondary: rgba(0, 0, 0, 0.56);
+  --sk-accent: #0071e3;
+  --sk-accent-dark: #2997ff;
+  --sk-link-light: #0066cc;
+  --sk-link-dark: #2997ff;
+  --sk-focus-color: #0071e3;
+  --sk-card-shadow: rgba(0, 0, 0, 0.12) 0px 4px 24px 0px;
+  --sk-nav-bg: rgba(255, 255, 255, 0.72);
+  --sk-surface: #ffffff;
+  --sk-surface-dark: #1c1c1e;
+  --sk-border: rgba(0, 0, 0, 0.08);
+  --sk-radius: 12px;
+  --sk-radius-sm: 8px;
+  --sk-radius-pill: 980px;
+
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.374px;
+}
+
+h1, h2, h3, h4 {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: -0.5px;
+}
+
+/* Sticky nav glass effect */
+.sk-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 48px;
+  background: var(--sk-nav-bg);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Apple-style button */
+.sk-btn-primary {
+  background: var(--sk-accent);
+  color: #ffffff;
+  padding: 8px 20px;
+  border-radius: var(--sk-radius-sm);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: normal;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sk-btn-primary:hover { background: #0077ed; }
+.sk-btn-primary:focus { outline: 2px solid var(--sk-focus-color); outline-offset: 2px; }
+
+.sk-btn-secondary {
+  background: transparent;
+  color: var(--sk-accent);
+  padding: 8px 20px;
+  border-radius: var(--sk-radius-pill);
+  font-size: 15px;
+  font-weight: 400;
+  border: 1px solid var(--sk-accent);
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sk-btn-secondary:hover { background: rgba(0, 113, 227, 0.06); }
+
+/* Input */
+.sk-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius-sm);
+  background: var(--sk-surface);
+  font-size: 17px;
+  color: var(--foreground);
+  letter-spacing: -0.374px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.sk-input:focus {
+  border-color: var(--sk-accent);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+}
+.sk-input.error { border-color: #ff3b30; }
+
+/* Card */
+.sk-card {
+  background: var(--sk-surface);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-card-shadow);
+}
+
+/* Section backgrounds */
+.sk-section-light { background: var(--sk-bg-light); }
+.sk-section-dark {
+  background: var(--sk-bg-dark);
+  color: var(--sk-text-primary-dark);
 }

@@ -7,6 +7,7 @@ import { getUser } from "@/lib/supabase/auth";
 import { FlightLogForm } from "@/components/FlightLogForm";
 import { FlightLogInsert } from "@/lib/schemas/logbook";
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 export default function NewFlightPage() {
   const router = useRouter();
@@ -21,10 +22,7 @@ export default function NewFlightPage() {
   }, [router]);
 
   const handleSubmit = async (data: FlightLogInsert) => {
-    if (!userId) {
-      router.push("/auth/login");
-      return;
-    }
+    if (!userId) { router.push("/auth/login"); return; }
     setIsSubmitting(true);
     try {
       await createFlightLog(userId, data);
@@ -35,33 +33,23 @@ export default function NewFlightPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* 헤더 */}
-        <div className="mb-8">
-          <Link
-            href="/logbook"
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            ← Back to Logbook
-          </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mt-4">New Flight</h1>
-          <p className="text-gray-600 mt-1">
-            Upload IGC file or manually enter your flight details
-          </p>
+    <div style={{ background: "#f5f5f7", minHeight: "calc(100vh - 48px)", padding: "40px 20px" }}>
+      <div style={{ maxWidth: 640, margin: "0 auto" }}>
+        {/* Back */}
+        <Link href="/logbook" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 14, color: "#0066cc", textDecoration: "none", marginBottom: 24 }}>
+          <ChevronLeft size={16} strokeWidth={1.5} />
+          로그북으로
+        </Link>
+
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.5px", color: "#1d1d1f" }}>새 비행 기록</h1>
+          <p style={{ fontSize: 14, color: "rgba(0,0,0,0.48)", marginTop: 4 }}>IGC 파일을 올리거나 직접 입력하세요</p>
         </div>
 
-        {/* 폼 */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="sk-card" style={{ padding: 32 }}>
           <FlightLogForm
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
-            sites={[
-              // TODO: 실제 sites 데이터 불러오기
-              { id: "site-1", name: "Deo Bong" },
-              { id: "site-2", name: "Soraesan" },
-              { id: "site-3", name: "Cheonggyesan" },
-            ]}
           />
         </div>
       </div>

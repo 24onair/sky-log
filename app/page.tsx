@@ -1,65 +1,71 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Wind, BarChart2, Upload, MapPin } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div>
+      {/* Hero — dark section */}
+      <section style={{ background: "#000", color: "#fff", padding: "100px 20px 80px", textAlign: "center" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: "0.1em", color: "#0071e3", textTransform: "uppercase", marginBottom: 16 }}>
+            Paragliding Logbook
           </p>
+          <h1 style={{ fontSize: "clamp(36px, 6vw, 56px)", fontWeight: 600, lineHeight: 1.07, letterSpacing: "-0.5px", marginBottom: 20 }}>
+            하늘의 기록을<br />한 곳에서
+          </h1>
+          <p style={{ fontSize: 19, fontWeight: 300, lineHeight: 1.47, color: "rgba(255,255,255,0.72)", marginBottom: 40, maxWidth: 480, margin: "0 auto 40px" }}>
+            IGC 파일을 올리거나 직접 입력해 비행 데이터를 기록하고 통계를 확인하세요.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/auth/signup" className="sk-btn-primary" style={{ padding: "12px 28px", fontSize: 17, borderRadius: 980 }}>
+              무료로 시작하기
+            </Link>
+            <Link href="/auth/login" style={{ padding: "12px 28px", fontSize: 17, borderRadius: 980, color: "#2997ff", textDecoration: "none", border: "1px solid rgba(41,151,255,0.4)", display: "inline-flex", alignItems: "center" }}>
+              로그인
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Features — light section */}
+      <section style={{ background: "#f5f5f7", padding: "80px 20px" }}>
+        <div style={{ maxWidth: 980, margin: "0 auto" }}>
+          <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 600, lineHeight: 1.1, letterSpacing: "-0.5px", textAlign: "center", marginBottom: 60, color: "#1d1d1f" }}>
+            비행을 더 깊이 이해하세요
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20 }}>
+            {[
+              { icon: Upload, title: "IGC 자동 파싱", desc: "비행 기록기에서 내보낸 IGC 파일을 업로드하면 비행 시간, 고도, 거리를 자동으로 추출합니다." },
+              { icon: BarChart2, title: "비행 통계", desc: "총 비행 시간, 최장 비행, 최고 고도 등 누적 통계를 한눈에 확인합니다." },
+              { icon: MapPin, title: "이륙장 관리", desc: "자주 이용하는 이륙장 정보를 저장하고 비행 기록과 연결합니다." },
+              { icon: Wind, title: "날씨 기록", desc: "풍향, 풍속, 날씨 상태를 함께 기록해 비행 조건 패턴을 분석합니다." },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="sk-card" style={{ padding: 32 }}>
+                <div style={{ width: 44, height: 44, background: "rgba(0,113,227,0.08)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                  <Icon size={22} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+                </div>
+                <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, color: "#1d1d1f", letterSpacing: "-0.3px" }}>{title}</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.57, color: "rgba(0,0,0,0.56)", letterSpacing: "-0.1px" }}>{desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* CTA — dark section */}
+      <section style={{ background: "#000", color: "#fff", padding: "80px 20px", textAlign: "center" }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 600, lineHeight: 1.1, letterSpacing: "-0.5px", marginBottom: 16 }}>
+            지금 바로 기록을 시작하세요
+          </h2>
+          <p style={{ fontSize: 17, color: "rgba(255,255,255,0.6)", marginBottom: 36, lineHeight: 1.47 }}>
+            무료로 가입하고 첫 번째 비행을 기록해보세요.
+          </p>
+          <Link href="/auth/signup" className="sk-btn-primary" style={{ padding: "12px 32px", fontSize: 17, borderRadius: 980 }}>
+            무료 가입
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDuration } from "@/lib/utils/format";
+import { Wind, Clock, Navigation, TrendingUp } from "lucide-react";
 
 interface StatisticsCard {
   totalFlights: number;
@@ -12,50 +13,53 @@ interface StatisticsCard {
   highestThermalMs: number;
 }
 
-export function StatisticsSummary({
-  stats,
-}: {
-  stats: StatisticsCard;
-}) {
+const statCard = {
+  background: "#fff",
+  borderRadius: 12,
+  padding: "20px 24px",
+  boxShadow: "rgba(0,0,0,0.08) 0px 2px 16px 0px",
+};
+
+export function StatisticsSummary({ stats }: { stats: StatisticsCard }) {
+  const items = [
+    {
+      icon: Wind,
+      label: "총 비행",
+      value: `${stats.totalFlights}회`,
+      sub: null,
+    },
+    {
+      icon: Clock,
+      label: "총 비행 시간",
+      value: formatDuration(stats.totalDurationSec),
+      sub: `최장 ${formatDuration(stats.longestFlightSec)}`,
+    },
+    {
+      icon: Navigation,
+      label: "총 XC 거리",
+      value: `${Math.round(stats.totalXcDistanceKm)} km`,
+      sub: `최장 ${stats.longestDistanceKm.toFixed(1)} km`,
+    },
+    {
+      icon: TrendingUp,
+      label: "개인 기록",
+      value: `${stats.highestAltitudeM.toLocaleString()} m`,
+      sub: `최고 써멀 ${stats.highestThermalMs.toFixed(1)} m/s`,
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {/* 누적 통계 */}
-      <div className="rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-4">
-        <p className="text-sm text-blue-600 font-medium">Total Flights</p>
-        <p className="text-3xl font-bold text-blue-900 mt-1">
-          {stats.totalFlights}
-        </p>
-      </div>
-
-      <div className="rounded-lg bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-4">
-        <p className="text-sm text-green-600 font-medium">Total Flight Time</p>
-        <p className="text-3xl font-bold text-green-900 mt-1">
-          {formatDuration(stats.totalDurationSec)}
-        </p>
-      </div>
-
-      <div className="rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 p-4">
-        <p className="text-sm text-purple-600 font-medium">Total XC Distance</p>
-        <p className="text-3xl font-bold text-purple-900 mt-1">
-          {Math.round(stats.totalXcDistanceKm)} km
-        </p>
-      </div>
-
-      {/* 개인 기록 */}
-      <div className="rounded-lg bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 p-4">
-        <p className="text-sm text-amber-600 font-medium">Personal Best</p>
-        <div className="mt-2 space-y-1 text-sm">
-          <p className="text-amber-900">
-            Longest: {formatDuration(stats.longestFlightSec)}
-          </p>
-          <p className="text-amber-900">
-            Highest: {stats.highestAltitudeM}m
-          </p>
-          <p className="text-amber-900">
-            Thermal: {stats.highestThermalMs.toFixed(1)}m/s
-          </p>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 32 }}>
+      {items.map(({ icon: Icon, label, value, sub }) => (
+        <div key={label} style={statCard}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <Icon size={16} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+            <p style={{ fontSize: 12, fontWeight: 500, color: "rgba(0,0,0,0.48)", letterSpacing: "0.02em" }}>{label}</p>
+          </div>
+          <p style={{ fontSize: 24, fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.5px", lineHeight: 1.1 }}>{value}</p>
+          {sub && <p style={{ fontSize: 12, color: "rgba(0,0,0,0.4)", marginTop: 4 }}>{sub}</p>}
         </div>
-      </div>
+      ))}
     </div>
   );
 }

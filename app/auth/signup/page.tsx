@@ -1,30 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUp } from "@/lib/supabase/auth";
+import { CheckCircle } from "lucide-react";
 
 const WING_GRADES = ["EN-A", "EN-B", "EN-C", "EN-D", "CCC"];
 
+const fieldStyle = { display: "flex", flexDirection: "column" as const, gap: 6 };
+const labelStyle = { fontSize: 13, fontWeight: 500, color: "#1d1d1f" } as React.CSSProperties;
+
 export default function SignUpPage() {
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
   const [form, setForm] = useState({
-    email: "",
-    password: "",
-    passwordConfirm: "",
-    name: "",
-    phone: "",
-    nickname: "",
-    wing_brand: "",
-    wing_name: "",
-    wing_grade: "",
+    email: "", password: "", passwordConfirm: "",
+    name: "", phone: "", nickname: "",
+    wing_brand: "", wing_name: "", wing_grade: "",
   });
-
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = (field: string, value: string) => {
@@ -37,7 +31,7 @@ export default function SignUpPage() {
     if (!form.email) e.email = "이메일을 입력해주세요";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "올바른 이메일 형식이 아닙니다";
     if (!form.password) e.password = "비밀번호를 입력해주세요";
-    else if (form.password.length < 6) e.password = "비밀번호는 6자 이상이어야 합니다";
+    else if (form.password.length < 6) e.password = "6자 이상 입력해주세요";
     if (form.password !== form.passwordConfirm) e.passwordConfirm = "비밀번호가 일치하지 않습니다";
     if (!form.name) e.name = "이름을 입력해주세요";
     setErrors(e);
@@ -47,20 +41,10 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
     try {
       setIsSubmitting(true);
       setError(null);
-      await signUp({
-        email: form.email,
-        password: form.password,
-        name: form.name,
-        phone: form.phone,
-        nickname: form.nickname,
-        wing_brand: form.wing_brand,
-        wing_name: form.wing_name,
-        wing_grade: form.wing_grade,
-      });
+      await signUp({ email: form.email, password: form.password, name: form.name, phone: form.phone, nickname: form.nickname, wing_brand: form.wing_brand, wing_name: form.wing_name, wing_grade: form.wing_grade });
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "회원가입에 실패했습니다");
@@ -71,18 +55,14 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md text-center">
-          <div className="text-5xl mb-4">✉️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">이메일을 확인해주세요</h2>
-          <p className="text-gray-600 mb-6">
-            <span className="font-medium text-gray-900">{form.email}</span>로<br />
-            인증 링크를 보냈습니다. 이메일을 확인 후 로그인해주세요.
+      <div style={{ minHeight: "calc(100vh - 48px)", background: "#f5f5f7", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div className="sk-card" style={{ padding: 48, maxWidth: 420, width: "100%", textAlign: "center" }}>
+          <CheckCircle size={48} strokeWidth={1.5} style={{ color: "#34c759", margin: "0 auto 20px" }} />
+          <h2 style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-0.5px", marginBottom: 12 }}>이메일을 확인해주세요</h2>
+          <p style={{ fontSize: 15, color: "rgba(0,0,0,0.56)", lineHeight: 1.5, marginBottom: 28 }}>
+            <strong style={{ color: "#1d1d1f" }}>{form.email}</strong>로 인증 링크를 보냈습니다.
           </p>
-          <Link
-            href="/auth/login"
-            className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-colors"
-          >
+          <Link href="/auth/login" className="sk-btn-primary" style={{ display: "inline-flex", justifyContent: "center", padding: "10px 28px", borderRadius: 10, fontSize: 15 }}>
             로그인 페이지로
           </Link>
         </div>
@@ -91,164 +71,97 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">회원가입</h1>
-          <p className="text-gray-500 mt-1">Sky Log에 오신 걸 환영합니다</p>
+    <div style={{ background: "#f5f5f7", padding: "48px 20px" }}>
+      <div style={{ maxWidth: 560, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.5px", color: "#1d1d1f", marginBottom: 8 }}>회원가입</h1>
+          <p style={{ fontSize: 15, color: "rgba(0,0,0,0.56)" }}>Sky Log에 오신 걸 환영합니다</p>
         </div>
 
-        {error && (
-          <div className="rounded-xl bg-red-50 border border-red-200 p-4 mb-6">
-            <p className="text-red-700 text-sm">{error}</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* 계정 정보 */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-gray-500 uppercase tracking-wide">계정 정보</legend>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">이메일 *</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => set("email", e.target.value)}
-                placeholder="email@example.com"
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-400" : "border-gray-300"}`}
-                disabled={isSubmitting}
-              />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+        <div className="sk-card" style={{ padding: "36px 40px" }}>
+          {error && (
+            <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 10, padding: "12px 16px", marginBottom: 24 }}>
+              <p style={{ fontSize: 14, color: "#ff3b30" }}>{error}</p>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호 *</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => set("password", e.target.value)}
-                placeholder="6자 이상"
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.password ? "border-red-400" : "border-gray-300"}`}
-                disabled={isSubmitting}
-              />
-              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-            </div>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호 확인 *</label>
-              <input
-                type="password"
-                value={form.passwordConfirm}
-                onChange={(e) => set("passwordConfirm", e.target.value)}
-                placeholder="비밀번호 재입력"
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.passwordConfirm ? "border-red-400" : "border-gray-300"}`}
-                disabled={isSubmitting}
-              />
-              {errors.passwordConfirm && <p className="text-red-500 text-xs mt-1">{errors.passwordConfirm}</p>}
-            </div>
-          </fieldset>
+            {/* 계정 정보 */}
+            <section>
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(0,0,0,0.4)", textTransform: "uppercase", marginBottom: 14 }}>계정 정보</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>이메일 *</label>
+                  <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="email@example.com" className={`sk-input${errors.email ? " error" : ""}`} disabled={isSubmitting} />
+                  {errors.email && <p style={{ fontSize: 12, color: "#ff3b30" }}>{errors.email}</p>}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div style={fieldStyle}>
+                    <label style={labelStyle}>비밀번호 *</label>
+                    <input type="password" value={form.password} onChange={(e) => set("password", e.target.value)} placeholder="6자 이상" className={`sk-input${errors.password ? " error" : ""}`} disabled={isSubmitting} />
+                    {errors.password && <p style={{ fontSize: 12, color: "#ff3b30" }}>{errors.password}</p>}
+                  </div>
+                  <div style={fieldStyle}>
+                    <label style={labelStyle}>비밀번호 확인 *</label>
+                    <input type="password" value={form.passwordConfirm} onChange={(e) => set("passwordConfirm", e.target.value)} placeholder="재입력" className={`sk-input${errors.passwordConfirm ? " error" : ""}`} disabled={isSubmitting} />
+                    {errors.passwordConfirm && <p style={{ fontSize: 12, color: "#ff3b30" }}>{errors.passwordConfirm}</p>}
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          {/* 개인 정보 */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-gray-500 uppercase tracking-wide">개인 정보</legend>
+            {/* 개인 정보 */}
+            <section>
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(0,0,0,0.4)", textTransform: "uppercase", marginBottom: 14 }}>개인 정보</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>이름 *</label>
+                  <input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="홍길동" className={`sk-input${errors.name ? " error" : ""}`} disabled={isSubmitting} />
+                  {errors.name && <p style={{ fontSize: 12, color: "#ff3b30" }}>{errors.name}</p>}
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>닉네임</label>
+                  <input type="text" value={form.nickname} onChange={(e) => set("nickname", e.target.value)} placeholder="활동명" className="sk-input" disabled={isSubmitting} />
+                </div>
+                <div style={{ ...fieldStyle, gridColumn: "1 / -1" }}>
+                  <label style={labelStyle}>전화번호</label>
+                  <input type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="010-0000-0000" className="sk-input" disabled={isSubmitting} />
+                </div>
+              </div>
+            </section>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">이름 *</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-                placeholder="홍길동"
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-400" : "border-gray-300"}`}
-                disabled={isSubmitting}
-              />
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-            </div>
+            {/* 날개 정보 */}
+            <section>
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(0,0,0,0.4)", textTransform: "uppercase", marginBottom: 14 }}>날개 정보</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>브랜드</label>
+                  <input type="text" value={form.wing_brand} onChange={(e) => set("wing_brand", e.target.value)} placeholder="Ozone, Advance..." className="sk-input" disabled={isSubmitting} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>날개 이름</label>
+                  <input type="text" value={form.wing_name} onChange={(e) => set("wing_name", e.target.value)} placeholder="Rush 6, Sigma 10..." className="sk-input" disabled={isSubmitting} />
+                </div>
+                <div style={{ ...fieldStyle, gridColumn: "1 / -1" }}>
+                  <label style={labelStyle}>등급</label>
+                  <select value={form.wing_grade} onChange={(e) => set("wing_grade", e.target.value)} className="sk-input" disabled={isSubmitting} style={{ cursor: "pointer" }}>
+                    <option value="">선택</option>
+                    {WING_GRADES.map((g) => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+              </div>
+            </section>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => set("phone", e.target.value)}
-                placeholder="010-0000-0000"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isSubmitting}
-              />
-            </div>
+            <button type="submit" disabled={isSubmitting} className="sk-btn-primary" style={{ width: "100%", justifyContent: "center", padding: "12px 20px", fontSize: 15, borderRadius: 10, opacity: isSubmitting ? 0.6 : 1 }}>
+              {isSubmitting ? "처리 중..." : "회원가입"}
+            </button>
+          </form>
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">닉네임</label>
-              <input
-                type="text"
-                value={form.nickname}
-                onChange={(e) => set("nickname", e.target.value)}
-                placeholder="활동명"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isSubmitting}
-              />
-            </div>
-          </fieldset>
-
-          {/* 날개 정보 */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-gray-500 uppercase tracking-wide">날개 정보</legend>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">날개 브랜드</label>
-              <input
-                type="text"
-                value={form.wing_brand}
-                onChange={(e) => set("wing_brand", e.target.value)}
-                placeholder="Ozone, Advance, Nova 등"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">날개 이름</label>
-              <input
-                type="text"
-                value={form.wing_name}
-                onChange={(e) => set("wing_name", e.target.value)}
-                placeholder="Rush 6, Sigma 10 등"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">날개 등급</label>
-              <select
-                value={form.wing_grade}
-                onChange={(e) => set("wing_grade", e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                disabled={isSubmitting}
-              >
-                <option value="">선택</option>
-                {WING_GRADES.map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
-            </div>
-          </fieldset>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-xl transition-colors mt-2"
-          >
-            {isSubmitting ? "처리 중..." : "회원가입"}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p style={{ textAlign: "center", fontSize: 14, color: "rgba(0,0,0,0.56)", marginTop: 20 }}>
           이미 계정이 있으신가요?{" "}
-          <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 font-medium">
-            로그인
-          </Link>
+          <Link href="/auth/login" style={{ color: "#0066cc", textDecoration: "none", fontWeight: 500 }}>로그인</Link>
         </p>
       </div>
     </div>

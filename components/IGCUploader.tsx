@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { parseIGC } from "@/lib/igc/parser";
 import { FlightLogInsert } from "@/lib/schemas/logbook";
+import { Upload, CheckCircle, AlertCircle } from "lucide-react";
 
 interface IGCUploaderProps {
   onParsed?: (data: Partial<FlightLogInsert>) => void;
@@ -12,15 +13,17 @@ export function IGCUploader({ onParsed }: IGCUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
 
   const handleFile = async (file: File) => {
-    if (!file.name.endsWith(".igc")) {
-      setError("Please upload an IGC file");
+    if (!file.name.toLowerCase().endsWith(".igc")) {
+      setError("IGC 파일만 업로드할 수 있습니다");
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    setFileName(null);
 
     try {
       const content = await file.text();
@@ -36,58 +39,80 @@ export function IGCUploader({ onParsed }: IGCUploaderProps) {
         distance_xcontest_km: parsed.distanceXcontestKm,
         igc_parsed: true,
       });
+
+      setFileName(file.name);
     } catch (err) {
-      setError(`Failed to parse IGC file: ${err instanceof Error ? err.message : "Unknown error"}`);
+      setError(err instanceof Error ? err.message : "파일 파싱에 실패했습니다");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const borderColor = isDragging ? "#0071e3" : fileName ? "#34c759" : error ? "#ff3b30" : "rgba(0,0,0,0.12)";
+  const bgColor = isDragging ? "rgba(0,113,227,0.04)" : fileName ? "rgba(52,199,89,0.04)" : "#fafafa";
+
   return (
-    <div className="mb-6">
-      <div
+    <div style={{ marginBottom: 24 }}>
+      <label
+        style={{
+          display: "block",
+          border: `1.5px dashed ${borderColor}`,
+          borderRadius: 12,
+          padding: "28px 20px",
+          textAlign: "center",
+          background: bgColor,
+          cursor: isLoading ? "default" : "pointer",
+          transition: "all 0.2s",
+        }}
         onDragEnter={() => setIsDragging(true)}
         onDragLeave={() => setIsDragging(false)}
+        onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
           setIsDragging(false);
           const file = e.dataTransfer.files[0];
           if (file) handleFile(file);
         }}
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          isDragging
-            ? "border-blue-400 bg-blue-50"
-            : "border-gray-300 hover:border-gray-400"
-        }`}
       >
-        <label className="cursor-pointer block">
-          <input
-            type="file"
-            accept=".igc"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleFile(file);
-            }}
-            className="hidden"
-            disabled={isLoading}
-          />
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-2xl">📁</span>
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                {isLoading ? "Processing..." : "Drag and drop IGC file or click to upload"}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                IGC files are automatically parsed
-              </p>
-            </div>
+        <input
+          type="file"
+          accept=".igc"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFile(file);
+          }}
+          style={{ display: "none" }}
+          disabled={isLoading}
+        />
+
+        {isLoading ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 32, height: 32, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            <p style={{ fontSize: 14, color: "rgba(0,0,0,0.56)" }}>파일 분석 중...</p>
           </div>
-        </label>
-      </div>
+        ) : fileName ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <CheckCircle size={28} strokeWidth={1.5} style={{ color: "#34c759" }} />
+            <p style={{ fontSize: 14, fontWeight: 500, color: "#1d1d1f" }}>{fileName}</p>
+            <p style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>파싱 완료 — 아래 내용을 확인하세요</p>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <Upload size={28} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+            <p style={{ fontSize: 14, fontWeight: 500, color: "#1d1d1f" }}>IGC 파일 드래그 또는 클릭하여 업로드</p>
+            <p style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>비행 데이터를 자동으로 입력합니다</p>
+          </div>
+        )}
+      </label>
 
       {error && (
-        <p className="mt-2 text-sm text-red-600 font-medium">{error}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, padding: "10px 14px", background: "rgba(255,59,48,0.06)", borderRadius: 8 }}>
+          <AlertCircle size={14} strokeWidth={1.5} style={{ color: "#ff3b30", flexShrink: 0 }} />
+          <p style={{ fontSize: 13, color: "#ff3b30" }}>{error}</p>
+        </div>
       )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

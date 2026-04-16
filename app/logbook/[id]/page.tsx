@@ -8,14 +8,19 @@ import {
   updateFlightLog,
   deleteFlightLog,
 } from "@/lib/supabase/logbook";
-import { FlightLog, FlightLogUpdate, FlightLogInsert } from "@/lib/schemas/logbook";
+import { FlightLog, FlightLogInsert } from "@/lib/schemas/logbook";
 import { getUser } from "@/lib/supabase/auth";
 import { FlightLogForm } from "@/components/FlightLogForm";
 import { formatDate, formatTime, formatDuration } from "@/lib/utils/format";
+import { ChevronLeft, Clock, Navigation, MoveUp, Wind, AlertCircle, Pencil, Trash2 } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
+
+const sectionTitle = { fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(0,0,0,0.36)", textTransform: "uppercase" as const, marginBottom: 14 };
+const statLabel = { fontSize: 12, color: "rgba(0,0,0,0.4)", marginBottom: 4 } as React.CSSProperties;
+const statValue = { fontSize: 22, fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.5px", lineHeight: 1 } as React.CSSProperties;
 
 export default function FlightDetailPage({ params }: PageProps) {
   const router = useRouter();
@@ -27,50 +32,40 @@ export default function FlightDetailPage({ params }: PageProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const resolveParams = async () => {
       const p = await params;
       setId(p.id);
-
       try {
         setLoading(true);
         setError(null);
-
         const user = await getUser();
         if (!user) { router.push("/auth/login"); return; }
         setCurrentUserId(user.id);
-
         const data = await getFlightLogById(user.id, p.id);
-        if (!data) {
-          setError("Flight not found");
-        } else {
-          setLog(data);
-        }
+        if (!data) setError("비행 기록을 찾을 수 없습니다");
+        else setLog(data);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load flight"
-        );
+        setError(err instanceof Error ? err.message : "불러오기에 실패했습니다");
       } finally {
         setLoading(false);
       }
     };
-
     resolveParams();
-  }, [params]);
+  }, [params, router]);
 
   const handleUpdate = async (data: FlightLogInsert) => {
     if (!log) return;
-
     try {
       setIsSubmitting(true);
       setError(null);
-
       const updated = await updateFlightLog(currentUserId, id, data);
       setLog(updated);
       setIsEditing(false);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to update flight";
+      const msg = err instanceof Error ? err.message : "수정에 실패했습니다";
       setError(msg);
       throw err;
     } finally {
@@ -79,20 +74,14 @@ export default function FlightDetailPage({ params }: PageProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this flight?")) {
-      return;
-    }
-
     try {
       setIsDeleting(true);
       setError(null);
-
       await deleteFlightLog(currentUserId, id);
       router.push("/logbook");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to delete flight"
-      );
+      setError(err instanceof Error ? err.message : "삭제에 실패했습니다");
+      setShowDeleteConfirm(false);
     } finally {
       setIsDeleting(false);
     }
@@ -100,285 +89,266 @@ export default function FlightDetailPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <p className="text-gray-600">Loading flight details...</p>
+      <div style={{ background: "#f5f5f7", minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+          <p style={{ fontSize: 14, color: "rgba(0,0,0,0.4)" }}>불러오는 중...</p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       </div>
     );
   }
 
-  if (error || !log) {
+  if (error && !log) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <Link
-            href="/logbook"
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            ← Back to Logbook
+      <div style={{ background: "#f5f5f7", minHeight: "calc(100vh - 48px)", padding: "40px 20px" }}>
+        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+          <Link href="/logbook" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 14, color: "#0066cc", textDecoration: "none", marginBottom: 24 }}>
+            <ChevronLeft size={16} strokeWidth={1.5} />
+            로그북으로
           </Link>
-          <div className="mt-6 rounded-lg bg-red-50 border border-red-200 p-4">
-            <p className="text-red-700">{error || "Flight not found"}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 10, padding: "12px 16px" }}>
+            <AlertCircle size={14} strokeWidth={1.5} style={{ color: "#ff3b30", flexShrink: 0 }} />
+            <p style={{ fontSize: 14, color: "#ff3b30" }}>{error}</p>
           </div>
         </div>
       </div>
     );
   }
+
+  if (!log) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* 헤더 */}
-        <div className="mb-8">
-          <Link
-            href="/logbook"
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            ← Back to Logbook
-          </Link>
-          <div className="flex items-center justify-between mt-4">
-            <h1 className="text-4xl font-bold text-gray-900">Flight Details</h1>
-            {!isEditing && (
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </button>
-              </div>
-            )}
+    <div style={{ background: "#f5f5f7", minHeight: "calc(100vh - 48px)", padding: "40px 20px" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto" }}>
+
+        {/* Back */}
+        <Link href="/logbook" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 14, color: "#0066cc", textDecoration: "none", marginBottom: 24 }}>
+          <ChevronLeft size={16} strokeWidth={1.5} />
+          로그북으로
+        </Link>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
+          <div>
+            <p style={{ fontSize: 13, color: "rgba(0,0,0,0.4)", marginBottom: 4 }}>{formatDate(new Date(log.flight_date))}</p>
+            <h1 style={{ fontSize: 34, fontWeight: 600, letterSpacing: "-0.5px", color: "#1d1d1f", lineHeight: 1.1 }}>
+              비행 상세
+            </h1>
           </div>
+          {!isEditing && (
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => setIsEditing(true)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, fontSize: 14, fontWeight: 500, background: "#fff", color: "#1d1d1f", border: "none", cursor: "pointer", boxShadow: "rgba(0,0,0,0.08) 0px 1px 6px 0px" }}
+              >
+                <Pencil size={14} strokeWidth={1.5} />
+                수정
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, fontSize: 14, fontWeight: 500, background: "rgba(255,59,48,0.08)", color: "#ff3b30", border: "none", cursor: "pointer" }}
+              >
+                <Trash2 size={14} strokeWidth={1.5} />
+                삭제
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Error */}
         {error && (
-          <div className="rounded-lg bg-red-50 border border-red-200 p-4 mb-6">
-            <p className="text-red-700">{error}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 10, padding: "12px 16px", marginBottom: 24 }}>
+            <AlertCircle size={14} strokeWidth={1.5} style={{ color: "#ff3b30", flexShrink: 0 }} />
+            <p style={{ fontSize: 14, color: "#ff3b30" }}>{error}</p>
+          </div>
+        )}
+
+        {/* Delete confirm */}
+        {showDeleteConfirm && (
+          <div style={{ background: "rgba(255,59,48,0.06)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 12, padding: "20px 24px", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+            <p style={{ fontSize: 15, fontWeight: 500, color: "#1d1d1f" }}>이 비행 기록을 삭제하시겠습니까?</p>
+            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                style={{ padding: "8px 16px", borderRadius: 8, fontSize: 14, fontWeight: 500, background: "#fff", color: "#1d1d1f", border: "none", cursor: "pointer" }}
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                style={{ padding: "8px 16px", borderRadius: 8, fontSize: 14, fontWeight: 500, background: "#ff3b30", color: "#fff", border: "none", cursor: "pointer", opacity: isDeleting ? 0.6 : 1 }}
+              >
+                {isDeleting ? "삭제 중..." : "삭제 확인"}
+              </button>
+            </div>
           </div>
         )}
 
         {isEditing ? (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <FlightLogForm
-              initialData={{
-                flight_date: new Date(log.flight_date),
-                duration_sec: log.duration_sec,
-                site_id: log.site_id,
-                distance_straight_km: log.distance_straight_km,
-                distance_track_km: log.distance_track_km,
-                distance_xcontest_km: log.distance_xcontest_km,
-                max_altitude_m: log.max_altitude_m,
-                max_thermal_ms: log.max_thermal_ms,
-                wind_direction: log.wind_direction,
-                wind_speed_kmh: log.wind_speed_kmh,
-                weather_condition: log.weather_condition,
-                memo: log.memo,
-                igc_parsed: log.igc_parsed,
-              }}
-              onSubmit={handleUpdate}
-              isSubmitting={isSubmitting}
-              sites={[
-                // TODO: 실제 sites 데이터 불러오기
-                { id: "site-1", name: "Deo Bong" },
-                { id: "site-2", name: "Soraesan" },
-                { id: "site-3", name: "Cheonggyesan" },
-              ]}
-              isEditing={true}
-            />
+          <div>
+            <div className="sk-card" style={{ padding: 32, marginBottom: 12 }}>
+              <FlightLogForm
+                initialData={{
+                  flight_date: new Date(log.flight_date),
+                  duration_sec: log.duration_sec,
+                  site_id: log.site_id,
+                  distance_straight_km: log.distance_straight_km,
+                  distance_track_km: log.distance_track_km,
+                  distance_xcontest_km: log.distance_xcontest_km,
+                  max_altitude_m: log.max_altitude_m,
+                  max_thermal_ms: log.max_thermal_ms,
+                  wind_direction: log.wind_direction,
+                  wind_speed_kmh: log.wind_speed_kmh,
+                  weather_condition: log.weather_condition,
+                  memo: log.memo,
+                  igc_parsed: log.igc_parsed,
+                }}
+                onSubmit={handleUpdate}
+                isSubmitting={isSubmitting}
+                isEditing={true}
+              />
+            </div>
             <button
               onClick={() => setIsEditing(false)}
-              className="mt-4 px-4 py-2 text-gray-700 hover:text-gray-900 font-medium"
+              style={{ fontSize: 14, color: "rgba(0,0,0,0.56)", background: "none", border: "none", cursor: "pointer", padding: "8px 0" }}
             >
-              Cancel
+              취소
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* 상세 정보 */}
-            <div className="lg:col-span-2 space-y-4">
-              {/* 기본 정보 */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Flight Information
-                </h2>
-                <dl className="space-y-4">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16, alignItems: "start" }}>
+
+            {/* Main */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+
+              {/* Key stats */}
+              <div className="sk-card" style={{ padding: "24px 28px" }}>
+                <p style={sectionTitle}>핵심 지표</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
                   <div>
-                    <dt className="text-sm text-gray-600">Date</dt>
-                    <dd className="text-lg font-semibold text-gray-900">
-                      {formatDate(new Date(log.flight_date))}
-                    </dd>
+                    <p style={statLabel}><Clock size={11} strokeWidth={1.5} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />비행 시간</p>
+                    <p style={statValue}>{formatDuration(log.duration_sec)}</p>
                   </div>
-                  <div>
-                    <dt className="text-sm text-gray-600">Time</dt>
-                    <dd className="text-lg font-semibold text-gray-900">
-                      {formatTime(new Date(log.flight_date))}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-gray-600">Duration</dt>
-                    <dd className="text-lg font-semibold text-gray-900">
-                      {formatDuration(log.duration_sec)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-gray-600">Site</dt>
-                    <dd className="text-lg font-semibold text-gray-900">
-                      {log.site_id}
-                    </dd>
-                  </div>
-                  {log.igc_parsed && (
+                  {log.distance_xcontest_km != null && (
                     <div>
-                      <dt className="text-sm text-gray-600">Source</dt>
-                      <dd className="text-lg font-semibold text-green-600">
-                        IGC Parsed
-                      </dd>
+                      <p style={statLabel}><Navigation size={11} strokeWidth={1.5} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />XC 거리</p>
+                      <p style={{ ...statValue, color: "#0071e3" }}>{log.distance_xcontest_km.toFixed(1)} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>km</span></p>
                     </div>
                   )}
-                </dl>
+                  {log.max_altitude_m != null && (
+                    <div>
+                      <p style={statLabel}><MoveUp size={11} strokeWidth={1.5} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />최고 고도</p>
+                      <p style={statValue}>{log.max_altitude_m.toLocaleString()} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>m</span></p>
+                    </div>
+                  )}
+                  {log.max_thermal_ms != null && (
+                    <div>
+                      <p style={statLabel}><Wind size={11} strokeWidth={1.5} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />최고 써멀</p>
+                      <p style={statValue}>{log.max_thermal_ms.toFixed(1)} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>m/s</span></p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* 거리 정보 */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Distance
-                </h2>
-                <dl className="grid grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <dt className="text-sm text-gray-600">Straight</dt>
-                    <dd className="text-2xl font-bold text-gray-900">
-                      {log.distance_straight_km
-                        ? `${log.distance_straight_km.toFixed(1)}km`
-                        : "—"}
-                    </dd>
+              {/* Distance */}
+              {(log.distance_straight_km != null || log.distance_track_km != null || log.distance_xcontest_km != null) && (
+                <div className="sk-card" style={{ padding: "24px 28px" }}>
+                  <p style={sectionTitle}>거리 정보</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                    <div>
+                      <p style={statLabel}>직선 거리</p>
+                      <p style={statValue}>{log.distance_straight_km != null ? `${log.distance_straight_km.toFixed(1)}` : "—"} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>{log.distance_straight_km != null ? "km" : ""}</span></p>
+                    </div>
+                    <div>
+                      <p style={statLabel}>경로 거리</p>
+                      <p style={statValue}>{log.distance_track_km != null ? `${log.distance_track_km.toFixed(1)}` : "—"} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>{log.distance_track_km != null ? "km" : ""}</span></p>
+                    </div>
+                    <div>
+                      <p style={statLabel}>XC 거리</p>
+                      <p style={{ ...statValue, color: log.distance_xcontest_km != null ? "#0071e3" : "#1d1d1f" }}>{log.distance_xcontest_km != null ? `${log.distance_xcontest_km.toFixed(1)}` : "—"} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>{log.distance_xcontest_km != null ? "km" : ""}</span></p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <dt className="text-sm text-gray-600">Track</dt>
-                    <dd className="text-2xl font-bold text-gray-900">
-                      {log.distance_track_km
-                        ? `${log.distance_track_km.toFixed(1)}km`
-                        : "—"}
-                    </dd>
-                  </div>
-                  <div className="text-center">
-                    <dt className="text-sm text-gray-600">XContest</dt>
-                    <dd className="text-2xl font-bold text-blue-600">
-                      {log.distance_xcontest_km
-                        ? `${log.distance_xcontest_km.toFixed(1)}km`
-                        : "—"}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
+                </div>
+              )}
 
-              {/* 고도 및 써멀 */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Performance
-                </h2>
-                <dl className="grid grid-cols-2 gap-4">
-                  <div>
-                    <dt className="text-sm text-gray-600">Max Altitude</dt>
-                    <dd className="text-2xl font-bold text-gray-900">
-                      {log.max_altitude_m ? `${log.max_altitude_m}m` : "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-gray-600">Max Thermal</dt>
-                    <dd className="text-2xl font-bold text-gray-900">
-                      {log.max_thermal_ms
-                        ? `${log.max_thermal_ms.toFixed(1)}m/s`
-                        : "—"}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
-              {/* 날씨 */}
-              {(log.wind_direction ||
-                log.wind_speed_kmh ||
-                log.weather_condition) && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                    Weather
-                  </h2>
-                  <dl className="space-y-3">
-                    {log.wind_direction && (
+              {/* Weather */}
+              {(log.wind_direction != null || log.wind_speed_kmh != null || log.weather_condition) && (
+                <div className="sk-card" style={{ padding: "24px 28px" }}>
+                  <p style={sectionTitle}>날씨</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                    {log.wind_direction != null && (
                       <div>
-                        <dt className="text-sm text-gray-600">Wind Direction</dt>
-                        <dd className="text-lg font-semibold text-gray-900">
-                          {log.wind_direction}°
-                        </dd>
+                        <p style={statLabel}>풍향</p>
+                        <p style={statValue}>{log.wind_direction}° </p>
                       </div>
                     )}
-                    {log.wind_speed_kmh && (
+                    {log.wind_speed_kmh != null && (
                       <div>
-                        <dt className="text-sm text-gray-600">Wind Speed</dt>
-                        <dd className="text-lg font-semibold text-gray-900">
-                          {log.wind_speed_kmh.toFixed(1)}km/h
-                        </dd>
+                        <p style={statLabel}>풍속</p>
+                        <p style={statValue}>{log.wind_speed_kmh.toFixed(1)} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>km/h</span></p>
                       </div>
                     )}
                     {log.weather_condition && (
                       <div>
-                        <dt className="text-sm text-gray-600">Condition</dt>
-                        <dd className="text-lg font-semibold text-gray-900">
-                          {log.weather_condition}
-                        </dd>
+                        <p style={statLabel}>날씨 상태</p>
+                        <p style={{ fontSize: 16, fontWeight: 500, color: "#1d1d1f" }}>{log.weather_condition}</p>
                       </div>
                     )}
-                  </dl>
+                  </div>
                 </div>
               )}
 
-              {/* 메모 */}
+              {/* Memo */}
               {log.memo && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                    Notes
-                  </h2>
-                  <p className="text-gray-700 whitespace-pre-wrap">{log.memo}</p>
+                <div className="sk-card" style={{ padding: "24px 28px" }}>
+                  <p style={sectionTitle}>메모</p>
+                  <p style={{ fontSize: 15, color: "#1d1d1f", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{log.memo}</p>
                 </div>
               )}
             </div>
 
-            {/* 사이드바 */}
-            <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">
-                  Metadata
-                </h3>
-                <dl className="space-y-3 text-sm">
+            {/* Sidebar */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div className="sk-card" style={{ padding: "20px 24px" }}>
+                <p style={sectionTitle}>비행 정보</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>
-                    <dt className="text-gray-600">Created</dt>
-                    <dd className="font-medium text-gray-900">
-                      {log.created_at
-                        ? new Date(log.created_at).toLocaleDateString()
-                        : "—"}
-                    </dd>
+                    <p style={{ ...statLabel, marginBottom: 2 }}>날짜</p>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: "#1d1d1f" }}>{formatDate(new Date(log.flight_date))}</p>
                   </div>
                   <div>
-                    <dt className="text-gray-600">Updated</dt>
-                    <dd className="font-medium text-gray-900">
-                      {log.updated_at
-                        ? new Date(log.updated_at).toLocaleDateString()
-                        : "—"}
-                    </dd>
+                    <p style={{ ...statLabel, marginBottom: 2 }}>이륙 시간</p>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: "#1d1d1f" }}>{formatTime(new Date(log.flight_date))}</p>
                   </div>
+                  {log.igc_parsed && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, paddingTop: 6, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#34c759", flexShrink: 0 }} />
+                      <p style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>IGC 파일로 기록됨</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="sk-card" style={{ padding: "20px 24px" }}>
+                <p style={sectionTitle}>메타</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
-                    <dt className="text-gray-600">Flight ID</dt>
-                    <dd className="font-mono text-xs text-gray-700 break-all">
-                      {log.id}
-                    </dd>
+                    <p style={{ ...statLabel, marginBottom: 2 }}>생성일</p>
+                    <p style={{ fontSize: 13, color: "#1d1d1f" }}>{log.created_at ? new Date(log.created_at).toLocaleDateString("ko-KR") : "—"}</p>
                   </div>
-                </dl>
+                  {log.updated_at && log.updated_at !== log.created_at && (
+                    <div>
+                      <p style={{ ...statLabel, marginBottom: 2 }}>수정일</p>
+                      <p style={{ fontSize: 13, color: "#1d1d1f" }}>{new Date(log.updated_at).toLocaleDateString("ko-KR")}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p style={{ ...statLabel, marginBottom: 2 }}>ID</p>
+                    <p style={{ fontSize: 11, fontFamily: "monospace", color: "rgba(0,0,0,0.36)", wordBreak: "break-all" }}>{log.id}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

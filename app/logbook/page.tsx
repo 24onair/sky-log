@@ -4,12 +4,18 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getFlightLogs, getFlightLogStats } from "@/lib/supabase/logbook";
-import { getUser, signOut } from "@/lib/supabase/auth";
+import { getUser } from "@/lib/supabase/auth";
 import { FlightLog } from "@/lib/schemas/logbook";
 import { FlightLogCard } from "@/components/FlightLogCard";
 import { StatisticsSummary } from "@/components/StatisticsSummary";
+import { Plus, Wind } from "lucide-react";
 
 type PeriodFilter = "all" | "year" | "month";
+const FILTERS: { key: PeriodFilter; label: string }[] = [
+  { key: "all", label: "전체" },
+  { key: "year", label: "올해" },
+  { key: "month", label: "이번 달" },
+];
 
 export default function LogbookPage() {
   const router = useRouter();
@@ -26,14 +32,10 @@ export default function LogbookPage() {
         setError(null);
 
         const user = await getUser();
-        if (!user) {
-          router.push("/auth/login");
-          return;
-        }
-        // 필터 계산
+        if (!user) { router.push("/auth/login"); return; }
+
         let startDate: Date | undefined;
         let endDate: Date | undefined;
-
         const now = new Date();
         if (period === "year") {
           startDate = new Date(now.getFullYear(), 0, 1);
@@ -51,96 +53,90 @@ export default function LogbookPage() {
         setLogs(logsData);
         setStats(statsData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load flight logs");
+        setError(err instanceof Error ? err.message : "데이터를 불러오지 못했습니다");
       } finally {
         setLoading(false);
       }
     };
-
     loadData();
-  }, [period]);
+  }, [period, router]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* 헤더 */}
-        <div className="flex items-center justify-between mb-8">
+    <div style={{ background: "#f5f5f7", minHeight: "calc(100vh - 48px)", padding: "40px 20px" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto" }}>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
           <div>
-            <h1 className="text-4xl font-bold text-gray-900">Logbook</h1>
-            <p className="text-gray-600 mt-1">Track your XC flights</p>
+            <h1 style={{ fontSize: 34, fontWeight: 600, letterSpacing: "-0.5px", color: "#1d1d1f", lineHeight: 1.1 }}>로그북</h1>
+            <p style={{ fontSize: 15, color: "rgba(0,0,0,0.48)", marginTop: 4 }}>나의 XC 비행 기록</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/logbook/new"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              + New Flight
-            </Link>
-            <button
-              onClick={async () => {
-                await signOut();
-                router.push("/auth/login");
-              }}
-              className="text-sm text-gray-500 hover:text-gray-700 font-medium py-2 px-3 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              로그아웃
-            </button>
-          </div>
+          <Link href="/logbook/new" className="sk-btn-primary" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 10, fontSize: 14 }}>
+            <Plus size={15} strokeWidth={2} />
+            새 비행 기록
+          </Link>
         </div>
 
-        {/* 통계 */}
-        {stats && !loading && (
-          <StatisticsSummary stats={stats} />
-        )}
+        {/* Stats */}
+        {stats && !loading && <StatisticsSummary stats={stats} />}
 
-        {/* 필터 */}
-        <div className="flex gap-3 mb-6">
-          {(["all", "year", "month"] as const).map((p) => (
+        {/* Period filter */}
+        <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+          {FILTERS.map(({ key, label }) => (
             <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                period === p
-                  ? "bg-blue-600 text-white"
-                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
+              key={key}
+              onClick={() => setPeriod(key)}
+              style={{
+                padding: "6px 16px",
+                borderRadius: 980,
+                fontSize: 13,
+                fontWeight: 500,
+                border: "none",
+                cursor: "pointer",
+                background: period === key ? "#1d1d1f" : "#fff",
+                color: period === key ? "#fff" : "rgba(0,0,0,0.56)",
+                boxShadow: period === key ? "none" : "rgba(0,0,0,0.08) 0px 1px 6px 0px",
+                transition: "all 0.15s",
+              }}
             >
-              {p === "all" && "All Time"}
-              {p === "year" && "This Year"}
-              {p === "month" && "This Month"}
+              {label}
             </button>
           ))}
         </div>
 
-        {/* 에러 */}
+        {/* Error */}
         {error && (
-          <div className="rounded-lg bg-red-50 border border-red-200 p-4 mb-6">
-            <p className="text-red-700">{error}</p>
+          <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 10, padding: "12px 16px", marginBottom: 20 }}>
+            <p style={{ fontSize: 14, color: "#ff3b30" }}>{error}</p>
           </div>
         )}
 
-        {/* 로딩 */}
+        {/* Loading */}
         {loading && (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Loading flights...</p>
+          <div style={{ textAlign: "center", padding: "60px 0" }}>
+            <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+            <p style={{ fontSize: 14, color: "rgba(0,0,0,0.4)" }}>불러오는 중...</p>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         )}
 
-        {/* 로그 목록 */}
+        {/* Empty state */}
         {!loading && logs.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-600 mb-4">No flights recorded yet</p>
-            <Link
-              href="/logbook/new"
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Add Your First Flight
+          <div style={{ textAlign: "center", padding: "80px 20px" }}>
+            <div style={{ width: 56, height: 56, background: "rgba(0,113,227,0.08)", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+              <Wind size={26} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+            </div>
+            <h3 style={{ fontSize: 19, fontWeight: 600, color: "#1d1d1f", marginBottom: 8, letterSpacing: "-0.3px" }}>아직 비행 기록이 없습니다</h3>
+            <p style={{ fontSize: 14, color: "rgba(0,0,0,0.48)", marginBottom: 24 }}>첫 번째 비행을 기록해보세요</p>
+            <Link href="/logbook/new" className="sk-btn-primary" style={{ display: "inline-flex", padding: "10px 24px", borderRadius: 980, fontSize: 14 }}>
+              첫 비행 기록하기
             </Link>
           </div>
         )}
 
+        {/* Flight list */}
         {!loading && logs.length > 0 && (
-          <div className="space-y-3">
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {logs.map((log) => (
               <FlightLogCard key={log.id} log={log} />
             ))}
