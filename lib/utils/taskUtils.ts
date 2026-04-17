@@ -239,46 +239,68 @@ function xctrackTurnpointType(index: number, total: number): string {
   return "TURNPOINT";
 }
 
-// Numeric enums for QR compact format (go-xctrack spec)
-function xctrackTurnpointTypeNum(index: number, total: number): number | undefined {
-  if (index === 0) return 1;            // TAKEOFF
-  if (total > 2 && index === 1) return 2;            // SSS
-  if (total >= 4 && index === total - 2) return 3;   // ESS
-  if (index === total - 1) return 4;    // GOAL
-  return undefined;                     // TURNPOINT — omit (default 0)
+// ── Polyline encoding (go-polyline EncodeInt) ────────────────────────────────
+// Encodes a single integer using Google's polyline algorithm.
+// Each value is independent (not delta-encoded).
+function polylineEncodeInt(value: number): string {
+  let v = Math.round(value) * 2;
+  if (v < 0) v = ~v;
+  let s = "";
+  while (v >= 0x20) {
+    s += String.fromCharCode(((v & 0x1f) | 0x20) + 63);
+    v = Math.floor(v / 32);
+  }
+  s += String.fromCharCode(v + 63);
+  return s;
 }
 
-/** pretty=true for file download, false for QR compact format (go-xctrack spec) */
+// Encodes [lon, lat, alt, radius] into a polyline string for the QR "z" field.
+function encodeQRZ(lon: number, lat: number, alt: number, radius: number): string {
+  return (
+    polylineEncodeInt(Math.round(lon * 1e5)) +
+    polylineEncodeInt(Math.round(lat * 1e5)) +
+    polylineEncodeInt(Math.round(alt)) +
+    polylineEncodeInt(Math.round(radius))
+  );
+}
+
+// Numeric turnpoint type for QR format: SSS=2, ESS=3 (0/omit for others)
+function qrTurnpointType(index: number, total: number): number {
+  if (total > 2 && index === 1) return 2;           // SSS
+  if (total >= 4 && index === total - 2) return 3;  // ESS
+  return 0;
+}
+
+/** pretty=true for .xctsk file download, false for QR code (XCTSK: compact format) */
 export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string {
   const n = task.waypoints.length;
   const sssType = task.task_type === "CLASSIC" ? "ELAPSED-TIME" : "RACE";
 
   if (!pretty) {
-    // Compact QR format: abbreviated field names + numeric enums
-    // sss.t: 1=RACE, 2=ELAPSED-TIME  |  sss.d: 1=ENTER  |  goal.t: 2=CYLINDER
+    // go-xctrack QR spec: XCTSK: prefix + version 2 + polyline-encoded "z" per turnpoint
     const qr: Record<string, unknown> = {
       taskType: "CLASSIC",
-      version: 1,
-      e: 0, // earthModel: WGS84
+      version: 2,
       t: task.waypoints.map((wp, i) => {
-        const typeNum = xctrackTurnpointTypeNum(i, n);
+        const typeNum = qrTurnpointType(i, n);
         const tp: Record<string, unknown> = {
-          z: { Lat: wp.lat, Lon: wp.lon, Alt: wp.altitude ?? 0, Radius: wp.radius },
+          z: encodeQRZ(wp.lon, wp.lat, wp.altitude ?? 0, wp.radius),
           n: wp.name,
         };
-        if (typeNum !== undefined) tp.t = typeNum;
+        if (typeNum !== 0) tp.t = typeNum;
         return tp;
       }),
+      e: 0, // WGS84
     };
     if (n >= 3) {
       qr.s = {
-        t: sssType === "RACE" ? 1 : 2,
-        d: 1, // ENTER
         g: ["10:00:00Z"],
+        d: 1, // ENTER
+        t: sssType === "RACE" ? 1 : 2,
       };
-      qr.g = { t: 2, d: "20:00:00Z" }; // CYLINDER
+      qr.g = { t: 2 }; // CYLINDER, no deadline
     }
-    return JSON.stringify(qr);
+    return "XCTSK:" + JSON.stringify(qr);
   }
 
   // Full format for .xctsk file download
