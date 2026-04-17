@@ -231,35 +231,51 @@ export function exportToCUP(task: Task | TaskInsert): string {
 
 // ── Export: XCTrack (.xctsk) ──────────────────────────────────────────────────
 
-const xctrackType = (wp: Waypoint): string => {
-  if (wp.type === "D") return "TAKEOFF";
-  if (wp.type === "G") return "GOAL";
+function xctrackTurnpointType(index: number, total: number): string {
+  if (index === 0) return "TAKEOFF";
+  if (total > 2 && index === 1) return "SSS";
+  if (total >= 4 && index === total - 2) return "ESS";
+  if (index === total - 1) return "GOAL";
   return "TURNPOINT";
-};
+}
 
 /** pretty=true for file download, false for QR (minimises data size) */
 export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string {
-  const typeMap: Record<TaskType, string> = {
-    RACE: "RACE_TO_GOAL",
-    CLASSIC: "OPEN_DISTANCE",
-    FAI: "FAI_TRIANGLE",
-  };
+  const n = task.waypoints.length;
 
-  const payload = {
-    taskType: typeMap[task.task_type],
+  // XCTrack spec: taskType must always be "CLASSIC"
+  // Race vs elapsed-time is expressed in sss.type, not taskType
+  const sssType = task.task_type === "CLASSIC" ? "ELAPSED-TIME" : "RACE";
+
+  const payload: Record<string, unknown> = {
+    taskType: "CLASSIC",
     version: 1,
-    turnpoints: task.waypoints.map((wp) => ({
+    earthModel: "WGS84",
+    turnpoints: task.waypoints.map((wp, i) => ({
       radius: wp.radius,
-      type: xctrackType(wp),
+      type: xctrackTurnpointType(i, n),
       waypoint: {
         name: wp.name,
         description: "",
         lat: wp.lat,
         lon: wp.lon,
-        altSmoothing: 0,
+        altSmoothed: wp.altitude ?? 0,
       },
     })),
   };
+
+  // SSS config (for tasks with 3+ waypoints so SSS exists)
+  if (n >= 3) {
+    payload.sss = {
+      type: sssType,
+      direction: "ENTER",
+      timeGates: ["00:00:00Z"],
+    };
+    payload.goal = {
+      type: "CYLINDER",
+      deadline: "23:59:59Z",
+    };
+  }
 
   return JSON.stringify(payload, null, pretty ? 2 : undefined);
 }
