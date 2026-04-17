@@ -13,7 +13,10 @@ import {
   autoName, waypointColor, exportToCUP, exportToXCTrack,
   downloadBlob, circlePolygon,
 } from "@/lib/utils/taskUtils";
-import { TaskElevationProfile } from "@/components/TaskElevationProfile";
+const TaskElevationProfile = dynamic(
+  () => import("@/components/TaskElevationProfile").then(m => m.TaskElevationProfile),
+  { ssr: false }
+);
 import {
   ChevronLeft, Plus, Minus, Trash2, Lock, Globe,
   Navigation, Download, QrCode, ChevronUp, ChevronDown,

@@ -8,11 +8,13 @@ import { waypointRoleColor } from "@/lib/utils/taskUtils";
 
 function hkm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
-  const dφ = ((lat2 - lat1) * Math.PI) / 180;
-  const dλ = ((lon2 - lon1) * Math.PI) / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
-    Math.sin(dφ / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dλ / 2) ** 2;
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -76,13 +78,12 @@ function altAt(pts: EP[], dist: number): number {
 
 export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ w: 800, h: 110 });
+  const [size, setSize] = useState({ w: 600, h: 110 });
   const [elevPts, setElevPts] = useState<EP[]>([]);
   const [wpDists, setWpDists] = useState<number[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [cursor, setCursor] = useState<{ x: number; alt: number; dist: number } | null>(null);
 
-  // Track actual container pixel size
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -94,23 +95,26 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
     return () => ro.disconnect();
   }, []);
 
-  // Fetch terrain elevation when route changes
   const wpKey = waypoints.map(w => `${w.lat.toFixed(5)},${w.lon.toFixed(5)}`).join("|");
+
   useEffect(() => {
     if (waypoints.length < 2) return;
     let cancelled = false;
-    setLoading(true);
+    setStatus("loading");
     const { pts: samples, wpDists: wd } = sampleRoute(waypoints);
     setWpDists(wd);
     fetchElev(samples)
       .then(alts => {
         if (cancelled) return;
         setElevPts(samples.map((s, i) => ({ dist: s.dist, alt: alts[i] })));
+        setStatus("ready");
       })
-      .catch(() => {}) // silent fail — profile just stays empty
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
     return () => { cancelled = true; };
-  }, [wpKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wpKey]);
 
   if (waypoints.length < 2) return null;
 
@@ -123,7 +127,7 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
 
   const alts = elevPts.map(p => p.alt);
   const minA = alts.length ? Math.min(...alts) : 0;
-  const maxA = alts.length ? Math.max(...alts) : 100;
+  const maxA = alts.length ? Math.max(...alts) : 1;
   const range = Math.max(maxA - minA, 1);
 
   const toX = (d: number) => PL + (d / totalDist) * CW;
@@ -133,11 +137,11 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
     .map((p, i) => `${i === 0 ? "M" : "L"}${toX(p.dist).toFixed(1)},${toY(p.alt).toFixed(1)}`)
     .join(" ");
   const areaD = elevPts.length
-    ? `${linePts} L${toX(totalDist)},${h - PB} L${PL},${h - PB} Z`
+    ? `${linePts} L${toX(totalDist).toFixed(1)},${h - PB} L${PL},${h - PB} Z`
     : "";
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current || !elevPts.length) return;
+    if (!containerRef.current || elevPts.length === 0) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const dist = Math.max(0, Math.min(totalDist, ((x - PL) / CW) * totalDist));
@@ -155,18 +159,25 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
         position: "absolute",
         bottom: 0, left: 0, right: 0,
         height: 130,
-        background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.42) 65%, transparent 100%)",
-        cursor: "crosshair",
+        background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 60%, transparent 100%)",
+        cursor: elevPts.length ? "crosshair" : "default",
         userSelect: "none",
         overflow: "hidden",
         zIndex: 3,
       }}
     >
-      {loading && (
-        <div style={{ position: "absolute", bottom: 10, right: 12, display: "flex", alignItems: "center", gap: 5 }}>
+      <style>{`@keyframes elSpin { to { transform: rotate(360deg); } }`}</style>
+
+      {status === "loading" && (
+        <div style={{ position: "absolute", bottom: 10, right: 14, display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ width: 10, height: 10, border: "1.5px solid rgba(255,255,255,0.2)", borderTopColor: "#F0B90B", borderRadius: "50%", animation: "elSpin 0.8s linear infinite" }} />
           <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: "-apple-system,sans-serif" }}>고도 로딩</span>
-          <style>{`@keyframes elSpin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      )}
+
+      {status === "error" && (
+        <div style={{ position: "absolute", bottom: 10, right: 14 }}>
+          <span style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", fontFamily: "-apple-system,sans-serif" }}>고도 데이터 없음</span>
         </div>
       )}
 
@@ -179,50 +190,41 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
             </linearGradient>
           </defs>
 
-          {/* Filled area */}
           <path d={areaD} fill="url(#tElevGrad)" />
-
-          {/* Profile line */}
           <path d={linePts} fill="none" stroke="#F0B90B" strokeWidth="1.5" />
 
-          {/* Waypoint verticals + dots */}
           {wpDists.map((d, i) => {
             const cx = toX(d);
             const cy = toY(altAt(elevPts, d));
             return (
               <g key={i}>
-                <line
-                  x1={cx} y1={PT} x2={cx} y2={h - PB}
-                  stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="3,2"
-                />
-                <circle cx={cx} cy={cy} r="3" fill={waypointRoleColor(i, n)} stroke="white" strokeWidth="1.5" />
+                <line x1={cx} y1={PT} x2={cx} y2={h - PB}
+                  stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="3,2" />
+                <circle cx={cx} cy={cy} r="3"
+                  fill={waypointRoleColor(i, n)} stroke="white" strokeWidth="1.5" />
               </g>
             );
           })}
 
-          {/* Y-axis labels */}
           {yTicks.map((a, i) => (
-            <text
-              key={i}
-              x={PL - 5} y={toY(a) + 3.5}
+            <text key={i} x={PL - 5} y={toY(a) + 3.5}
               textAnchor="end" fontSize="9" fill="rgba(255,255,255,0.5)"
-              fontFamily="-apple-system,sans-serif"
-            >
+              fontFamily="-apple-system,sans-serif">
               {Math.round(a)}m
             </text>
           ))}
 
-          {/* Hover cursor */}
           {cursor && (() => {
             const cy = toY(cursor.alt);
-            const labelX = cursor.x + 6 > w - 55 ? cursor.x - 6 : cursor.x + 6;
-            const anchor = cursor.x + 6 > w - 55 ? "end" : "start";
+            const flip = cursor.x + 6 > w - 55;
             return (
               <>
                 <line x1={cursor.x} y1={PT} x2={cursor.x} y2={h - PB}
                   stroke="rgba(255,255,255,0.75)" strokeWidth="1" />
-                <circle cx={cursor.x} cy={cy} r="4" fill="#F0B90B" stroke="white" strokeWidth="1.5" />
-                <text x={labelX} y={cy - 6} textAnchor={anchor}
+                <circle cx={cursor.x} cy={cy} r="4"
+                  fill="#F0B90B" stroke="white" strokeWidth="1.5" />
+                <text x={flip ? cursor.x - 6 : cursor.x + 6} y={cy - 6}
+                  textAnchor={flip ? "end" : "start"}
                   fontSize="11" fontWeight="700" fill="white"
                   fontFamily="-apple-system,sans-serif">
                   {cursor.alt}m
