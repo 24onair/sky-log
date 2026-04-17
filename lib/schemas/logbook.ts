@@ -26,6 +26,8 @@ export const flightLogSchema = z.object({
   // 기타
   memo: z.string().nullable(),
   igc_parsed: z.boolean().default(false),
+  // IGC track data: [lon, lat, alt][] sampled for map/playback
+  track_points: z.array(z.tuple([z.number(), z.number(), z.number()])).nullable().optional(),
   
   created_at: z.coerce.date().optional(),
   updated_at: z.coerce.date().optional(),

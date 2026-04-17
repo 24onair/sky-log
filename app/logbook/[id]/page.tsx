@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   getFlightLogById,
   updateFlightLog,
@@ -13,6 +14,11 @@ import { getUser } from "@/lib/supabase/auth";
 import { FlightLogForm } from "@/components/FlightLogForm";
 import { formatDate, formatTime, formatDuration } from "@/lib/utils/format";
 import { ChevronLeft, Clock, Navigation, MoveUp, Wind, AlertCircle, Pencil, Trash2 } from "lucide-react";
+
+const FlightReplay = dynamic(
+  () => import("@/components/FlightReplay").then((m) => m.FlightReplay),
+  { ssr: false, loading: () => <div style={{ height: 560, borderRadius: 14, background: "#1E2026", display: "flex", alignItems: "center", justifyContent: "center" }}><p style={{ color: "rgba(255,255,255,0.3)", fontSize: 14 }}>지도 로딩 중...</p></div> }
+);
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -218,6 +224,16 @@ export default function FlightDetailPage({ params }: PageProps) {
             </button>
           </div>
         ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Flight replay map + altitude profile */}
+          {log.track_points && log.track_points.length > 1 && (
+            <FlightReplay
+              trackPoints={log.track_points as [number, number, number][]}
+              durationSec={log.duration_sec}
+            />
+          )}
+
           <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16, alignItems: "start" }}>
 
             {/* Main */}
@@ -351,6 +367,8 @@ export default function FlightDetailPage({ params }: PageProps) {
                 </div>
               </div>
             </div>
+          </div>
+
           </div>
         )}
       </div>

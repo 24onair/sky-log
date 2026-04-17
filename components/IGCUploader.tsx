@@ -38,6 +38,7 @@ export function IGCUploader({ onParsed }: IGCUploaderProps) {
         distance_track_km: parsed.distanceTrackKm,
         distance_xcontest_km: parsed.distanceXcontestKm,
         igc_parsed: true,
+        track_points: parsed.trackPoints,
       });
 
       setFileName(file.name);
