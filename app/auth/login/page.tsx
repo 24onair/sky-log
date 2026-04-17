@@ -42,24 +42,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ minHeight: "calc(100vh - 48px)", background: "#f5f5f7", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
-      <div style={{ width: "100%", maxWidth: 400 }}>
+    <div style={{ minHeight: "calc(100vh - 48px)", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+      <div style={{ width: "100%", maxWidth: 420 }}>
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.5px", color: "#1d1d1f", marginBottom: 8 }}>로그인</h1>
-          <p style={{ fontSize: 15, color: "rgba(0,0,0,0.56)" }}>Sky Log에 오신 걸 환영합니다</p>
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <h1 style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.5px", color: "#1E2026", marginBottom: 10 }}>로그인</h1>
+          <p style={{ fontSize: 15, color: "#848E9C", fontWeight: 500 }}>Sky Log에 오신 걸 환영합니다</p>
         </div>
 
-        <div className="sk-card" style={{ padding: 36 }}>
+        <div className="sk-card" style={{ padding: 40 }}>
           {error && (
-            <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 10, padding: "12px 16px", marginBottom: 20 }}>
-              <p style={{ fontSize: 14, color: "#ff3b30" }}>{error}</p>
+            <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 12, padding: "14px 16px", marginBottom: 24 }}>
+              <p style={{ fontSize: 14, color: "#ff3b30", fontWeight: 500 }}>{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#1d1d1f", marginBottom: 6 }}>이메일</label>
+              <label style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#1E2026", marginBottom: 8 }}>이메일</label>
               <input
                 type="email"
                 value={form.email}
@@ -69,11 +69,11 @@ export default function LoginPage() {
                 disabled={isSubmitting}
                 autoComplete="email"
               />
-              {errors.email && <p style={{ fontSize: 12, color: "#ff3b30", marginTop: 4 }}>{errors.email}</p>}
+              {errors.email && <p style={{ fontSize: 12, color: "#ff3b30", marginTop: 4, fontWeight: 500 }}>{errors.email}</p>}
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#1d1d1f", marginBottom: 6 }}>비밀번호</label>
+              <label style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#1E2026", marginBottom: 8 }}>비밀번호</label>
               <input
                 type="password"
                 value={form.password}
@@ -83,23 +83,23 @@ export default function LoginPage() {
                 disabled={isSubmitting}
                 autoComplete="current-password"
               />
-              {errors.password && <p style={{ fontSize: 12, color: "#ff3b30", marginTop: 4 }}>{errors.password}</p>}
+              {errors.password && <p style={{ fontSize: 12, color: "#ff3b30", marginTop: 4, fontWeight: 500 }}>{errors.password}</p>}
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
               className="sk-btn-primary"
-              style={{ width: "100%", justifyContent: "center", padding: "12px 20px", fontSize: 15, marginTop: 8, borderRadius: 10, opacity: isSubmitting ? 0.6 : 1 }}
+              style={{ width: "100%", justifyContent: "center", padding: "14px 20px", fontSize: 16, fontWeight: 600, marginTop: 10, opacity: isSubmitting ? 0.7 : 1 }}
             >
               {isSubmitting ? "로그인 중..." : "로그인"}
             </button>
           </form>
         </div>
 
-        <p style={{ textAlign: "center", fontSize: 14, color: "rgba(0,0,0,0.56)", marginTop: 20 }}>
+        <p style={{ textAlign: "center", fontSize: 14, color: "#848E9C", marginTop: 24, fontWeight: 500 }}>
           계정이 없으신가요?{" "}
-          <Link href="/auth/signup" style={{ color: "#0066cc", textDecoration: "none", fontWeight: 500 }}>
+          <Link href="/auth/signup" style={{ color: "#F0B90B", textDecoration: "none", fontWeight: 700 }}>
             회원가입
           </Link>
         </p>

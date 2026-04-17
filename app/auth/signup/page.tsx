@@ -7,8 +7,8 @@ import { CheckCircle } from "lucide-react";
 
 const WING_GRADES = ["EN-A", "EN-B", "EN-C", "EN-D", "CCC"];
 
-const fieldStyle = { display: "flex", flexDirection: "column" as const, gap: 6 };
-const labelStyle = { fontSize: 13, fontWeight: 500, color: "#1d1d1f" } as React.CSSProperties;
+const fieldStyle = { display: "flex", flexDirection: "column" as const, gap: 8 };
+const labelStyle = { fontSize: 14, fontWeight: 600, color: "#1E2026" } as React.CSSProperties;
 
 export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,14 +55,14 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div style={{ minHeight: "calc(100vh - 48px)", background: "#f5f5f7", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-        <div className="sk-card" style={{ padding: 48, maxWidth: 420, width: "100%", textAlign: "center" }}>
-          <CheckCircle size={48} strokeWidth={1.5} style={{ color: "#34c759", margin: "0 auto 20px" }} />
-          <h2 style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-0.5px", marginBottom: 12 }}>이메일을 확인해주세요</h2>
-          <p style={{ fontSize: 15, color: "rgba(0,0,0,0.56)", lineHeight: 1.5, marginBottom: 28 }}>
-            <strong style={{ color: "#1d1d1f" }}>{form.email}</strong>로 인증 링크를 보냈습니다.
+      <div style={{ minHeight: "calc(100vh - 48px)", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div className="sk-card" style={{ padding: 56, maxWidth: 420, width: "100%", textAlign: "center" }}>
+          <CheckCircle size={56} strokeWidth={1.5} style={{ color: "#34c759", margin: "0 auto 24px" }} />
+          <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.5px", marginBottom: 14, color: "#1E2026" }}>이메일을 확인해주세요</h2>
+          <p style={{ fontSize: 15, color: "#848E9C", lineHeight: 1.6, marginBottom: 32, fontWeight: 500 }}>
+            <strong style={{ color: "#1E2026" }}>{form.email}</strong>로 인증 링크를 보냈습니다.
           </p>
-          <Link href="/auth/login" className="sk-btn-primary" style={{ display: "inline-flex", justifyContent: "center", padding: "10px 28px", borderRadius: 10, fontSize: 15 }}>
+          <Link href="/auth/login" className="sk-btn-primary" style={{ display: "inline-flex", justifyContent: "center", padding: "12px 32px", fontSize: 15, fontWeight: 600 }}>
             로그인 페이지로
           </Link>
         </div>
@@ -71,41 +71,41 @@ export default function SignUpPage() {
   }
 
   return (
-    <div style={{ background: "#f5f5f7", padding: "48px 20px" }}>
+    <div style={{ background: "#FFFFFF", padding: "56px 20px" }}>
       <div style={{ maxWidth: 560, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.5px", color: "#1d1d1f", marginBottom: 8 }}>회원가입</h1>
-          <p style={{ fontSize: 15, color: "rgba(0,0,0,0.56)" }}>Sky Log에 오신 걸 환영합니다</p>
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <h1 style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.5px", color: "#1E2026", marginBottom: 10 }}>회원가입</h1>
+          <p style={{ fontSize: 15, color: "#848E9C", fontWeight: 500 }}>Sky Log에 오신 걸 환영합니다</p>
         </div>
 
-        <div className="sk-card" style={{ padding: "36px 40px" }}>
+        <div className="sk-card" style={{ padding: "48px" }}>
           {error && (
-            <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 10, padding: "12px 16px", marginBottom: 24 }}>
-              <p style={{ fontSize: 14, color: "#ff3b30" }}>{error}</p>
+            <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 12, padding: "14px 16px", marginBottom: 28 }}>
+              <p style={{ fontSize: 14, color: "#ff3b30", fontWeight: 500 }}>{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 28 }}>
 
             {/* 계정 정보 */}
             <section>
-              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(0,0,0,0.4)", textTransform: "uppercase", marginBottom: 14 }}>계정 정보</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#848E9C", textTransform: "uppercase", marginBottom: 16 }}>계정 정보</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div style={fieldStyle}>
                   <label style={labelStyle}>이메일 *</label>
                   <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="email@example.com" className={`sk-input${errors.email ? " error" : ""}`} disabled={isSubmitting} />
-                  {errors.email && <p style={{ fontSize: 12, color: "#ff3b30" }}>{errors.email}</p>}
+                  {errors.email && <p style={{ fontSize: 12, color: "#ff3b30", fontWeight: 500 }}>{errors.email}</p>}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                   <div style={fieldStyle}>
                     <label style={labelStyle}>비밀번호 *</label>
                     <input type="password" value={form.password} onChange={(e) => set("password", e.target.value)} placeholder="6자 이상" className={`sk-input${errors.password ? " error" : ""}`} disabled={isSubmitting} />
-                    {errors.password && <p style={{ fontSize: 12, color: "#ff3b30" }}>{errors.password}</p>}
+                    {errors.password && <p style={{ fontSize: 12, color: "#ff3b30", fontWeight: 500 }}>{errors.password}</p>}
                   </div>
                   <div style={fieldStyle}>
                     <label style={labelStyle}>비밀번호 확인 *</label>
                     <input type="password" value={form.passwordConfirm} onChange={(e) => set("passwordConfirm", e.target.value)} placeholder="재입력" className={`sk-input${errors.passwordConfirm ? " error" : ""}`} disabled={isSubmitting} />
-                    {errors.passwordConfirm && <p style={{ fontSize: 12, color: "#ff3b30" }}>{errors.passwordConfirm}</p>}
+                    {errors.passwordConfirm && <p style={{ fontSize: 12, color: "#ff3b30", fontWeight: 500 }}>{errors.passwordConfirm}</p>}
                   </div>
                 </div>
               </div>
@@ -113,12 +113,12 @@ export default function SignUpPage() {
 
             {/* 개인 정보 */}
             <section>
-              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(0,0,0,0.4)", textTransform: "uppercase", marginBottom: 14 }}>개인 정보</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#848E9C", textTransform: "uppercase", marginBottom: 16 }}>개인 정보</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <div style={fieldStyle}>
                   <label style={labelStyle}>이름 *</label>
                   <input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="홍길동" className={`sk-input${errors.name ? " error" : ""}`} disabled={isSubmitting} />
-                  {errors.name && <p style={{ fontSize: 12, color: "#ff3b30" }}>{errors.name}</p>}
+                  {errors.name && <p style={{ fontSize: 12, color: "#ff3b30", fontWeight: 500 }}>{errors.name}</p>}
                 </div>
                 <div style={fieldStyle}>
                   <label style={labelStyle}>닉네임</label>
@@ -133,8 +133,8 @@ export default function SignUpPage() {
 
             {/* 날개 정보 */}
             <section>
-              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(0,0,0,0.4)", textTransform: "uppercase", marginBottom: 14 }}>날개 정보</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#848E9C", textTransform: "uppercase", marginBottom: 16 }}>날개 정보</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <div style={fieldStyle}>
                   <label style={labelStyle}>브랜드</label>
                   <input type="text" value={form.wing_brand} onChange={(e) => set("wing_brand", e.target.value)} placeholder="Ozone, Advance..." className="sk-input" disabled={isSubmitting} />
@@ -153,15 +153,15 @@ export default function SignUpPage() {
               </div>
             </section>
 
-            <button type="submit" disabled={isSubmitting} className="sk-btn-primary" style={{ width: "100%", justifyContent: "center", padding: "12px 20px", fontSize: 15, borderRadius: 10, opacity: isSubmitting ? 0.6 : 1 }}>
+            <button type="submit" disabled={isSubmitting} className="sk-btn-primary" style={{ width: "100%", justifyContent: "center", padding: "14px 20px", fontSize: 16, fontWeight: 600, marginTop: 8, opacity: isSubmitting ? 0.7 : 1 }}>
               {isSubmitting ? "처리 중..." : "회원가입"}
             </button>
           </form>
         </div>
 
-        <p style={{ textAlign: "center", fontSize: 14, color: "rgba(0,0,0,0.56)", marginTop: 20 }}>
+        <p style={{ textAlign: "center", fontSize: 14, color: "#848E9C", marginTop: 28, fontWeight: 500 }}>
           이미 계정이 있으신가요?{" "}
-          <Link href="/auth/login" style={{ color: "#0066cc", textDecoration: "none", fontWeight: 500 }}>로그인</Link>
+          <Link href="/auth/login" style={{ color: "#F0B90B", textDecoration: "none", fontWeight: 700 }}>로그인</Link>
         </p>
       </div>
     </div>

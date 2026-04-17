@@ -4,10 +4,10 @@ import { Wind, BarChart2, Upload, MapPin } from "lucide-react";
 export default function Home() {
   return (
     <div>
-      {/* Hero — dark section */}
-      <section style={{ background: "#000", color: "#fff", padding: "100px 20px 80px", textAlign: "center" }}>
+      {/* Hero — dark section inspired by Binance */}
+      <section style={{ background: "#222126", color: "#fff", padding: "100px 20px 80px", textAlign: "center" }}>
         <div style={{ maxWidth: 680, margin: "0 auto" }}>
-          <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: "0.1em", color: "#0071e3", textTransform: "uppercase", marginBottom: 16 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: "0.1em", color: "#F0B90B", textTransform: "uppercase", marginBottom: 16 }}>
             Paragliding Logbook
           </p>
           <h1 style={{ fontSize: "clamp(36px, 6vw, 56px)", fontWeight: 600, lineHeight: 1.07, letterSpacing: "-0.5px", marginBottom: 20 }}>
@@ -17,10 +17,10 @@ export default function Home() {
             IGC 파일을 올리거나 직접 입력해 비행 데이터를 기록하고 통계를 확인하세요.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/auth/signup" className="sk-btn-primary" style={{ padding: "12px 28px", fontSize: 17, borderRadius: 980 }}>
+            <Link href="/auth/signup" className="sk-btn-primary" style={{ padding: "14px 40px", fontSize: 16, fontWeight: 600 }}>
               무료로 시작하기
             </Link>
-            <Link href="/auth/login" style={{ padding: "12px 28px", fontSize: 17, borderRadius: 980, color: "#2997ff", textDecoration: "none", border: "1px solid rgba(41,151,255,0.4)", display: "inline-flex", alignItems: "center" }}>
+            <Link href="/auth/login" style={{ padding: "14px 40px", fontSize: 16, fontWeight: 600, color: "#F0B90B", textDecoration: "none", border: "2px solid #F0B90B", borderRadius: 50, display: "inline-flex", alignItems: "center", fontWeight: 600, background: "transparent" }}>
               로그인
             </Link>
           </div>
@@ -28,9 +28,9 @@ export default function Home() {
       </section>
 
       {/* Features — light section */}
-      <section style={{ background: "#f5f5f7", padding: "80px 20px" }}>
+      <section style={{ background: "#FFFFFF", padding: "80px 20px" }}>
         <div style={{ maxWidth: 980, margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 600, lineHeight: 1.1, letterSpacing: "-0.5px", textAlign: "center", marginBottom: 60, color: "#1d1d1f" }}>
+          <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 600, lineHeight: 1.1, letterSpacing: "-0.5px", textAlign: "center", marginBottom: 60, color: "#1E2026" }}>
             비행을 더 깊이 이해하세요
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20 }}>
@@ -41,11 +41,11 @@ export default function Home() {
               { icon: Wind, title: "날씨 기록", desc: "풍향, 풍속, 날씨 상태를 함께 기록해 비행 조건 패턴을 분석합니다." },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="sk-card" style={{ padding: 32 }}>
-                <div style={{ width: 44, height: 44, background: "rgba(0,113,227,0.08)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-                  <Icon size={22} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+                <div style={{ width: 48, height: 48, background: "rgba(240, 185, 11, 0.1)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                  <Icon size={24} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
                 </div>
-                <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, color: "#1d1d1f", letterSpacing: "-0.3px" }}>{title}</h3>
-                <p style={{ fontSize: 14, lineHeight: 1.57, color: "rgba(0,0,0,0.56)", letterSpacing: "-0.1px" }}>{desc}</p>
+                <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, color: "#1E2026", letterSpacing: "-0.3px" }}>{title}</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.57, color: "#848E9C", letterSpacing: "-0.1px" }}>{desc}</p>
               </div>
             ))}
           </div>

@@ -2,28 +2,53 @@
 @import "mapbox-gl/dist/mapbox-gl.css";
 
 :root {
-  /* Apple Design System */
-  --sk-bg-light: #f5f5f7;
-  --sk-bg-dark: #000000;
-  --sk-text-primary-light: #1d1d1f;
-  --sk-text-primary-dark: #f5f5f7;
-  --sk-text-secondary: rgba(0, 0, 0, 0.56);
-  --sk-accent: #0071e3;
-  --sk-accent-dark: #2997ff;
-  --sk-link-light: #0066cc;
-  --sk-link-dark: #2997ff;
-  --sk-focus-color: #0071e3;
-  --sk-card-shadow: rgba(0, 0, 0, 0.12) 0px 4px 24px 0px;
-  --sk-nav-bg: rgba(255, 255, 255, 0.72);
-  --sk-surface: #ffffff;
-  --sk-surface-dark: #1c1c1e;
+  /* Binance Design System */
+  /* Primary */
+  --bn-yellow-primary: #F0B90B;
+  --bn-yellow-light: #F8D12F;
+  --bn-yellow-dark: #D0980B;
+  --bn-yellow-gold: #FFD000;
+  
+  /* Surface & Background */
+  --bn-bg-light: #FFFFFF;
+  --bn-bg-snow: #F5F5F5;
+  --bn-bg-dark: #222126;
+  --bn-bg-card-dark: #2B2F36;
+  
+  /* Text & Neutrals */
+  --bn-text-primary: #1E2026;
+  --bn-text-secondary: #32313A;
+  --bn-text-tertiary: #848E9C;
+  --bn-text-muted: #777E90;
+  --bn-text-ink: #1E2026;
+  --bn-text-steel: #686A6C;
+  --bn-text-hover: #1A1A1A;
+  
+  /* Accent */
+  --bn-focus-blue: #1EAEDB;
+  
+  /* Derived */
+  --sk-bg-light: var(--bn-bg-light);
+  --sk-bg-dark: var(--bn-bg-dark);
+  --sk-text-primary-light: var(--bn-text-primary);
+  --sk-text-primary-dark: var(--bn-bg-light);
+  --sk-text-secondary: var(--bn-text-tertiary);
+  --sk-accent: var(--bn-yellow-primary);
+  --sk-accent-dark: var(--bn-yellow-gold);
+  --sk-link-light: var(--bn-yellow-primary);
+  --sk-link-dark: var(--bn-yellow-light);
+  --sk-focus-color: var(--bn-focus-blue);
+  --sk-card-shadow: rgba(0, 0, 0, 0.05) 0px 2px 12px 0px;
+  --sk-nav-bg: rgba(255, 255, 255, 0.95);
+  --sk-surface: var(--bn-bg-light);
+  --sk-surface-dark: var(--bn-bg-dark);
   --sk-border: rgba(0, 0, 0, 0.08);
   --sk-radius: 12px;
   --sk-radius-sm: 8px;
-  --sk-radius-pill: 980px;
+  --sk-radius-pill: 50px;
 
-  --background: #f5f5f7;
-  --foreground: #1d1d1f;
+  --background: var(--bn-bg-light);
+  --foreground: var(--bn-text-primary);
 }
 
 @theme inline {
@@ -66,40 +91,49 @@ h1, h2, h3, h4 {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Apple-style button */
+/* Binance pill-shaped button */
 .sk-btn-primary {
-  background: var(--sk-accent);
-  color: #ffffff;
-  padding: 8px 20px;
-  border-radius: var(--sk-radius-sm);
+  background: var(--bn-yellow-primary);
+  color: var(--bn-text-ink);
+  padding: 12px 32px;
+  border-radius: var(--sk-radius-pill);
   font-size: 15px;
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: normal;
   border: none;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, box-shadow 0.2s;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
-.sk-btn-primary:hover { background: #0077ed; }
-.sk-btn-primary:focus { outline: 2px solid var(--sk-focus-color); outline-offset: 2px; }
+.sk-btn-primary:hover { 
+  background: var(--bn-yellow-gold);
+  box-shadow: 0 4px 12px rgba(240, 185, 11, 0.2);
+}
+.sk-btn-primary:active { background: var(--bn-yellow-dark); }
+.sk-btn-primary:focus { outline: 2px solid var(--bn-focus-blue); outline-offset: 2px; }
 
 .sk-btn-secondary {
   background: transparent;
-  color: var(--sk-accent);
-  padding: 8px 20px;
+  color: var(--bn-yellow-primary);
+  padding: 12px 32px;
   border-radius: var(--sk-radius-pill);
   font-size: 15px;
-  font-weight: 400;
-  border: 1px solid var(--sk-accent);
+  font-weight: 600;
+  border: 2px solid var(--bn-yellow-primary);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
-.sk-btn-secondary:hover { background: rgba(0, 113, 227, 0.06); }
+.sk-btn-secondary:hover { 
+  background: rgba(240, 185, 11, 0.1);
+  color: var(--bn-yellow-dark);
+}
 
 /* Input */
 .sk-input {
@@ -115,8 +149,8 @@ h1, h2, h3, h4 {
   outline: none;
 }
 .sk-input:focus {
-  border-color: var(--sk-accent);
-  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+  border-color: var(--bn-yellow-primary);
+  box-shadow: 0 0 0 3px rgba(240, 185, 11, 0.15);
 }
 .sk-input.error { border-color: #ff3b30; }
 
@@ -125,6 +159,11 @@ h1, h2, h3, h4 {
   background: var(--sk-surface);
   border-radius: var(--sk-radius);
   box-shadow: var(--sk-card-shadow);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.sk-card:hover {
+  box-shadow: rgba(0, 0, 0, 0.08) 0px 4px 20px 0px;
+  transform: translateY(-2px);
 }
 
 /* Section backgrounds */

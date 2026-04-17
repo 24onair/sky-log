@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" style={{ minHeight: "100%" }}>
-      <body style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f5f5f7" }}>
+      <body style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#FFFFFF" }}>
         <Navbar />
         {/* On mobile, bottom tab bar is 60px + safe area — give content room */}
         <main style={{ flex: 1 }} className="sk-main-content">{children}</main>

@@ -13,11 +13,11 @@ interface FlightLogFormProps {
   isEditing?: boolean;
 }
 
-const label = { fontSize: 13, fontWeight: 500, color: "#1d1d1f", display: "block", marginBottom: 6 } as React.CSSProperties;
-const section = { marginBottom: 28 } as React.CSSProperties;
-const sectionTitle = { fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(0,0,0,0.36)", textTransform: "uppercase" as const, marginBottom: 14 };
-const grid2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } as React.CSSProperties;
-const grid3 = { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 } as React.CSSProperties;
+const label = { fontSize: 14, fontWeight: 600, color: "#1E2026", display: "block", marginBottom: 8 } as React.CSSProperties;
+const section = { marginBottom: 32 } as React.CSSProperties;
+const sectionTitle = { fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#848E9C", textTransform: "uppercase" as const, marginBottom: 16 };
+const grid2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 } as React.CSSProperties;
+const grid3 = { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 } as React.CSSProperties;
 
 export function FlightLogForm({ initialData, isSubmitting = false, onSubmit, sites = [], isEditing = false }: FlightLogFormProps) {
   const [formData, setFormData] = useState<FlightLogInsert>(
@@ -204,7 +204,7 @@ export function FlightLogForm({ initialData, isSubmitting = false, onSubmit, sit
         type="submit"
         disabled={isSubmitting}
         className="sk-btn-primary"
-        style={{ width: "100%", justifyContent: "center", padding: "12px 20px", fontSize: 15, borderRadius: 10, opacity: isSubmitting ? 0.6 : 1 }}
+        style={{ width: "100%", justifyContent: "center", padding: "14px 20px", fontSize: 16, fontWeight: 600, opacity: isSubmitting ? 0.7 : 1 }}
       >
         {isSubmitting ? "저장 중..." : isEditing ? "수정 완료" : "비행 기록 저장"}
       </button>

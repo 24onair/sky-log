@@ -18,9 +18,9 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-const sectionTitle = { fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(0,0,0,0.36)", textTransform: "uppercase" as const, marginBottom: 14 };
-const statLabel = { fontSize: 12, color: "rgba(0,0,0,0.4)", marginBottom: 4 } as React.CSSProperties;
-const statValue = { fontSize: 22, fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.5px", lineHeight: 1 } as React.CSSProperties;
+const sectionTitle = { fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#848E9C", textTransform: "uppercase" as const, marginBottom: 16 };
+const statLabel = { fontSize: 13, color: "#848E9C", marginBottom: 6, fontWeight: 500 } as React.CSSProperties;
+const statValue = { fontSize: 26, fontWeight: 700, color: "#1E2026", letterSpacing: "-0.5px", lineHeight: 1 } as React.CSSProperties;
 
 export default function FlightDetailPage({ params }: PageProps) {
   const router = useRouter();

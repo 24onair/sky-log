@@ -22,21 +22,21 @@ const FlightMap = dynamic(
 
 // ─── style constants ──────────────────────────────────────────────
 const label = {
-  fontSize: 12,
-  fontWeight: 500,
-  color: "rgba(0,0,0,0.48)",
+  fontSize: 14,
+  fontWeight: 600,
+  color: "#1E2026",
   display: "block",
-  marginBottom: 5,
+  marginBottom: 8,
   letterSpacing: "0.02em",
 } as React.CSSProperties;
 
 const secHead = {
-  fontSize: 10,
+  fontSize: 12,
   fontWeight: 700,
   letterSpacing: "0.10em",
-  color: "rgba(0,0,0,0.3)",
+  color: "#848E9C",
   textTransform: "uppercase" as const,
-  marginBottom: 12,
+  marginBottom: 14,
 };
 
 // ─── blank form state ─────────────────────────────────────────────

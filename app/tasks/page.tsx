@@ -48,43 +48,43 @@ export default function TasksPage() {
   const publicTasks = tasks.filter((t) => t.user_id !== userId && t.is_public);
 
   return (
-    <div style={{ background: "#f5f5f7", minHeight: "calc(100vh - 48px)", padding: "40px 20px" }}>
+    <div style={{ background: "#FFFFFF", minHeight: "calc(100vh - 48px)", padding: "40px 20px" }}>
       <div style={{ maxWidth: 720, margin: "0 auto" }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36 }}>
           <div>
-            <h1 style={{ fontSize: 34, fontWeight: 600, letterSpacing: "-0.5px", color: "#1d1d1f", lineHeight: 1.1 }}>타스크</h1>
-            <p style={{ fontSize: 15, color: "rgba(0,0,0,0.48)", marginTop: 4 }}>XC 비행 태스크 플래너</p>
+            <h1 style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.5px", color: "#1E2026", lineHeight: 1.1 }}>타스크</h1>
+            <p style={{ fontSize: 15, color: "#848E9C", marginTop: 6, fontWeight: 500 }}>XC 비행 태스크 플래너</p>
           </div>
           <Link
             href="/tasks/new"
             className="sk-btn-primary"
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 10, fontSize: 14 }}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 28px", fontSize: 15, fontWeight: 600 }}
           >
-            <Plus size={15} strokeWidth={2} />
+            <Plus size={16} strokeWidth={2} />
             새 타스크
           </Link>
         </div>
 
         {error && (
-          <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 10, padding: "12px 16px", marginBottom: 20 }}>
-            <p style={{ fontSize: 14, color: "#ff3b30" }}>{error}</p>
+          <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 12, padding: "14px 16px", marginBottom: 24 }}>
+            <p style={{ fontSize: 14, color: "#ff3b30", fontWeight: 500 }}>{error}</p>
           </div>
         )}
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: "60px 0" }}>
-            <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+          <div style={{ textAlign: "center", padding: "80px 20px" }}>
+            <div style={{ width: 32, height: 32, border: "3px solid #F0B90B", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         ) : (
           <>
             {/* My tasks */}
             {myTasks.length > 0 && (
-              <section style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(0,0,0,0.36)", textTransform: "uppercase", marginBottom: 12 }}>내 타스크</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <section style={{ marginBottom: 36 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#848E9C", textTransform: "uppercase", marginBottom: 14 }}>내 타스크</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {myTasks.map((task) => (
                     <TaskCard key={task.id} task={task} isOwner onDelete={() => handleDelete(task.id)} />
                   ))}
@@ -95,8 +95,8 @@ export default function TasksPage() {
             {/* Public tasks from others */}
             {publicTasks.length > 0 && (
               <section>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(0,0,0,0.36)", textTransform: "uppercase", marginBottom: 12 }}>공개 타스크</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "#848E9C", textTransform: "uppercase", marginBottom: 14 }}>공개 타스크</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {publicTasks.map((task) => (
                     <TaskCard key={task.id} task={task} isOwner={false} />
                   ))}
@@ -105,13 +105,13 @@ export default function TasksPage() {
             )}
 
             {myTasks.length === 0 && publicTasks.length === 0 && (
-              <div style={{ textAlign: "center", padding: "80px 20px" }}>
-                <div style={{ width: 56, height: 56, background: "rgba(0,113,227,0.08)", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-                  <Navigation size={26} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+              <div style={{ textAlign: "center", padding: "100px 20px" }}>
+                <div style={{ width: 64, height: 64, background: "rgba(240, 185, 11, 0.1)", borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+                  <Navigation size={32} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
                 </div>
-                <h3 style={{ fontSize: 19, fontWeight: 600, color: "#1d1d1f", marginBottom: 8 }}>타스크가 없습니다</h3>
-                <p style={{ fontSize: 14, color: "rgba(0,0,0,0.48)", marginBottom: 24 }}>첫 번째 XC 타스크를 만들어보세요</p>
-                <Link href="/tasks/new" className="sk-btn-primary" style={{ display: "inline-flex", padding: "10px 24px", borderRadius: 980, fontSize: 14 }}>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1E2026", marginBottom: 10 }}>타스크가 없습니다</h3>
+                <p style={{ fontSize: 15, color: "#848E9C", marginBottom: 28, fontWeight: 500 }}>첫 번째 XC 타스크를 만들어보세요</p>
+                <Link href="/tasks/new" className="sk-btn-primary" style={{ display: "inline-flex", padding: "12px 28px", fontSize: 15, fontWeight: 600 }}>
                   타스크 만들기
                 </Link>
               </div>
@@ -127,14 +127,14 @@ function TaskCard({ task, isOwner, onDelete }: { task: Task; isOwner: boolean; o
   return (
     <div
       className="sk-card"
-      style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}
+      style={{ padding: "18px 24px", display: "flex", alignItems: "center", gap: 14 }}
     >
       {/* Waypoint type dots */}
-      <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+      <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
         {task.waypoints.slice(0, 5).map((wp, i) => (
           <div
             key={i}
-            style={{ width: 8, height: 8, borderRadius: "50%", background: waypointColor(wp.type) }}
+            style={{ width: 9, height: 9, borderRadius: "50%", background: waypointColor(wp.type) }}
           />
         ))}
       </div>
@@ -144,23 +144,23 @@ function TaskCard({ task, isOwner, onDelete }: { task: Task; isOwner: boolean; o
         href={`/tasks/${task.id}`}
         style={{ flex: 1, minWidth: 0, textDecoration: "none", color: "inherit" }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-          <p style={{ fontSize: 15, fontWeight: 600, color: "#1d1d1f", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "#1E2026", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {task.name}
           </p>
           {task.is_public
-            ? <Globe size={11} strokeWidth={1.5} style={{ color: "rgba(0,0,0,0.3)", flexShrink: 0 }} />
-            : <Lock size={11} strokeWidth={1.5} style={{ color: "rgba(0,0,0,0.3)", flexShrink: 0 }} />}
+            ? <Globe size={12} strokeWidth={1.5} style={{ color: "#848E9C", flexShrink: 0 }} />
+            : <Lock size={12} strokeWidth={1.5} style={{ color: "#848E9C", flexShrink: 0 }} />}
         </div>
-        <div style={{ display: "flex", gap: 12 }}>
-          <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>{task.task_date}</span>
-          <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>{task.task_type}</span>
+        <div style={{ display: "flex", gap: 14 }}>
+          <span style={{ fontSize: 13, color: "#848E9C", fontWeight: 500 }}>{task.task_date}</span>
+          <span style={{ fontSize: 13, color: "#848E9C", fontWeight: 500 }}>{task.task_type}</span>
           {task.distance_km != null && (
-            <span style={{ fontSize: 12, color: "#0071e3", fontWeight: 500 }}>
+            <span style={{ fontSize: 13, color: "#F0B90B", fontWeight: 600 }}>
               {task.distance_km.toFixed(1)} km
             </span>
           )}
-          <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>
+          <span style={{ fontSize: 13, color: "#848E9C", fontWeight: 500 }}>
             WP {task.waypoints.length}개
           </span>
         </div>
@@ -171,12 +171,14 @@ function TaskCard({ task, isOwner, onDelete }: { task: Task; isOwner: boolean; o
         {isOwner && onDelete && (
           <button
             onClick={onDelete}
-            style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(0,0,0,0.28)", borderRadius: 6 }}
+            style={{ padding: 8, background: "none", border: "none", cursor: "pointer", color: "#848E9C", borderRadius: 6, transition: "color 0.2s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#ff3b30")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#848E9C")}
           >
-            <Trash2 size={15} strokeWidth={1.5} />
+            <Trash2 size={16} strokeWidth={1.5} />
           </button>
         )}
-        <ChevronRight size={15} strokeWidth={1.5} style={{ color: "rgba(0,0,0,0.24)" }} />
+        <ChevronRight size={16} strokeWidth={1.5} style={{ color: "#D0D0D0" }} />
       </div>
     </div>
   );
