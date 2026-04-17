@@ -79,13 +79,22 @@ export function circlePolygon(
 
 // ── Waypoint helpers ──────────────────────────────────────────────────────────
 
-/** Position-aware display label */
+/** Position-aware name (stored + exported) */
 export function waypointLabel(index: number, total: number): string {
   if (index === 0) return "Take Off";
   if (total > 2 && index === 1) return "SSS";
   if (total >= 4 && index === total - 2) return "ESS";
   if (index === total - 1) return "Landing";
   return `TP${String(index - 1).padStart(2, "0")}`;
+}
+
+/** Badge label shown in the UI (TPs all read "Turn Point") */
+export function waypointRoleLabel(index: number, total: number): string {
+  if (index === 0) return "Take Off";
+  if (total > 2 && index === 1) return "SSS";
+  if (total >= 4 && index === total - 2) return "ESS";
+  if (index === total - 1) return "Landing";
+  return "Turn Point";
 }
 
 /** Position-aware color */

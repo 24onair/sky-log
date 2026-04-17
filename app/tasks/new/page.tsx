@@ -13,6 +13,7 @@ import {
   calculateCenterDistance,
   assignWaypointTypes,
   waypointLabel,
+  waypointRoleLabel,
   waypointRoleColor,
   exportToCUP,
   exportToXCTrack,
@@ -126,17 +127,18 @@ export default function NewTaskPage() {
   };
 
   // ── waypoint actions ───────────────────────────────────────────────────
-  /** Assign positional labels to special roles (TO/SSS/ESS/Landing); keep custom TP names */
+  /** True when name was auto-generated (should be overwritten on position change) */
+  const isAutoName = (name: string) =>
+    !name ||
+    ["Take Off", "SSS", "ESS", "Landing"].includes(name) ||
+    /^TP\d+$/.test(name);
+
+  /** Re-label all waypoints by position; preserves user-custom TP names */
   const applyLabels = useCallback((wps: Waypoint[]) =>
-    wps.map((wp, i) => {
-      const label = waypointLabel(i, wps.length);
-      const isSpecial =
-        i === 0 ||
-        (i === 1 && wps.length > 2) ||
-        (i === wps.length - 2 && wps.length >= 4) ||
-        i === wps.length - 1;
-      return { ...wp, name: isSpecial ? label : (wp.name || label) };
-    }), []);
+    wps.map((wp, i) => ({
+      ...wp,
+      name: isAutoName(wp.name) ? waypointLabel(i, wps.length) : wp.name,
+    })), []);
 
   const addWaypoint = useCallback((lat: number, lon: number) => {
     setTask((prev) => {
@@ -694,7 +696,7 @@ function WaypointRow({
   onDelete: () => void;
 }) {
   const color = waypointRoleColor(index, total);
-  const roleLabel = waypointLabel(index, total);
+  const roleLabel = waypointRoleLabel(index, total);
 
   // Local input state so user can type freely; committed on blur / Enter
   const [inputVal, setInputVal] = useState(String(wp.radius));
