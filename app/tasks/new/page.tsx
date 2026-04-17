@@ -151,7 +151,7 @@ export default function NewTaskPage() {
         distance_km: calculateTaskDistance(assigned),
       };
     });
-    setIsAddMode(false); // exit add mode after each point on mobile
+    // stay in add mode — user clicks continuously until pressing "완료"
   }, []);
 
   const moveWaypoint = useCallback((id: string, lat: number, lon: number) => {
@@ -352,40 +352,56 @@ export default function NewTaskPage() {
             </div>
           </div>
 
-          {/* Add mode overlay hint */}
+          {/* Add mode hint banner — top just below search */}
           {isAddMode && (
-            <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "rgba(0,113,227,0.9)", borderRadius: 16, padding: "12px 20px", pointerEvents: "none" }}>
-              <p style={{ fontSize: 14, fontWeight: 500, color: "#fff", textAlign: "center" }}>지도를 탭하여 웨이포인트 추가</p>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", textAlign: "center", marginTop: 2 }}>취소하려면 아래 버튼을 다시 누르세요</p>
+            <div style={{
+              position: "absolute", top: 58, left: "50%", transform: "translateX(-50%)",
+              background: "rgba(0,113,227,0.92)", backdropFilter: "blur(8px)",
+              borderRadius: 20, padding: "7px 18px", pointerEvents: "none", whiteSpace: "nowrap",
+            }}>
+              <p style={{ fontSize: 13, fontWeight: 500, color: "#fff" }}>
+                클릭하여 포인트 추가 · 드래그하여 이동
+              </p>
             </div>
           )}
 
-          {/* FAB: add waypoint */}
-          <button
-            className="fab-add"
-            onClick={() => setIsAddMode((v) => !v)}
-            style={{
-              position: "absolute",
-              bottom: 16,
-              right: 16,
-              width: 52,
-              height: 52,
-              borderRadius: "50%",
-              background: isAddMode ? "#ff3b30" : "#0071e3",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.24)",
-              transition: "background 0.2s",
-              zIndex: 10,
-            }}
-          >
-            {isAddMode
-              ? <Minus size={22} strokeWidth={2.5} style={{ color: "#fff" }} />
-              : <Plus size={22} strokeWidth={2.5} style={{ color: "#fff" }} />}
-          </button>
+          {/* FAB: start adding / finish adding */}
+          {isAddMode ? (
+            <button
+              className="fab-add"
+              onClick={() => setIsAddMode(false)}
+              style={{
+                position: "absolute", bottom: 16, right: 16,
+                height: 48, padding: "0 22px",
+                borderRadius: 24,
+                background: "#34c759",
+                border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 8,
+                boxShadow: "0 4px 16px rgba(52,199,89,0.4)",
+                transition: "all 0.2s", zIndex: 10,
+              }}
+            >
+              <CheckCircle2 size={18} strokeWidth={2} style={{ color: "#fff" }} />
+              <span style={{ fontSize: 15, fontWeight: 600, color: "#fff" }}>완료</span>
+            </button>
+          ) : (
+            <button
+              className="fab-add"
+              onClick={() => setIsAddMode(true)}
+              style={{
+                position: "absolute", bottom: 16, right: 16,
+                width: 52, height: 52,
+                borderRadius: "50%",
+                background: "#0071e3",
+                border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.24)",
+                transition: "all 0.2s", zIndex: 10,
+              }}
+            >
+              <Plus size={22} strokeWidth={2.5} style={{ color: "#fff" }} />
+            </button>
+          )}
 
           {/* Legend */}
           {task.waypoints.length > 0 && (
@@ -508,20 +524,16 @@ export default function NewTaskPage() {
                 <button
                   onClick={() => setIsAddMode((v) => !v)}
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "4px 10px",
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 500,
-                    border: "none",
-                    cursor: "pointer",
-                    background: isAddMode ? "rgba(255,59,48,0.1)" : "rgba(0,113,227,0.1)",
-                    color: isAddMode ? "#ff3b30" : "#0071e3",
+                    display: "flex", alignItems: "center", gap: 4,
+                    padding: "4px 10px", borderRadius: 6,
+                    fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer",
+                    background: isAddMode ? "rgba(52,199,89,0.12)" : "rgba(0,113,227,0.1)",
+                    color: isAddMode ? "#34c759" : "#0071e3",
                   }}
                 >
-                  {isAddMode ? <><Minus size={12} />추가 취소</> : <><MapPin size={12} />지도에서 추가</>}
+                  {isAddMode
+                    ? <><CheckCircle2 size={12} />추가 완료</>
+                    : <><MapPin size={12} />지도에서 추가</>}
                 </button>
               </div>
 

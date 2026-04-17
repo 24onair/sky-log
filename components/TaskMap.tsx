@@ -39,19 +39,10 @@ export function TaskMap({
   useEffect(() => { onWaypointMoveRef.current = onWaypointMove; }, [onWaypointMove]);
   useEffect(() => { onWaypointClickRef.current = onWaypointClick; }, [onWaypointClick]);
 
-  // Update cursor when add mode changes
+  // Update cursor when add mode changes (keep pan/zoom enabled so user can drag to position)
   useEffect(() => {
     if (!mapRef.current) return;
     mapRef.current.getCanvas().style.cursor = isAddMode ? "crosshair" : "";
-    if (isAddMode) {
-      mapRef.current.dragPan.disable();
-      mapRef.current.scrollZoom.disable();
-      mapRef.current.doubleClickZoom.disable();
-    } else {
-      mapRef.current.dragPan.enable();
-      mapRef.current.scrollZoom.enable();
-      mapRef.current.doubleClickZoom.enable();
-    }
   }, [isAddMode]);
 
   const renderLayers = useCallback((wps: Waypoint[]) => {
