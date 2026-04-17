@@ -239,14 +239,49 @@ function xctrackTurnpointType(index: number, total: number): string {
   return "TURNPOINT";
 }
 
-/** pretty=true for file download, false for QR (minimises data size) */
+// Numeric enums for QR compact format (go-xctrack spec)
+function xctrackTurnpointTypeNum(index: number, total: number): number | undefined {
+  if (index === 0) return 1;            // TAKEOFF
+  if (total > 2 && index === 1) return 2;            // SSS
+  if (total >= 4 && index === total - 2) return 3;   // ESS
+  if (index === total - 1) return 4;    // GOAL
+  return undefined;                     // TURNPOINT — omit (default 0)
+}
+
+/** pretty=true for file download, false for QR compact format (go-xctrack spec) */
 export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string {
   const n = task.waypoints.length;
-
-  // XCTrack spec: taskType must always be "CLASSIC"
-  // Race vs elapsed-time is expressed in sss.type, not taskType
   const sssType = task.task_type === "CLASSIC" ? "ELAPSED-TIME" : "RACE";
 
+  if (!pretty) {
+    // Compact QR format: abbreviated field names + numeric enums
+    // sss.t: 1=RACE, 2=ELAPSED-TIME  |  sss.d: 1=ENTER  |  goal.t: 2=CYLINDER
+    const qr: Record<string, unknown> = {
+      taskType: "CLASSIC",
+      version: 1,
+      e: 0, // earthModel: WGS84
+      t: task.waypoints.map((wp, i) => {
+        const typeNum = xctrackTurnpointTypeNum(i, n);
+        const tp: Record<string, unknown> = {
+          z: { Lat: wp.lat, Lon: wp.lon, Alt: wp.altitude ?? 0, Radius: wp.radius },
+          n: wp.name,
+        };
+        if (typeNum !== undefined) tp.t = typeNum;
+        return tp;
+      }),
+    };
+    if (n >= 3) {
+      qr.s = {
+        t: sssType === "RACE" ? 1 : 2,
+        d: 1, // ENTER
+        g: ["10:00:00Z"],
+      };
+      qr.g = { t: 2, d: "20:00:00Z" }; // CYLINDER
+    }
+    return JSON.stringify(qr);
+  }
+
+  // Full format for .xctsk file download
   const payload: Record<string, unknown> = {
     taskType: "CLASSIC",
     version: 1,
@@ -263,21 +298,11 @@ export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string 
       },
     })),
   };
-
-  // SSS config (for tasks with 3+ waypoints so SSS exists)
   if (n >= 3) {
-    payload.sss = {
-      type: sssType,
-      direction: "ENTER",
-      timeGates: ["00:00:00Z"],
-    };
-    payload.goal = {
-      type: "CYLINDER",
-      deadline: "23:59:59Z",
-    };
+    payload.sss = { type: sssType, direction: "ENTER", timeGates: ["10:00:00Z"] };
+    payload.goal = { type: "CYLINDER", deadline: "20:00:00Z" };
   }
-
-  return JSON.stringify(payload, null, pretty ? 2 : undefined);
+  return JSON.stringify(payload, null, 2);
 }
 
 // ── Download helpers ──────────────────────────────────────────────────────────
