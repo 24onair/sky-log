@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import { Waypoint } from "@/lib/schemas/task";
-import { circlePolygon, waypointRoleColor, waypointMarkerText } from "@/lib/utils/taskUtils";
+import { circlePolygon, waypointRoleColor, waypointMarkerText, optimumLineSegments } from "@/lib/utils/taskUtils";
 
 interface TaskMapProps {
   waypoints: Waypoint[];
@@ -117,6 +117,36 @@ export function TaskMap({
           },
         },
         "circles-fill" // insert below circles
+      );
+    }
+
+    // ── optimum (cylinder edge-to-edge) line segments ─────────────
+    const segs = optimumLineSegments(wps);
+    const optData: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: segs.map((seg) => ({
+        type: "Feature" as const,
+        properties: {},
+        geometry: { type: "LineString" as const, coordinates: seg },
+      })),
+    };
+
+    if (m.getSource("optline")) {
+      (m.getSource("optline") as mapboxgl.GeoJSONSource).setData(optData);
+    } else {
+      m.addSource("optline", { type: "geojson", data: optData });
+      m.addLayer(
+        {
+          id: "optline",
+          type: "line",
+          source: "optline",
+          paint: {
+            "line-color": "#F0B90B",
+            "line-width": 2,
+            "line-opacity": 0.85,
+          },
+        },
+        "circles-fill"
       );
     }
 

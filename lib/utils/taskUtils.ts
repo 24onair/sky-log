@@ -49,6 +49,48 @@ export function calculateCenterDistance(waypoints: Waypoint[]): number {
   return Math.round(total * 10) / 10;
 }
 
+/**
+ * For each leg, returns the two cylinder-edge endpoints [exitPt, entryPt].
+ * Cylinders that overlap produce no segment (empty array for that leg).
+ */
+export function optimumLineSegments(waypoints: Waypoint[]): [[number, number], [number, number]][] {
+  if (waypoints.length < 2) return [];
+  const segments: [[number, number], [number, number]][] = [];
+
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const a = waypoints[i];
+    const b = waypoints[i + 1];
+    const d = haversine(a.lat, a.lon, b.lat, b.lon) * 1000; // metres
+    if (d <= a.radius + b.radius) continue; // cylinders overlap — no gap
+
+    segments.push([
+      destPoint(a.lat, a.lon, bearing(a.lat, a.lon, b.lat, b.lon), a.radius),
+      destPoint(b.lat, b.lon, bearing(b.lat, b.lon, a.lat, a.lon), b.radius),
+    ]);
+  }
+  return segments;
+}
+
+function bearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+  return Math.atan2(
+    Math.sin(Δλ) * Math.cos(φ2),
+    Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ)
+  );
+}
+
+function destPoint(lat: number, lon: number, brng: number, distM: number): [number, number] {
+  const R = 6371000;
+  const d = distM / R;
+  const φ1 = (lat * Math.PI) / 180;
+  const λ1 = (lon * Math.PI) / 180;
+  const φ2 = Math.asin(Math.sin(φ1) * Math.cos(d) + Math.cos(φ1) * Math.sin(d) * Math.cos(brng));
+  const λ2 = λ1 + Math.atan2(Math.sin(brng) * Math.sin(d) * Math.cos(φ1), Math.cos(d) - Math.sin(φ1) * Math.sin(φ2));
+  return [(λ2 * 180) / Math.PI, (φ2 * 180) / Math.PI];
+}
+
 /** GeoJSON circle polygon (for Mapbox fill layer) */
 export function circlePolygon(
   center: [number, number],
