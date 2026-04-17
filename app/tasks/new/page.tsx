@@ -150,7 +150,6 @@ export default function NewTaskPage() {
       const assigned = applyLabels(assignWaypointTypes(draft));
       return { ...prev, waypoints: assigned, distance_km: calculateTaskDistance(assigned) };
     });
-    // stay in add mode — user clicks continuously until pressing "완료"
   }, [applyLabels]);
 
   const moveWaypoint = useCallback((id: string, lat: number, lon: number) => {
@@ -390,12 +389,28 @@ export default function NewTaskPage() {
           {isAddMode && (
             <div style={{
               position: "absolute", top: 58, left: "50%", transform: "translateX(-50%)",
+              display: "flex", alignItems: "center", gap: 10,
               background: "rgba(0,113,227,0.92)", backdropFilter: "blur(8px)",
-              borderRadius: 20, padding: "7px 18px", pointerEvents: "none", whiteSpace: "nowrap",
+              borderRadius: 20, padding: "7px 10px 7px 18px", whiteSpace: "nowrap",
+              zIndex: 200,
             }}>
-              <p style={{ fontSize: 13, fontWeight: 500, color: "#fff" }}>
-                클릭하여 포인트 추가 · 드래그하여 이동
+              <p style={{ fontSize: 13, fontWeight: 500, color: "#fff", pointerEvents: "none" }}>
+                탭하여 포인트 추가
               </p>
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsAddMode(false); setSheetExpanded(false); }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setIsAddMode(false); setSheetExpanded(false); }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 5,
+                  background: "#fff", border: "none", cursor: "pointer",
+                  borderRadius: 14, padding: "5px 12px",
+                  fontSize: 13, fontWeight: 600, color: "#0071e3",
+                  touchAction: "none",
+                }}
+              >
+                <CheckCircle2 size={13} strokeWidth={2.5} style={{ pointerEvents: "none" }} />
+                완료
+              </button>
             </div>
           )}
 
@@ -403,25 +418,28 @@ export default function NewTaskPage() {
           {isAddMode ? (
             <button
               className="fab-add"
-              onClick={() => setIsAddMode(false)}
+              onClick={(e) => { e.stopPropagation(); setIsAddMode(false); setSheetExpanded(false); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setIsAddMode(false); setSheetExpanded(false); }}
               style={{
                 position: "absolute", bottom: 16, right: 16,
-                height: 48, padding: "0 22px",
-                borderRadius: 24,
+                height: 52, padding: "0 24px",
+                borderRadius: 26,
                 background: "#34c759",
                 border: "none", cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 8,
-                boxShadow: "0 4px 16px rgba(52,199,89,0.4)",
-                transition: "all 0.2s", zIndex: 10,
+                boxShadow: "0 4px 20px rgba(52,199,89,0.5)",
+                transition: "all 0.2s", zIndex: 200,
+                touchAction: "none",
               }}
             >
-              <CheckCircle2 size={18} strokeWidth={2} style={{ color: "#fff" }} />
-              <span style={{ fontSize: 15, fontWeight: 600, color: "#fff" }}>완료</span>
+              <CheckCircle2 size={18} strokeWidth={2} style={{ color: "#fff", pointerEvents: "none" }} />
+              <span style={{ fontSize: 15, fontWeight: 600, color: "#fff", pointerEvents: "none" }}>완료</span>
             </button>
           ) : (
             <button
               className="fab-add"
-              onClick={() => setIsAddMode(true)}
+              onClick={(e) => { e.stopPropagation(); setIsAddMode(true); setSheetExpanded(true); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setIsAddMode(true); setSheetExpanded(true); }}
               style={{
                 position: "absolute", bottom: 16, right: 16,
                 width: 52, height: 52,
@@ -430,10 +448,11 @@ export default function NewTaskPage() {
                 border: "none", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 boxShadow: "0 4px 16px rgba(0,0,0,0.24)",
-                transition: "all 0.2s", zIndex: 10,
+                transition: "all 0.2s", zIndex: 200,
+                touchAction: "none",
               }}
             >
-              <Plus size={22} strokeWidth={2.5} style={{ color: "#fff" }} />
+              <Plus size={22} strokeWidth={2.5} style={{ color: "#fff", pointerEvents: "none" }} />
             </button>
           )}
 
@@ -566,13 +585,13 @@ export default function NewTaskPage() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <p style={secHead}>웨이포인트</p>
                 <button
-                  onClick={() => setIsAddMode((v) => !v)}
+                  onClick={(e) => { e.stopPropagation(); setIsAddMode((v) => !v); }}
                   style={{
                     display: "flex", alignItems: "center", gap: 4,
-                    padding: "4px 10px", borderRadius: 6,
+                    padding: "6px 12px", borderRadius: 6,
                     fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer",
-                    background: isAddMode ? "rgba(52,199,89,0.12)" : "rgba(0,113,227,0.1)",
-                    color: isAddMode ? "#34c759" : "#0071e3",
+                    background: isAddMode ? "#34c759" : "rgba(0,113,227,0.1)",
+                    color: isAddMode ? "#fff" : "#0071e3",
                   }}
                 >
                   {isAddMode
