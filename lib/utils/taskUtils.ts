@@ -14,22 +14,55 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/** Cylinder-edge to cylinder-edge task distance (km) — optimum/shortest */
+/**
+ * Compute the single optimal touch point on each cylinder:
+ * - Start (i=0): exit edge toward next wp
+ * - End (i=n-1): entry edge from prev wp
+ * - Middle: bisector of (toward-prev + toward-next) — the one point where
+ *   the pilot touches the cylinder and immediately turns toward the next wp
+ */
+function computeTouchPoints(waypoints: Waypoint[]): [number, number][] {
+  const n = waypoints.length;
+  return waypoints.map((wp, i) => {
+    const center: [number, number] = [wp.lon, wp.lat];
+
+    if (i === 0) {
+      const next = waypoints[1];
+      const dm = haversine(wp.lat, wp.lon, next.lat, next.lon) * 1000;
+      return dm > wp.radius
+        ? destPoint(wp.lat, wp.lon, bearing(wp.lat, wp.lon, next.lat, next.lon), wp.radius)
+        : center;
+    }
+
+    if (i === n - 1) {
+      const prev = waypoints[n - 2];
+      const dm = haversine(wp.lat, wp.lon, prev.lat, prev.lon) * 1000;
+      return dm > wp.radius
+        ? destPoint(wp.lat, wp.lon, bearing(wp.lat, wp.lon, prev.lat, prev.lon), wp.radius)
+        : center;
+    }
+
+    // Middle: bisector direction between prev and next as seen from this wp
+    const prev = waypoints[i - 1];
+    const next = waypoints[i + 1];
+    const bPrev = bearing(wp.lat, wp.lon, prev.lat, prev.lon);
+    const bNext = bearing(wp.lat, wp.lon, next.lat, next.lon);
+    const vx = Math.cos(bPrev) + Math.cos(bNext);
+    const vy = Math.sin(bPrev) + Math.sin(bNext);
+    const len = Math.sqrt(vx * vx + vy * vy);
+    // degenerate (180° U-turn): touch the near side facing prev
+    if (len < 1e-10) return destPoint(wp.lat, wp.lon, bPrev, wp.radius);
+    return destPoint(wp.lat, wp.lon, Math.atan2(vy, vx), wp.radius);
+  });
+}
+
+/** Optimum task distance (km): sum of distances between consecutive touch points */
 export function calculateTaskDistance(waypoints: Waypoint[]): number {
   if (waypoints.length < 2) return 0;
+  const pts = computeTouchPoints(waypoints);
   let total = 0;
-  for (let i = 1; i < waypoints.length; i++) {
-    const d = haversine(
-      waypoints[i - 1].lat,
-      waypoints[i - 1].lon,
-      waypoints[i].lat,
-      waypoints[i].lon
-    );
-    const leg = Math.max(
-      0,
-      d - waypoints[i - 1].radius / 1000 - waypoints[i].radius / 1000
-    );
-    total += leg;
+  for (let i = 1; i < pts.length; i++) {
+    total += haversine(pts[i - 1][1], pts[i - 1][0], pts[i][1], pts[i][0]);
   }
   return Math.round(total * 10) / 10;
 }
@@ -49,46 +82,10 @@ export function calculateCenterDistance(waypoints: Waypoint[]): number {
   return Math.round(total * 10) / 10;
 }
 
-/**
- * Connected optimum path through all cylinders.
- * Each waypoint contributes an entry point (from prev) and/or exit point (toward next),
- * producing a single polyline: exit_0 → entry_1 → exit_1 → entry_2 → … → entry_n
- * Segments inside overlapping cylinders collapse to the center point.
- */
+/** Connected optimum path: one touch point per waypoint */
 export function optimumLinePath(waypoints: Waypoint[]): [number, number][] {
-  const n = waypoints.length;
-  if (n < 2) return [];
-
-  const coords: [number, number][] = [];
-
-  for (let i = 0; i < n; i++) {
-    const wp = waypoints[i];
-    const center: [number, number] = [wp.lon, wp.lat];
-
-    // Entry point: edge of wp[i] facing wp[i-1]
-    if (i > 0) {
-      const prev = waypoints[i - 1];
-      const dm = haversine(wp.lat, wp.lon, prev.lat, prev.lon) * 1000;
-      coords.push(
-        dm > wp.radius
-          ? destPoint(wp.lat, wp.lon, bearing(wp.lat, wp.lon, prev.lat, prev.lon), wp.radius)
-          : center
-      );
-    }
-
-    // Exit point: edge of wp[i] facing wp[i+1]
-    if (i < n - 1) {
-      const next = waypoints[i + 1];
-      const dm = haversine(wp.lat, wp.lon, next.lat, next.lon) * 1000;
-      coords.push(
-        dm > wp.radius
-          ? destPoint(wp.lat, wp.lon, bearing(wp.lat, wp.lon, next.lat, next.lon), wp.radius)
-          : center
-      );
-    }
-  }
-
-  return coords;
+  if (waypoints.length < 2) return [];
+  return computeTouchPoints(waypoints);
 }
 
 function bearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
