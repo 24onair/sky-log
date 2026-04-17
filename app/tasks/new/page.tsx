@@ -131,7 +131,8 @@ export default function NewTaskPage() {
   const isAutoName = (name: string) =>
     !name ||
     ["Take Off", "SSS", "ESS", "Landing"].includes(name) ||
-    /^TP\d+$/.test(name);
+    /^TurnPoint\d+$/.test(name) ||
+    /^TP\d+$/.test(name); // legacy format
 
   /** Re-label all waypoints by position; preserves user-custom TP names */
   const applyLabels = useCallback((wps: Waypoint[]) =>
