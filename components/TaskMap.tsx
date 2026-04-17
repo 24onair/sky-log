@@ -11,6 +11,7 @@ interface TaskMapProps {
   onMapClick: (lat: number, lon: number) => void;
   onWaypointMove: (id: string, lat: number, lon: number) => void;
   onWaypointClick?: (id: string) => void;
+  flyToTarget?: { center: [number, number]; zoom: number } | null;
 }
 
 export function TaskMap({
@@ -19,6 +20,7 @@ export function TaskMap({
   onMapClick,
   onWaypointMove,
   onWaypointClick,
+  flyToTarget,
 }: TaskMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -223,6 +225,12 @@ export function TaskMap({
       styleLoadedRef.current = false;
     };
   }, [renderLayers]);
+
+  // Fly to target when search result is selected
+  useEffect(() => {
+    if (!flyToTarget || !mapRef.current) return;
+    mapRef.current.flyTo({ center: flyToTarget.center, zoom: flyToTarget.zoom, duration: 900 });
+  }, [flyToTarget]);
 
   // Re-render layers whenever waypoints change
   useEffect(() => {

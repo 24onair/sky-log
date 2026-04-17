@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -18,10 +18,16 @@ import {
   exportToXCTrack,
   downloadBlob,
 } from "@/lib/utils/taskUtils";
+
+interface GeoResult {
+  id: string;
+  place_name: string;
+  center: [number, number]; // [lon, lat]
+}
 import {
   ChevronLeft, Plus, Minus, Trash2, Lock, Globe,
   Navigation, Download, QrCode, ChevronUp, ChevronDown,
-  MapPin, CheckCircle2,
+  MapPin, CheckCircle2, Search, X,
 } from "lucide-react";
 import QRCodeLib from "qrcode";
 
@@ -60,12 +66,64 @@ export default function NewTaskPage() {
   const [showQr, setShowQr] = useState(false);
   const [editingWpId, setEditingWpId] = useState<string | null>(null);
 
+  // Search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<GeoResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [flyToTarget, setFlyToTarget] = useState<{ center: [number, number]; zoom: number } | null>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     getUser().then((u) => {
       if (!u) router.push("/auth/login");
       else setUserId(u.id);
     });
   }, [router]);
+
+  // ── search ─────────────────────────────────────────────────────────────
+  const handleSearchInput = (q: string) => {
+    setSearchQuery(q);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (!q.trim()) { setSearchResults([]); return; }
+
+    searchTimerRef.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${token}&language=ko&limit=6&proximity=128.0,36.5`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const results: GeoResult[] = (data.features ?? []).map((f: { id: string; place_name: string; center: [number, number] }) => ({
+          id: f.id,
+          place_name: f.place_name,
+          center: f.center,
+        }));
+        setSearchResults(results);
+        // Auto-fly when exactly one result
+        if (results.length === 1) {
+          setFlyToTarget({ center: results[0].center, zoom: 13 });
+          setSearchResults([]);
+        }
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+  };
+
+  const handleSelectResult = (r: GeoResult) => {
+    setFlyToTarget({ center: r.center, zoom: 13 });
+    setSearchQuery(r.place_name.split(",")[0].trim());
+    setSearchResults([]);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchResults([]);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+  };
 
   // ── waypoint actions ───────────────────────────────────────────────────
   const addWaypoint = useCallback((lat: number, lon: number) => {
@@ -202,7 +260,79 @@ export default function NewTaskPage() {
             onMapClick={addWaypoint}
             onWaypointMove={moveWaypoint}
             onWaypointClick={setEditingWpId}
+            flyToTarget={flyToTarget}
           />
+
+          {/* Search overlay — top center */}
+          <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 10, width: "min(300px, calc(100% - 200px))" }}>
+            <div style={{ position: "relative" }}>
+              <div style={{
+                display: "flex", alignItems: "center",
+                background: "rgba(255,255,255,0.96)", backdropFilter: "blur(12px)",
+                borderRadius: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+                border: searchOpen ? "1.5px solid rgba(0,113,227,0.4)" : "1.5px solid transparent",
+                transition: "border-color 0.15s",
+              }}>
+                <Search size={14} strokeWidth={1.8} style={{ margin: "0 10px", color: "rgba(0,0,0,0.35)", flexShrink: 0 }} />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => handleSearchInput(e.target.value)}
+                  onFocus={() => setSearchOpen(true)}
+                  onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
+                  placeholder="지명 검색..."
+                  style={{
+                    flex: 1, border: "none", outline: "none", background: "transparent",
+                    fontSize: 14, fontWeight: 500, color: "#1d1d1f",
+                    padding: "10px 4px 10px 0",
+                  }}
+                />
+                {isSearching && (
+                  <div style={{ width: 14, height: 14, margin: "0 10px", border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.6s linear infinite", flexShrink: 0 }} />
+                )}
+                {searchQuery && !isSearching && (
+                  <button
+                    onMouseDown={(e) => { e.preventDefault(); clearSearch(); }}
+                    style={{ padding: "0 10px", background: "none", border: "none", cursor: "pointer", color: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center" }}
+                  >
+                    <X size={14} strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+
+              {/* Results dropdown */}
+              {searchResults.length > 0 && searchOpen && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0,
+                  background: "#fff", borderRadius: 12,
+                  boxShadow: "0 6px 24px rgba(0,0,0,0.14)",
+                  overflow: "hidden", zIndex: 20,
+                }}>
+                  {searchResults.map((r, i) => {
+                    const [main, ...rest] = r.place_name.split(",");
+                    return (
+                      <button
+                        key={r.id}
+                        onMouseDown={() => handleSelectResult(r)}
+                        style={{
+                          display: "flex", flexDirection: "column", alignItems: "flex-start",
+                          width: "100%", padding: "10px 14px", background: "none", border: "none",
+                          cursor: "pointer", textAlign: "left",
+                          borderBottom: i < searchResults.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,113,227,0.05)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                      >
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f" }}>{main.trim()}</span>
+                        {rest.length > 0 && (
+                          <span style={{ fontSize: 11, color: "rgba(0,0,0,0.4)", marginTop: 1 }}>{rest.join(",").trim()}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Map top-left overlay: back + task name + distance */}
           <div style={{ position: "absolute", top: 12, left: 12, display: "flex", flexDirection: "column", gap: 6, pointerEvents: "none" }}>
