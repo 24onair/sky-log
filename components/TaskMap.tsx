@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import { Waypoint } from "@/lib/schemas/task";
-import { circlePolygon, waypointRoleColor, waypointMarkerText, optimumLineSegments } from "@/lib/utils/taskUtils";
+import { circlePolygon, waypointRoleColor, waypointMarkerText, optimumLinePath } from "@/lib/utils/taskUtils";
 
 interface TaskMapProps {
   waypoints: Waypoint[];
@@ -120,15 +120,12 @@ export function TaskMap({
       );
     }
 
-    // ── optimum (cylinder edge-to-edge) line segments ─────────────
-    const segs = optimumLineSegments(wps);
-    const optData: GeoJSON.FeatureCollection = {
-      type: "FeatureCollection",
-      features: segs.map((seg) => ({
-        type: "Feature" as const,
-        properties: {},
-        geometry: { type: "LineString" as const, coordinates: seg },
-      })),
+    // ── optimum path (connected through cylinders) ────────────────
+    const optCoords = optimumLinePath(wps);
+    const optData: GeoJSON.Feature = {
+      type: "Feature",
+      properties: {},
+      geometry: { type: "LineString", coordinates: optCoords },
     };
 
     if (m.getSource("optline")) {
@@ -143,7 +140,7 @@ export function TaskMap({
           paint: {
             "line-color": "#F0B90B",
             "line-width": 2,
-            "line-opacity": 0.85,
+            "line-opacity": 0.9,
           },
         },
         "circles-fill"

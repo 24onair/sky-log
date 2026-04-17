@@ -50,25 +50,45 @@ export function calculateCenterDistance(waypoints: Waypoint[]): number {
 }
 
 /**
- * For each leg, returns the two cylinder-edge endpoints [exitPt, entryPt].
- * Cylinders that overlap produce no segment (empty array for that leg).
+ * Connected optimum path through all cylinders.
+ * Each waypoint contributes an entry point (from prev) and/or exit point (toward next),
+ * producing a single polyline: exit_0 → entry_1 → exit_1 → entry_2 → … → entry_n
+ * Segments inside overlapping cylinders collapse to the center point.
  */
-export function optimumLineSegments(waypoints: Waypoint[]): [[number, number], [number, number]][] {
-  if (waypoints.length < 2) return [];
-  const segments: [[number, number], [number, number]][] = [];
+export function optimumLinePath(waypoints: Waypoint[]): [number, number][] {
+  const n = waypoints.length;
+  if (n < 2) return [];
 
-  for (let i = 0; i < waypoints.length - 1; i++) {
-    const a = waypoints[i];
-    const b = waypoints[i + 1];
-    const d = haversine(a.lat, a.lon, b.lat, b.lon) * 1000; // metres
-    if (d <= a.radius + b.radius) continue; // cylinders overlap — no gap
+  const coords: [number, number][] = [];
 
-    segments.push([
-      destPoint(a.lat, a.lon, bearing(a.lat, a.lon, b.lat, b.lon), a.radius),
-      destPoint(b.lat, b.lon, bearing(b.lat, b.lon, a.lat, a.lon), b.radius),
-    ]);
+  for (let i = 0; i < n; i++) {
+    const wp = waypoints[i];
+    const center: [number, number] = [wp.lon, wp.lat];
+
+    // Entry point: edge of wp[i] facing wp[i-1]
+    if (i > 0) {
+      const prev = waypoints[i - 1];
+      const dm = haversine(wp.lat, wp.lon, prev.lat, prev.lon) * 1000;
+      coords.push(
+        dm > wp.radius
+          ? destPoint(wp.lat, wp.lon, bearing(wp.lat, wp.lon, prev.lat, prev.lon), wp.radius)
+          : center
+      );
+    }
+
+    // Exit point: edge of wp[i] facing wp[i+1]
+    if (i < n - 1) {
+      const next = waypoints[i + 1];
+      const dm = haversine(wp.lat, wp.lon, next.lat, next.lon) * 1000;
+      coords.push(
+        dm > wp.radius
+          ? destPoint(wp.lat, wp.lon, bearing(wp.lat, wp.lon, next.lat, next.lon), wp.radius)
+          : center
+      );
+    }
   }
-  return segments;
+
+  return coords;
 }
 
 function bearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
