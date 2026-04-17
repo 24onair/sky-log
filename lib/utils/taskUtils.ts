@@ -14,7 +14,7 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/** Cylinder-edge to cylinder-edge task distance (km) */
+/** Cylinder-edge to cylinder-edge task distance (km) — optimum/shortest */
 export function calculateTaskDistance(waypoints: Waypoint[]): number {
   if (waypoints.length < 2) return 0;
   let total = 0;
@@ -30,6 +30,21 @@ export function calculateTaskDistance(waypoints: Waypoint[]): number {
       d - waypoints[i - 1].radius / 1000 - waypoints[i].radius / 1000
     );
     total += leg;
+  }
+  return Math.round(total * 10) / 10;
+}
+
+/** Center-to-center sum of all legs (km) — ignores cylinder sizes */
+export function calculateCenterDistance(waypoints: Waypoint[]): number {
+  if (waypoints.length < 2) return 0;
+  let total = 0;
+  for (let i = 1; i < waypoints.length; i++) {
+    total += haversine(
+      waypoints[i - 1].lat,
+      waypoints[i - 1].lon,
+      waypoints[i].lat,
+      waypoints[i].lon
+    );
   }
   return Math.round(total * 10) / 10;
 }

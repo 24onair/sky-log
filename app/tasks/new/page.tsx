@@ -10,6 +10,7 @@ import { createTask } from "@/lib/supabase/tasks";
 import { Waypoint, TaskInsert, TaskType } from "@/lib/schemas/task";
 import {
   calculateTaskDistance,
+  calculateCenterDistance,
   assignWaypointTypes,
   waypointLabel,
   waypointRoleColor,
@@ -221,10 +222,12 @@ export default function NewTaskPage() {
     }
   };
 
-  const distanceDisplay =
-    task.distance_km != null && task.distance_km > 0
-      ? `${task.distance_km.toFixed(1)} km`
-      : task.waypoints.length >= 2 ? "0.0 km" : "—";
+  const centerKm = task.waypoints.length >= 2
+    ? calculateCenterDistance(task.waypoints)
+    : null;
+  const optimumKm = task.distance_km != null && task.waypoints.length >= 2
+    ? task.distance_km
+    : null;
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -353,11 +356,30 @@ export default function NewTaskPage() {
               타스크
             </Link>
             <div style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)", borderRadius: 12, padding: "8px 14px", boxShadow: "0 1px 8px rgba(0,0,0,0.12)" }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f", marginBottom: 2 }}>{task.name}</p>
-              <p style={{ fontSize: 20, fontWeight: 700, color: "#0071e3", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                {distanceDisplay}
-                <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(0,0,0,0.4)", marginLeft: 4 }}>써클 경계 기준</span>
-              </p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f", marginBottom: 6 }}>{task.name}</p>
+              {task.waypoints.length >= 2 ? (
+                <div style={{ display: "flex", gap: 12 }}>
+                  {/* Center-to-center */}
+                  <div>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "rgba(0,0,0,0.35)", letterSpacing: "0.06em", marginBottom: 1 }}>중심간</p>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: "#636366", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                      {centerKm != null ? `${centerKm.toFixed(1)}` : "—"}
+                      <span style={{ fontSize: 11, fontWeight: 500, marginLeft: 2 }}>km</span>
+                    </p>
+                  </div>
+                  <div style={{ width: 1, background: "rgba(0,0,0,0.1)", alignSelf: "stretch" }} />
+                  {/* Optimum (edge-to-edge) */}
+                  <div>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "rgba(0,0,0,0.35)", letterSpacing: "0.06em", marginBottom: 1 }}>최단거리</p>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: "#0071e3", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                      {optimumKm != null ? `${optimumKm.toFixed(1)}` : "—"}
+                      <span style={{ fontSize: 11, fontWeight: 500, marginLeft: 2 }}>km</span>
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ fontSize: 13, color: "rgba(0,0,0,0.35)" }}>포인트를 추가하세요</p>
+              )}
             </div>
           </div>
 
@@ -452,8 +474,12 @@ export default function NewTaskPage() {
               <span style={{ fontSize: 14, fontWeight: 600, color: "#1d1d1f" }}>
                 {task.waypoints.length}개 웨이포인트
               </span>
-              {task.distance_km != null && task.distance_km > 0 && (
-                <span style={{ fontSize: 13, color: "#0071e3", fontWeight: 500 }}>{task.distance_km.toFixed(1)} km</span>
+              {task.waypoints.length >= 2 && (
+                <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)", fontWeight: 500 }}>
+                  중심 <span style={{ color: "#636366", fontWeight: 600 }}>{centerKm?.toFixed(1)}</span>
+                  {" / "}
+                  최단 <span style={{ color: "#0071e3", fontWeight: 600 }}>{optimumKm?.toFixed(1)}</span> km
+                </span>
               )}
             </div>
             {sheetExpanded
