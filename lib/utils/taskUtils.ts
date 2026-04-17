@@ -240,8 +240,8 @@ const xctrackType = (wp: Waypoint): string => {
 /** pretty=true for file download, false for QR (minimises data size) */
 export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string {
   const typeMap: Record<TaskType, string> = {
-    RACE: "RACE",
-    CLASSIC: "CLASSIC",
+    RACE: "RACE_TO_GOAL",
+    CLASSIC: "OPEN_DISTANCE",
     FAI: "FAI_TRIANGLE",
   };
 
