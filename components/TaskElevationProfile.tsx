@@ -66,6 +66,14 @@ async function fetchElev(pts: SP[]): Promise<number[]> {
   return (d.results as { elevation: number | null }[]).map(x => x.elevation ?? 0);
 }
 
+function wpLabel(index: number, total: number): string {
+  if (index === 0) return "Take Off";
+  if (total > 2 && index === 1) return "SSS";
+  if (total >= 4 && index === total - 2) return "ESS";
+  if (index === total - 1) return "Landing";
+  return `TP${index - 1}`;
+}
+
 function altAt(pts: EP[], dist: number): number {
   if (!pts.length) return 0;
   let lo = pts[0], hi = pts[pts.length - 1];
@@ -119,7 +127,7 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
 
   const w = width;
   const h = PROFILE_H;
-  const PL = 40, PR = 8, PT = 20, PB = 22;
+  const PL = 40, PR = 8, PT = 28, PB = 22;
   const CW = Math.max(1, w - PL - PR);
   const CH = Math.max(1, h - PT - PB);
   const n = waypoints.length;
@@ -197,12 +205,24 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
           {wpDists.map((d, i) => {
             const cx = toX(d);
             const cy = toY(altAt(elevPts, d));
+            const color = waypointRoleColor(i, n);
+            const label = wpLabel(i, n);
+            // Avoid clipping: shift label left for last point
+            const anchor = i === n - 1 ? "end" : i === 0 ? "start" : "middle";
+            const lx = i === n - 1 ? cx - 1 : i === 0 ? cx + 1 : cx;
             return (
               <g key={i}>
                 <line x1={cx} y1={PT} x2={cx} y2={h - PB}
-                  stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="3,2" />
+                  stroke="rgba(255,255,255,0.25)" strokeWidth="1" strokeDasharray="3,2" />
+                {/* Label at top */}
+                <text x={lx} y={PT - 5} textAnchor={anchor}
+                  fontSize="8.5" fontWeight="700" fill={color}
+                  fontFamily="-apple-system,sans-serif" opacity="0.95">
+                  {label}
+                </text>
+                {/* Dot on profile line */}
                 <circle cx={cx} cy={cy} r="3"
-                  fill={waypointRoleColor(i, n)} stroke="white" strokeWidth="1.5" />
+                  fill={color} stroke="white" strokeWidth="1.5" />
               </g>
             );
           })}
