@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -40,7 +40,7 @@ const label = { fontSize: 12, fontWeight: 500, color: "rgba(0,0,0,0.48)", displa
 const secHead = { fontSize: 10, fontWeight: 700, letterSpacing: "0.10em", color: "rgba(0,0,0,0.3)", textTransform: "uppercase" as const, marginBottom: 10 };
 
 const TASK_TYPES: TaskType[] = ["RACE", "CLASSIC", "FAI"];
-const RADIUS_PRESETS = [200, 400, 1000, 2000, 3000, 5000];
+const SLIDER_MAX = 5000; // slider covers up to 5 km; beyond → direct input
 
 // ── default task state ─────────────────────────────────────────────────────
 const blankTask = (): TaskInsert => ({
@@ -240,6 +240,22 @@ export default function NewTaskPage() {
         @media (max-width: 767px) {
           .task-sidebar.collapsed { max-height: 88px !important; }
           .task-sidebar.expanded { max-height: 62vh !important; }
+        }
+        .radius-slider {
+          -webkit-appearance: none; appearance: none;
+          width: 100%; height: 4px; border-radius: 2px;
+          background: rgba(0,0,0,0.1); outline: none; cursor: pointer;
+        }
+        .radius-slider::-webkit-slider-thumb {
+          -webkit-appearance: none; appearance: none;
+          width: 18px; height: 18px; border-radius: 50%;
+          background: #0071e3; border: 2.5px solid #fff;
+          box-shadow: 0 1px 6px rgba(0,113,227,0.4); cursor: grab;
+        }
+        .radius-slider::-moz-range-thumb {
+          width: 18px; height: 18px; border-radius: 50%;
+          background: #0071e3; border: 2.5px solid #fff;
+          box-shadow: 0 1px 6px rgba(0,113,227,0.4); cursor: grab;
         }
       `}</style>
 
@@ -654,6 +670,27 @@ function WaypointRow({
   const color = waypointRoleColor(index, total);
   const roleLabel = waypointLabel(index, total);
 
+  // Local input state so user can type freely; committed on blur / Enter
+  const [inputVal, setInputVal] = useState(String(wp.radius));
+  useEffect(() => { setInputVal(String(wp.radius)); }, [wp.radius]);
+
+  const commitInput = () => {
+    const v = parseInt(inputVal, 10);
+    if (!isNaN(v) && v >= 50) onRadiusChange(v);
+    else setInputVal(String(wp.radius));
+  };
+
+  // Slider progress background (fills left of thumb in blue)
+  const sliderPct = useMemo(
+    () => Math.round((Math.min(wp.radius, SLIDER_MAX) / SLIDER_MAX) * 100),
+    [wp.radius]
+  );
+  const sliderBg = `linear-gradient(to right, #0071e3 ${sliderPct}%, rgba(0,0,0,0.1) ${sliderPct}%)`;
+
+  const displayRadius = wp.radius >= 1000
+    ? `${(wp.radius / 1000 % 1 === 0 ? wp.radius / 1000 : (wp.radius / 1000).toFixed(1))} km`
+    : `${wp.radius} m`;
+
   return (
     <div style={{ borderRadius: 10, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
       {/* Header row */}
@@ -667,9 +704,7 @@ function WaypointRow({
           padding: "2px 6px", flexShrink: 0, letterSpacing: "0.03em",
         }}>{roleLabel}</span>
         <span style={{ fontSize: 13, fontWeight: 500, color: "#1d1d1f", flex: 1 }}>{wp.name}</span>
-        <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>
-          {wp.radius >= 1000 ? `${wp.radius / 1000}km` : `${wp.radius}m`}
-        </span>
+        <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)", marginRight: 2 }}>{displayRadius}</span>
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
           style={{ padding: 4, background: "none", border: "none", cursor: "pointer", color: "rgba(0,0,0,0.28)", flexShrink: 0 }}
@@ -680,7 +715,8 @@ function WaypointRow({
 
       {/* Expanded edit section */}
       {isEditing && (
-        <div style={{ padding: "10px 12px", background: "rgba(0,0,0,0.02)", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ padding: "10px 12px", background: "rgba(0,0,0,0.02)", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Name */}
           <div>
             <label style={{ ...label, marginBottom: 4 }}>이름</label>
             <input
@@ -692,28 +728,55 @@ function WaypointRow({
               onClick={(e) => e.stopPropagation()}
             />
           </div>
-          <div>
-            <label style={{ ...label, marginBottom: 6 }}>반경</label>
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-              {RADIUS_PRESETS.map((r) => (
-                <button
-                  key={r}
-                  onClick={(e) => { e.stopPropagation(); onRadiusChange(r); }}
-                  style={{
-                    padding: "5px 10px",
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 500,
-                    border: "none",
-                    cursor: "pointer",
-                    background: wp.radius === r ? "#0071e3" : "rgba(0,0,0,0.06)",
-                    color: wp.radius === r ? "#fff" : "#1d1d1f",
-                    transition: "all 0.1s",
-                  }}
-                >
-                  {r >= 1000 ? `${r / 1000}km` : `${r}m`}
-                </button>
+
+          {/* Radius */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <label style={label}>반경</label>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#0071e3" }}>{displayRadius}</span>
+            </div>
+
+            {/* Slider — 100 m to 5 km */}
+            <input
+              type="range"
+              className="radius-slider"
+              min={100}
+              max={SLIDER_MAX}
+              step={50}
+              value={Math.min(wp.radius, SLIDER_MAX)}
+              onChange={(e) => onRadiusChange(Number(e.target.value))}
+              style={{ background: sliderBg }}
+            />
+
+            {/* Scale labels */}
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2, marginBottom: 8 }}>
+              {["100m", "1km", "2km", "3km", "4km", "5km"].map((t) => (
+                <span key={t} style={{ fontSize: 9, color: "rgba(0,0,0,0.3)" }}>{t}</span>
               ))}
+            </div>
+
+            {/* Direct input for exact / > 5 km */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 11, color: "rgba(0,0,0,0.45)", flexShrink: 0 }}>직접 입력</span>
+              <input
+                type="number"
+                min={50}
+                step={50}
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                onBlur={commitInput}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { commitInput(); (e.target as HTMLInputElement).blur(); }
+                  e.stopPropagation();
+                }}
+                style={{
+                  flex: 1, padding: "5px 8px", borderRadius: 7,
+                  border: "1px solid rgba(0,0,0,0.14)", fontSize: 13,
+                  fontWeight: 500, textAlign: "right", outline: "none",
+                  background: "#fff", color: "#1d1d1f",
+                }}
+              />
+              <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)", flexShrink: 0 }}>m</span>
             </div>
           </div>
         </div>
