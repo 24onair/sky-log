@@ -215,9 +215,9 @@ export default function NewTaskPage() {
   };
 
   const handleShowQR = async () => {
-    const json = exportToXCTrack(task);
+    const json = exportToXCTrack(task, false);
     try {
-      const url = await QRCodeLib.toDataURL(json, { width: 280, margin: 2, color: { dark: "#1d1d1f", light: "#ffffff" } });
+      const url = await QRCodeLib.toDataURL(json, { width: 360, margin: 3, errorCorrectionLevel: "L", color: { dark: "#1d1d1f", light: "#ffffff" } });
       setQrDataUrl(url);
       setShowQr(true);
     } catch {

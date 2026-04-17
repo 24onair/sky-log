@@ -237,7 +237,8 @@ const xctrackType = (wp: Waypoint): string => {
   return "TURNPOINT";
 };
 
-export function exportToXCTrack(task: Task | TaskInsert): string {
+/** pretty=true for file download, false for QR (minimises data size) */
+export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string {
   const typeMap: Record<TaskType, string> = {
     RACE: "RACE",
     CLASSIC: "CLASSIC",
@@ -260,7 +261,7 @@ export function exportToXCTrack(task: Task | TaskInsert): string {
     })),
   };
 
-  return JSON.stringify(payload, null, 2);
+  return JSON.stringify(payload, null, pretty ? 2 : undefined);
 }
 
 // ── Download helpers ──────────────────────────────────────────────────────────
