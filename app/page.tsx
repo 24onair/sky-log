@@ -20,7 +20,7 @@ export default function Home() {
             <Link href="/auth/signup" className="sk-btn-primary" style={{ padding: "14px 40px", fontSize: 16, fontWeight: 600 }}>
               무료로 시작하기
             </Link>
-            <Link href="/auth/login" style={{ padding: "14px 40px", fontSize: 16, fontWeight: 600, color: "#F0B90B", textDecoration: "none", border: "2px solid #F0B90B", borderRadius: 50, display: "inline-flex", alignItems: "center", fontWeight: 600, background: "transparent" }}>
+            <Link href="/auth/login" style={{ padding: "14px 40px", fontSize: 16, fontWeight: 600, color: "#F0B90B", textDecoration: "none", border: "2px solid #F0B90B", borderRadius: 50, display: "inline-flex", alignItems: "center", background: "transparent" }}>
               로그인
             </Link>
           </div>
