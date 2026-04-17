@@ -13,6 +13,7 @@ import {
   autoName, waypointColor, exportToCUP, exportToXCTrack,
   downloadBlob, circlePolygon,
 } from "@/lib/utils/taskUtils";
+import { TaskElevationProfile } from "@/components/TaskElevationProfile";
 import {
   ChevronLeft, Plus, Minus, Trash2, Lock, Globe,
   Navigation, Download, QrCode, ChevronUp, ChevronDown,
@@ -186,13 +187,13 @@ export default function TaskDetailPage({ params }: PageProps) {
           )}
 
           {isOwner && (
-            <button onClick={() => setIsAddMode((v) => !v)} style={{ position: "absolute", bottom: 16, right: 16, width: 52, height: 52, borderRadius: "50%", background: isAddMode ? "#ff3b30" : "#0071e3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.24)", transition: "background 0.2s", zIndex: 10 }}>
+            <button onClick={() => setIsAddMode((v) => !v)} style={{ position: "absolute", bottom: task.waypoints.length >= 2 ? 148 : 16, right: 16, width: 52, height: 52, borderRadius: "50%", background: isAddMode ? "#ff3b30" : "#0071e3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.24)", transition: "background 0.2s, bottom 0.3s", zIndex: 10 }}>
               {isAddMode ? <Minus size={22} strokeWidth={2.5} style={{ color: "#fff" }} /> : <Plus size={22} strokeWidth={2.5} style={{ color: "#fff" }} />}
             </button>
           )}
 
           {task.waypoints.length > 0 && (
-            <div style={{ position: "absolute", bottom: 16, left: 12, display: "flex", gap: 8, flexWrap: "wrap", pointerEvents: "none" }}>
+            <div style={{ position: "absolute", bottom: task.waypoints.length >= 2 ? 148 : 16, left: 12, display: "flex", gap: 8, flexWrap: "wrap", pointerEvents: "none" }}>
               {[{ color: "#34c759", label: "이륙" }, { color: "#0071e3", label: "전환점" }, { color: "#ff3b30", label: "도착" }].map(({ color, label: lbl }) => (
                 <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(6px)", borderRadius: 20, padding: "4px 9px", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }}>
                   <div style={{ width: 7, height: 7, borderRadius: "50%", background: color }} /><span style={{ fontSize: 11, fontWeight: 500, color: "#1d1d1f" }}>{lbl}</span>
@@ -200,6 +201,9 @@ export default function TaskDetailPage({ params }: PageProps) {
               ))}
             </div>
           )}
+
+          {/* Terrain elevation profile */}
+          <TaskElevationProfile waypoints={task.waypoints} />
         </div>
 
         {/* SIDEBAR */}
