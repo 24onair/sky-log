@@ -11,9 +11,8 @@ import { Waypoint, TaskInsert, TaskType } from "@/lib/schemas/task";
 import {
   calculateTaskDistance,
   assignWaypointTypes,
-  defaultRadius,
-  autoName,
-  waypointColor,
+  waypointLabel,
+  waypointRoleColor,
   exportToCUP,
   exportToXCTrack,
   downloadBlob,
@@ -126,33 +125,29 @@ export default function NewTaskPage() {
   };
 
   // ── waypoint actions ───────────────────────────────────────────────────
+  /** Assign positional labels to special roles (TO/SSS/ESS/Landing); keep custom TP names */
+  const applyLabels = useCallback((wps: Waypoint[]) =>
+    wps.map((wp, i) => {
+      const label = waypointLabel(i, wps.length);
+      const isSpecial =
+        i === 0 ||
+        (i === 1 && wps.length > 2) ||
+        (i === wps.length - 2 && wps.length >= 4) ||
+        i === wps.length - 1;
+      return { ...wp, name: isSpecial ? label : (wp.name || label) };
+    }), []);
+
   const addWaypoint = useCallback((lat: number, lon: number) => {
     setTask((prev) => {
       const draft: Waypoint[] = [
         ...prev.waypoints,
-        {
-          id: uuid(),
-          name: "",
-          lat,
-          lon,
-          altitude: 0,
-          radius: 400,
-          type: "T",
-        },
+        { id: uuid(), name: "", lat, lon, altitude: 0, radius: 400, type: "T" },
       ];
-      const assigned = assignWaypointTypes(draft).map((wp, i) => ({
-        ...wp,
-        name: wp.name || autoName(wp.type, i),
-        radius: wp.radius === 400 && wp.type === "T" ? defaultRadius("T") : wp.radius,
-      }));
-      return {
-        ...prev,
-        waypoints: assigned,
-        distance_km: calculateTaskDistance(assigned),
-      };
+      const assigned = applyLabels(assignWaypointTypes(draft));
+      return { ...prev, waypoints: assigned, distance_km: calculateTaskDistance(assigned) };
     });
     // stay in add mode — user clicks continuously until pressing "완료"
-  }, []);
+  }, [applyLabels]);
 
   const moveWaypoint = useCallback((id: string, lat: number, lon: number) => {
     setTask((prev) => {
@@ -165,9 +160,7 @@ export default function NewTaskPage() {
 
   const removeWaypoint = (id: string) => {
     setTask((prev) => {
-      const wps = assignWaypointTypes(
-        prev.waypoints.filter((wp) => wp.id !== id)
-      );
+      const wps = applyLabels(assignWaypointTypes(prev.waypoints.filter((wp) => wp.id !== id)));
       return { ...prev, waypoints: wps, distance_km: calculateTaskDistance(wps) };
     });
   };
@@ -405,8 +398,14 @@ export default function NewTaskPage() {
 
           {/* Legend */}
           {task.waypoints.length > 0 && (
-            <div style={{ position: "absolute", bottom: 16, left: 12, display: "flex", gap: 8, flexWrap: "wrap", pointerEvents: "none" }}>
-              {[{ color: "#34c759", label: "이륙" }, { color: "#0071e3", label: "전환점" }, { color: "#ff3b30", label: "도착" }].map(({ color, label: lbl }) => (
+            <div style={{ position: "absolute", bottom: 16, left: 12, display: "flex", gap: 6, flexWrap: "wrap", pointerEvents: "none" }}>
+              {[
+                { color: "#34c759", label: "Take Off" },
+                { color: "#ff9500", label: "SSS" },
+                { color: "#0071e3", label: "TP" },
+                { color: "#bf5af2", label: "ESS" },
+                { color: "#ff3b30", label: "Landing" },
+              ].map(({ color, label: lbl }) => (
                 <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(6px)", borderRadius: 20, padding: "4px 9px", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }}>
                   <div style={{ width: 7, height: 7, borderRadius: "50%", background: color }} />
                   <span style={{ fontSize: 11, fontWeight: 500, color: "#1d1d1f" }}>{lbl}</span>
@@ -543,10 +542,12 @@ export default function NewTaskPage() {
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {task.waypoints.map((wp) => (
+                  {task.waypoints.map((wp, i) => (
                     <WaypointRow
                       key={wp.id}
                       wp={wp}
+                      index={i}
+                      total={task.waypoints.length}
                       isEditing={editingWpId === wp.id}
                       onToggleEdit={() => setEditingWpId((id) => id === wp.id ? null : wp.id)}
                       onNameChange={(n) => setWpName(wp.id, n)}
@@ -639,28 +640,33 @@ export default function NewTaskPage() {
 
 // ── Waypoint row component ───────────────────────────────────────────────────
 function WaypointRow({
-  wp, isEditing, onToggleEdit, onNameChange, onRadiusChange, onDelete,
+  wp, index, total, isEditing, onToggleEdit, onNameChange, onRadiusChange, onDelete,
 }: {
   wp: Waypoint;
+  index: number;
+  total: number;
   isEditing: boolean;
   onToggleEdit: () => void;
   onNameChange: (n: string) => void;
   onRadiusChange: (r: number) => void;
   onDelete: () => void;
 }) {
-  const color = waypointColor(wp.type);
-  const typeLabel = wp.type === "D" ? "이륙" : wp.type === "G" ? "도착" : "전환";
+  const color = waypointRoleColor(index, total);
+  const roleLabel = waypointLabel(index, total);
 
   return (
     <div style={{ borderRadius: 10, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
       {/* Header row */}
       <div
         onClick={onToggleEdit}
-        style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#fff", cursor: "pointer" }}
+        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "#fff", cursor: "pointer" }}
       >
-        <div style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />
-        <span style={{ fontSize: 11, fontWeight: 700, color, letterSpacing: "0.04em", flexShrink: 0 }}>{typeLabel}</span>
-        <span style={{ fontSize: 14, fontWeight: 500, color: "#1d1d1f", flex: 1 }}>{wp.name}</span>
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: "#fff",
+          background: color, borderRadius: 6,
+          padding: "2px 6px", flexShrink: 0, letterSpacing: "0.03em",
+        }}>{roleLabel}</span>
+        <span style={{ fontSize: 13, fontWeight: 500, color: "#1d1d1f", flex: 1 }}>{wp.name}</span>
         <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>
           {wp.radius >= 1000 ? `${wp.radius / 1000}km` : `${wp.radius}m`}
         </span>

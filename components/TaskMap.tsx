@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import { Waypoint } from "@/lib/schemas/task";
-import { circlePolygon, waypointColor } from "@/lib/utils/taskUtils";
+import { circlePolygon, waypointRoleColor, waypointMarkerText } from "@/lib/utils/taskUtils";
 
 interface TaskMapProps {
   waypoints: Waypoint[];
@@ -50,9 +50,9 @@ export function TaskMap({
     if (!m || !styleLoadedRef.current) return;
 
     // ── circles (fill + outline) ──────────────────────────────────
-    const circleFeatures = wps.map((wp) => ({
+    const circleFeatures = wps.map((wp, i) => ({
       type: "Feature" as const,
-      properties: { id: wp.id, color: waypointColor(wp.type) },
+      properties: { id: wp.id, color: waypointRoleColor(i, wps.length) },
       geometry: {
         type: "Polygon" as const,
         coordinates: [circlePolygon([wp.lon, wp.lat], wp.radius)],
@@ -121,53 +121,45 @@ export function TaskMap({
     }
 
     // ── markers (draggable) ───────────────────────────────────────
-    const currentIds = new Set(wps.map((wp) => wp.id));
+    // Always recreate so color/text stay in sync with positional roles
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current.clear();
 
-    // Remove stale markers
-    markersRef.current.forEach((marker, id) => {
-      if (!currentIds.has(id)) {
-        marker.remove();
-        markersRef.current.delete(id);
-      }
-    });
+    wps.forEach((wp, i) => {
+      const color = waypointRoleColor(i, wps.length);
+      const text = waypointMarkerText(i, wps.length);
 
-    wps.forEach((wp) => {
-      const color = waypointColor(wp.type);
+      const el = document.createElement("div");
+      el.style.cssText = `
+        min-width: 26px; height: 26px; padding: 0 5px;
+        background: ${color};
+        border: 2.5px solid white;
+        border-radius: 13px;
+        cursor: grab;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.32);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 9px; font-weight: 800; color: white;
+        font-family: -apple-system, sans-serif;
+        user-select: none; letter-spacing: 0.02em;
+      `;
+      el.textContent = text;
+      el.title = wp.name || text;
 
-      if (markersRef.current.has(wp.id)) {
-        markersRef.current.get(wp.id)!.setLngLat([wp.lon, wp.lat]);
-      } else {
-        const el = document.createElement("div");
-        el.style.cssText = `
-          width: 20px; height: 20px;
-          background: ${color};
-          border: 3px solid white;
-          border-radius: 50%;
-          cursor: grab;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.32);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 9px; font-weight: 800; color: white;
-          font-family: -apple-system, sans-serif;
-          user-select: none;
-        `;
-        el.title = wp.name;
+      const marker = new mapboxgl.Marker({ element: el, draggable: true })
+        .setLngLat([wp.lon, wp.lat])
+        .addTo(m);
 
-        const marker = new mapboxgl.Marker({ element: el, draggable: true })
-          .setLngLat([wp.lon, wp.lat])
-          .addTo(m);
+      marker.on("dragend", () => {
+        const { lng, lat } = marker.getLngLat();
+        onWaypointMoveRef.current(wp.id, lat, lng);
+      });
 
-        marker.on("dragend", () => {
-          const { lng, lat } = marker.getLngLat();
-          onWaypointMoveRef.current(wp.id, lat, lng);
-        });
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onWaypointClickRef.current?.(wp.id);
+      });
 
-        el.addEventListener("click", (e) => {
-          e.stopPropagation();
-          onWaypointClickRef.current?.(wp.id);
-        });
-
-        markersRef.current.set(wp.id, marker);
-      }
+      markersRef.current.set(wp.id, marker);
     });
   }, []);
 

@@ -64,6 +64,34 @@ export function circlePolygon(
 
 // ── Waypoint helpers ──────────────────────────────────────────────────────────
 
+/** Position-aware display label */
+export function waypointLabel(index: number, total: number): string {
+  if (index === 0) return "Take Off";
+  if (total > 2 && index === 1) return "SSS";
+  if (total >= 4 && index === total - 2) return "ESS";
+  if (index === total - 1) return "Landing";
+  return `TP${String(index - 1).padStart(2, "0")}`;
+}
+
+/** Position-aware color */
+export function waypointRoleColor(index: number, total: number): string {
+  if (index === 0) return "#34c759";                       // Take Off: green
+  if (total > 2 && index === 1) return "#ff9500";          // SSS: orange
+  if (total >= 4 && index === total - 2) return "#bf5af2"; // ESS: purple
+  if (index === total - 1) return "#ff3b30";               // Landing: red
+  return "#0071e3";                                         // TP: blue
+}
+
+/** Short text shown inside map marker */
+export function waypointMarkerText(index: number, total: number): string {
+  if (index === 0) return "TO";
+  if (total > 2 && index === 1) return "S";
+  if (total >= 4 && index === total - 2) return "E";
+  if (index === total - 1) return "LZ";
+  return String(index - 1);
+}
+
+/** Legacy color by type — kept for any existing callers */
 export function waypointColor(type: WaypointType): string {
   if (type === "D") return "#34c759";
   if (type === "G") return "#ff3b30";
@@ -74,18 +102,16 @@ export function waypointColor(type: WaypointType): string {
 export function assignWaypointTypes(waypoints: Waypoint[]): Waypoint[] {
   return waypoints.map((wp, i) => ({
     ...wp,
-    type:
-      i === 0 ? "D" : i === waypoints.length - 1 ? "G" : "T",
+    type: i === 0 ? "D" : i === waypoints.length - 1 ? "G" : "T",
   }));
 }
 
-/** Default radius per type */
-export function defaultRadius(type: WaypointType): number {
-  if (type === "T") return 2000;
+/** Default radius — 400 m for all types */
+export function defaultRadius(_type: WaypointType): number {
   return 400;
 }
 
-/** Auto-generate waypoint name */
+/** Auto-generate waypoint name by position */
 export function autoName(type: WaypointType, index: number): string {
   if (type === "D") return "D01";
   if (type === "G") return "G01";
