@@ -104,6 +104,7 @@ export default function NewFlightPage() {
         distance_track_km: parsed.distanceTrackKm,
         distance_xcontest_km: parsed.distanceXcontestKm,
         igc_parsed: true,
+        track_points: parsed.trackPoints,
       }));
       setTrackPoints(parsed.trackPoints);
       setAltProfile(parsed.altitudeProfile);
