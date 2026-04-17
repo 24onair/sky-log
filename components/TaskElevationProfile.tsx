@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { Waypoint } from "@/lib/schemas/task";
 import { waypointRoleColor } from "@/lib/utils/taskUtils";
 
+const PROFILE_H = 130;
+
 // ── Geometry ─────────────────────────────────────────────────────────────────
 
 function hkm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -31,7 +33,6 @@ function sampleRoute(wps: Waypoint[], n = 80): { pts: SP[]; wpDists: number[] } 
 
   const step = total / (n - 1);
   const pts: SP[] = [];
-
   for (let s = 0; s < n; s++) {
     const target = Math.min(s * step, total);
     let cum = 0;
@@ -53,7 +54,8 @@ function sampleRoute(wps: Waypoint[], n = 80): { pts: SP[]; wpDists: number[] } 
 
 async function fetchElev(pts: SP[]): Promise<number[]> {
   const locs = pts.map(p => `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`).join("|");
-  const r = await fetch("https://api.opentopodata.org/v1/srtm30m", {
+  // Use internal proxy to avoid CORS issues
+  const r = await fetch("/api/elevation", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ locations: locs }),
@@ -78,7 +80,7 @@ function altAt(pts: EP[], dist: number): number {
 
 export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ w: 600, h: 110 });
+  const [width, setWidth] = useState(600);
   const [elevPts, setElevPts] = useState<EP[]>([]);
   const [wpDists, setWpDists] = useState<number[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -87,20 +89,19 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(entries => {
-      const { width, height } = entries[0].contentRect;
-      if (width > 0 && height > 0) setSize({ w: width, h: height });
+    const ro = new ResizeObserver(([e]) => {
+      if (e.contentRect.width > 0) setWidth(e.contentRect.width);
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
   const wpKey = waypoints.map(w => `${w.lat.toFixed(5)},${w.lon.toFixed(5)}`).join("|");
-
   useEffect(() => {
     if (waypoints.length < 2) return;
     let cancelled = false;
     setStatus("loading");
+    setElevPts([]);
     const { pts: samples, wpDists: wd } = sampleRoute(waypoints);
     setWpDists(wd);
     fetchElev(samples)
@@ -109,19 +110,18 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
         setElevPts(samples.map((s, i) => ({ dist: s.dist, alt: alts[i] })));
         setStatus("ready");
       })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
-      });
+      .catch(() => { if (!cancelled) setStatus("error"); });
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wpKey]);
 
   if (waypoints.length < 2) return null;
 
-  const { w, h } = size;
+  const w = width;
+  const h = PROFILE_H;
   const PL = 40, PR = 8, PT = 20, PB = 22;
-  const CW = w - PL - PR;
-  const CH = h - PT - PB;
+  const CW = Math.max(1, w - PL - PR);
+  const CH = Math.max(1, h - PT - PB);
   const n = waypoints.length;
   const totalDist = wpDists[wpDists.length - 1] || 1;
 
@@ -158,35 +158,36 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
       style={{
         position: "absolute",
         bottom: 0, left: 0, right: 0,
-        height: 130,
-        background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 60%, transparent 100%)",
+        height: h,
+        background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.50) 55%, transparent 100%)",
         cursor: elevPts.length ? "crosshair" : "default",
         userSelect: "none",
         overflow: "hidden",
-        zIndex: 3,
+        zIndex: 50,   // above Mapbox canvas
+        pointerEvents: "auto",
       }}
     >
       <style>{`@keyframes elSpin { to { transform: rotate(360deg); } }`}</style>
 
+      {/* Status label — always visible so we can confirm rendering */}
       {status === "loading" && (
-        <div style={{ position: "absolute", bottom: 10, right: 14, display: "flex", alignItems: "center", gap: 5 }}>
+        <div style={{ position: "absolute", bottom: 8, right: 14, display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ width: 10, height: 10, border: "1.5px solid rgba(255,255,255,0.2)", borderTopColor: "#F0B90B", borderRadius: "50%", animation: "elSpin 0.8s linear infinite" }} />
-          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: "-apple-system,sans-serif" }}>고도 로딩</span>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: "-apple-system,sans-serif" }}>고도 로딩 중…</span>
         </div>
       )}
-
       {status === "error" && (
-        <div style={{ position: "absolute", bottom: 10, right: 14 }}>
-          <span style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", fontFamily: "-apple-system,sans-serif" }}>고도 데이터 없음</span>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 11, color: "rgba(255,100,100,0.6)", fontFamily: "-apple-system,sans-serif" }}>고도 데이터를 불러올 수 없습니다</span>
         </div>
       )}
 
       {elevPts.length > 0 && (
-        <svg width={w} height={h} style={{ display: "block", overflow: "visible" }}>
+        <svg width={w} height={h} style={{ display: "block" }}>
           <defs>
             <linearGradient id="tElevGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#F0B90B" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#F0B90B" stopOpacity="0.04" />
+              <stop offset="100%" stopColor="#F0B90B" stopOpacity="0.05" />
             </linearGradient>
           </defs>
 
@@ -208,7 +209,7 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
 
           {yTicks.map((a, i) => (
             <text key={i} x={PL - 5} y={toY(a) + 3.5}
-              textAnchor="end" fontSize="9" fill="rgba(255,255,255,0.5)"
+              textAnchor="end" fontSize="9" fill="rgba(255,255,255,0.55)"
               fontFamily="-apple-system,sans-serif">
               {Math.round(a)}m
             </text>
@@ -220,10 +221,12 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
             return (
               <>
                 <line x1={cursor.x} y1={PT} x2={cursor.x} y2={h - PB}
-                  stroke="rgba(255,255,255,0.75)" strokeWidth="1" />
+                  stroke="rgba(255,255,255,0.8)" strokeWidth="1" />
                 <circle cx={cursor.x} cy={cy} r="4"
                   fill="#F0B90B" stroke="white" strokeWidth="1.5" />
-                <text x={flip ? cursor.x - 6 : cursor.x + 6} y={cy - 6}
+                <text
+                  x={flip ? cursor.x - 6 : cursor.x + 6}
+                  y={cy - 6}
                   textAnchor={flip ? "end" : "start"}
                   fontSize="11" fontWeight="700" fill="white"
                   fontFamily="-apple-system,sans-serif">
