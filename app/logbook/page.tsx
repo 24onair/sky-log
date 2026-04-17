@@ -8,13 +8,14 @@ import { getUser } from "@/lib/supabase/auth";
 import { FlightLog } from "@/lib/schemas/logbook";
 import { FlightLogCard } from "@/components/FlightLogCard";
 import { StatisticsSummary } from "@/components/StatisticsSummary";
-import { Plus, Wind } from "lucide-react";
+import { Plus, Wind, CalendarDays } from "lucide-react";
 
-type PeriodFilter = "all" | "year" | "month";
+type PeriodFilter = "all" | "year" | "month" | "custom";
 const FILTERS: { key: PeriodFilter; label: string }[] = [
   { key: "all", label: "전체" },
   { key: "year", label: "올해" },
   { key: "month", label: "이번 달" },
+  { key: "custom", label: "직접 지정" },
 ];
 
 export default function LogbookPage() {
@@ -24,6 +25,8 @@ export default function LogbookPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<PeriodFilter>("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -43,10 +46,16 @@ export default function LogbookPage() {
         } else if (period === "month") {
           startDate = new Date(now.getFullYear(), now.getMonth(), 1);
           endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        } else if (period === "custom") {
+          if (customStart) startDate = new Date(customStart);
+          if (customEnd) {
+            endDate = new Date(customEnd);
+            endDate.setDate(endDate.getDate() + 1); // inclusive end
+          }
         }
 
         const [logsData, statsData] = await Promise.all([
-          getFlightLogs(user.id, { startDate, endDate, limit: 50 }),
+          getFlightLogs(user.id, { startDate, endDate, limit: 200 }),
           getFlightLogStats(user.id),
         ]);
 
@@ -59,7 +68,7 @@ export default function LogbookPage() {
       }
     };
     loadData();
-  }, [period, router]);
+  }, [period, customStart, customEnd, router]);
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "calc(100vh - 48px)", padding: "40px 20px" }}>
@@ -81,27 +90,79 @@ export default function LogbookPage() {
         {stats && !loading && <StatisticsSummary stats={stats} />}
 
         {/* Period filter */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-          {FILTERS.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setPeriod(key)}
-              style={{
-                padding: "10px 20px",
-                borderRadius: 50,
-                fontSize: 14,
-                fontWeight: 600,
-                border: "none",
-                cursor: "pointer",
-                background: period === key ? "#F0B90B" : "transparent",
-                color: period === key ? "#1E2026" : "#848E9C",
-                boxShadow: "none",
-                transition: "all 0.2s",
-              }}
-            >
-              {label}
-            </button>
-          ))}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {FILTERS.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setPeriod(key)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "10px 20px",
+                  borderRadius: 50,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  border: "none",
+                  cursor: "pointer",
+                  background: period === key ? "#F0B90B" : "transparent",
+                  color: period === key ? "#1E2026" : "#848E9C",
+                  transition: "all 0.2s",
+                }}
+              >
+                {key === "custom" && <CalendarDays size={14} strokeWidth={2} />}
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Date range inputs — shown only for custom filter */}
+          {period === "custom" && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 10, marginTop: 12,
+              padding: "14px 16px",
+              background: "rgba(240,185,11,0.06)",
+              borderRadius: 12,
+              border: "1px solid rgba(240,185,11,0.2)",
+              flexWrap: "wrap",
+            }}>
+              <CalendarDays size={15} strokeWidth={1.8} style={{ color: "#F0B90B", flexShrink: 0 }} />
+              <input
+                type="date"
+                value={customStart}
+                onChange={(e) => setCustomStart(e.target.value)}
+                max={customEnd || undefined}
+                style={{
+                  padding: "7px 12px", borderRadius: 8, border: "1px solid rgba(0,0,0,0.12)",
+                  fontSize: 14, fontWeight: 500, color: "#1E2026", background: "#fff",
+                  cursor: "pointer", outline: "none",
+                }}
+              />
+              <span style={{ fontSize: 14, color: "#848E9C", fontWeight: 500 }}>~</span>
+              <input
+                type="date"
+                value={customEnd}
+                onChange={(e) => setCustomEnd(e.target.value)}
+                min={customStart || undefined}
+                style={{
+                  padding: "7px 12px", borderRadius: 8, border: "1px solid rgba(0,0,0,0.12)",
+                  fontSize: 14, fontWeight: 500, color: "#1E2026", background: "#fff",
+                  cursor: "pointer", outline: "none",
+                }}
+              />
+              {(customStart || customEnd) && (
+                <button
+                  onClick={() => { setCustomStart(""); setCustomEnd(""); }}
+                  style={{
+                    padding: "7px 12px", borderRadius: 8, border: "none",
+                    fontSize: 13, fontWeight: 600, color: "#848E9C",
+                    background: "rgba(0,0,0,0.05)", cursor: "pointer",
+                  }}
+                >
+                  초기화
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Error */}
