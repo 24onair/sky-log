@@ -19,6 +19,7 @@ import {
   exportToXCTrack,
   downloadBlob,
 } from "@/lib/utils/taskUtils";
+import { setUnsavedChanges } from "@/lib/unsavedChanges";
 
 interface GeoResult {
   id: string;
@@ -81,6 +82,13 @@ export default function NewTaskPage() {
       else setUserId(u.id);
     });
   }, [router]);
+
+  // Track unsaved changes for nav guard
+  useEffect(() => {
+    const dirty = task.waypoints.length > 0 || task.name !== "새 타스크";
+    setUnsavedChanges(dirty, "타스크 작업 중입니다. 떠나면 저장되지 않습니다.");
+    return () => setUnsavedChanges(false);
+  }, [task.waypoints.length, task.name]);
 
   // ── search ─────────────────────────────────────────────────────────────
   const handleSearchInput = (q: string) => {
@@ -196,6 +204,7 @@ export default function NewTaskPage() {
     try {
       await createTask(userId, task);
       setIsSaved(true);
+      setUnsavedChanges(false);
       setTimeout(() => router.push("/tasks"), 800);
     } catch (e) {
       setError(e instanceof Error ? e.message : "저장 실패");
