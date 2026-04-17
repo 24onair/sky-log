@@ -26,8 +26,8 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
     playing: false,
     speed: 4 as Speed,
     startRealMs: 0,
-    startIndex: 0,
-    currentIndex: 0,
+    startFrac: 0,   // fractional track index at playback anchor
+    currentFrac: 0, // fractional track index, updated every RAF tick
   });
 
   // React state only for UI display (throttled to ~10fps)
@@ -42,9 +42,12 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
   const progressLineRef = useRef<SVGPathElement>(null);
   const progressFillRef = useRef<SVGPathElement>(null);
 
+  // Altitude label overlay (HTML div above the SVG)
+  const altLabelRef = useRef<HTMLDivElement>(null);
+
   const secsPerPoint = durationSec / Math.max(1, n - 1);
 
-  // Pre-compute SVG points once
+  // Pre-compute SVG integer-index points once
   const altitudes = trackPoints.map((p) => p[2]);
   const minAlt = n > 0 ? Math.min(...altitudes) : 0;
   const maxAlt = n > 0 ? Math.max(...altitudes) : 0;
@@ -56,58 +59,77 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
   const fullLinePath = svgPts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
   const fullFillPath = `${fullLinePath} L100,95 L0,95 Z`;
 
-  // Update everything for a given index — called from RAF (no setState)
+  // Update everything for a fractional index — smooth interpolation between track points
   const applyIndex = useCallback(
-    (idx: number) => {
-      const clamped = Math.max(0, Math.min(n - 1, idx));
+    (fracIdx: number) => {
+      const clamped = Math.max(0, Math.min(n - 1, fracIdx));
+      const lo = Math.floor(clamped);
+      const hi = Math.min(n - 1, lo + 1);
+      const t = clamped - lo;
+
+      // Interpolate position + altitude
+      const [lon0, lat0, alt0] = trackPoints[lo];
+      const [lon1, lat1, alt1] = trackPoints[hi];
+      const lon = lon0 + (lon1 - lon0) * t;
+      const lat = lat0 + (lat1 - lat0) * t;
+      const alt = Math.round(alt0 + (alt1 - alt0) * t);
 
       // Map marker
-      const [lon, lat] = trackPoints[clamped];
       markerRef.current?.setLngLat([lon, lat]);
 
       // Mapbox progress line (requires ≥2 coords)
-      if (clamped >= 1 && styleReadyRef.current) {
+      if (lo >= 1 && styleReadyRef.current) {
         const src = mapRef.current?.getSource("progress") as mapboxgl.GeoJSONSource | undefined;
+        const coords: [number, number][] = trackPoints.slice(0, lo + 1).map(([lo, la]) => [lo, la]);
+        coords.push([lon, lat]); // smooth interpolated endpoint
         src?.setData({
           type: "Feature",
           properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: trackPoints.slice(0, clamped + 1).map(([lo, la]) => [lo, la]),
-          },
+          geometry: { type: "LineString", coordinates: coords },
         });
       }
 
-      // SVG cursor — imperative DOM update (zero React renders)
-      const px = svgPts[clamped]?.x ?? 0;
-      const py = svgPts[clamped]?.y ?? 50;
+      // Smooth cursor position in SVG viewBox (0–100)
+      const px = (clamped / Math.max(1, n - 1)) * 100;
+      const py = 88 - ((alt - minAlt) / altRange) * 76;
+
       if (cursorLineRef.current) {
-        cursorLineRef.current.setAttribute("x1", px.toFixed(2));
-        cursorLineRef.current.setAttribute("x2", px.toFixed(2));
+        cursorLineRef.current.setAttribute("x1", px.toFixed(3));
+        cursorLineRef.current.setAttribute("x2", px.toFixed(3));
       }
       if (cursorDotRef.current) {
-        cursorDotRef.current.setAttribute("cx", px.toFixed(2));
-        cursorDotRef.current.setAttribute("cy", py.toFixed(2));
+        cursorDotRef.current.setAttribute("cx", px.toFixed(3));
+        cursorDotRef.current.setAttribute("cy", py.toFixed(3));
       }
 
-      // SVG progress line + fill
-      if (clamped >= 1) {
-        const path = svgPts
-          .slice(0, clamped + 1)
-          .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`)
-          .join(" ");
+      // Altitude label overlay — SVG is 80px tall, viewBox 0–100 → scale 0.8
+      if (altLabelRef.current) {
+        const topPx = py * 0.8 - 20; // 20px above the dot
+        altLabelRef.current.style.left = `${px}%`;
+        altLabelRef.current.style.top = `${Math.max(0, topPx)}px`;
+        altLabelRef.current.style.transform =
+          px < 15 ? "translateX(0)" : px > 85 ? "translateX(-100%)" : "translateX(-50%)";
+        altLabelRef.current.textContent = `${alt} m`;
+      }
+
+      // SVG progress line + fill (with smooth interpolated endpoint)
+      if (clamped > 0) {
+        const intPts = svgPts.slice(0, lo + 1);
+        const parts = intPts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`);
+        parts.push(`L${px.toFixed(3)},${py.toFixed(3)}`);
+        const path = parts.join(" ");
         progressLineRef.current?.setAttribute("d", path);
-        progressFillRef.current?.setAttribute("d", `${path} L${px.toFixed(2)},95 L0,95 Z`);
+        progressFillRef.current?.setAttribute("d", `${path} L${px.toFixed(3)},95 L0,95 Z`);
       }
 
       // Throttled React state update for time/altitude display (~10fps)
       const now = performance.now();
       if (now - lastDisplayUpdateRef.current > 100) {
         lastDisplayUpdateRef.current = now;
-        setDisplayIdx(clamped);
+        setDisplayIdx(lo);
       }
     },
-    [n, trackPoints, svgPts]
+    [n, trackPoints, svgPts, minAlt, altRange]
   );
 
   // RAF loop — only mutates refs + DOM, no setState
@@ -117,15 +139,13 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
       if (!ps.playing) return;
 
       const simElapsed = ((now - ps.startRealMs) / 1000) * ps.speed;
-      const rawIdx = ps.startIndex + Math.floor(simElapsed / Math.max(0.001, secsPerPoint));
-      const newIdx = Math.min(n - 1, rawIdx);
+      const fracIdx = ps.startFrac + simElapsed / Math.max(0.001, secsPerPoint);
+      const clampedFrac = Math.min(n - 1, fracIdx);
 
-      if (newIdx !== ps.currentIndex) {
-        ps.currentIndex = newIdx;
-        applyIndex(newIdx);
-      }
+      ps.currentFrac = clampedFrac;
+      applyIndex(clampedFrac);
 
-      if (newIdx < n - 1) {
+      if (clampedFrac < n - 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
         ps.playing = false;
@@ -143,15 +163,15 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
       ps.playing = false;
       setPlaying(false);
     } else {
-      const startIdx = ps.currentIndex >= n - 1 ? 0 : ps.currentIndex;
-      if (startIdx === 0) {
-        ps.currentIndex = 0;
+      const startFrac = ps.currentFrac >= n - 1 ? 0 : ps.currentFrac;
+      if (startFrac === 0) {
+        ps.currentFrac = 0;
         applyIndex(0);
         setDisplayIdx(0);
       }
       ps.playing = true;
       ps.startRealMs = performance.now();
-      ps.startIndex = startIdx;
+      ps.startFrac = startFrac;
       setPlaying(true);
       rafRef.current = requestAnimationFrame(tick);
     }
@@ -162,7 +182,7 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
     playRef.current.speed = s;
     if (playRef.current.playing) {
       playRef.current.startRealMs = performance.now();
-      playRef.current.startIndex = playRef.current.currentIndex;
+      playRef.current.startFrac = playRef.current.currentFrac;
     }
   }, []);
 
@@ -170,13 +190,13 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
     (e: React.MouseEvent<SVGSVGElement>) => {
       const rect = e.currentTarget.getBoundingClientRect();
       const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const newIdx = Math.round(ratio * (n - 1));
-      playRef.current.currentIndex = newIdx;
-      applyIndex(newIdx);
-      setDisplayIdx(newIdx);
+      const newFrac = ratio * (n - 1);
+      playRef.current.currentFrac = newFrac;
+      applyIndex(newFrac);
+      setDisplayIdx(Math.round(newFrac));
       if (playRef.current.playing) {
         playRef.current.startRealMs = performance.now();
-        playRef.current.startIndex = newIdx;
+        playRef.current.startFrac = newFrac;
       }
     },
     [n, applyIndex]
@@ -350,25 +370,49 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
 
       {/* Altitude profile */}
       <div style={{ background: "#16181D" }}>
-        <svg
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          style={{ width: "100%", height: 80, display: "block", cursor: "col-resize" }}
-          onClick={handleScrub}
-        >
-          {/* Static background fill */}
-          <path d={fullFillPath} fill="rgba(0,113,227,0.1)" />
-          {/* Static full track line */}
-          <path d={fullLinePath} fill="none" stroke="rgba(255,255,255,0.13)" strokeWidth="0.5" />
-          {/* Progress fill — updated imperatively */}
-          <path ref={progressFillRef} d="" fill="rgba(0,113,227,0.22)" />
-          {/* Progress line — updated imperatively */}
-          <path ref={progressLineRef} d="" fill="none" stroke="#0071e3" strokeWidth="0.7" />
-          {/* Cursor line — updated imperatively */}
-          <line ref={cursorLineRef} x1="0" y1="3" x2="0" y2="95" stroke="#0071e3" strokeWidth="0.5" opacity="0.7" />
-          {/* Cursor dot — updated imperatively */}
-          <circle ref={cursorDotRef} cx="0" cy="50" r="1.6" fill="#0071e3" stroke="white" strokeWidth="0.4" />
-        </svg>
+        {/* Relative wrapper so the altitude label overlay is positioned correctly */}
+        <div style={{ position: "relative" }}>
+          <svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            style={{ width: "100%", height: 80, display: "block", cursor: "col-resize" }}
+            onClick={handleScrub}
+          >
+            {/* Static background fill */}
+            <path d={fullFillPath} fill="rgba(0,113,227,0.1)" />
+            {/* Static full track line */}
+            <path d={fullLinePath} fill="none" stroke="rgba(255,255,255,0.13)" strokeWidth="0.5" />
+            {/* Progress fill — updated imperatively */}
+            <path ref={progressFillRef} d="" fill="rgba(0,113,227,0.22)" />
+            {/* Progress line — updated imperatively */}
+            <path ref={progressLineRef} d="" fill="none" stroke="#0071e3" strokeWidth="0.7" />
+            {/* Cursor line — updated imperatively */}
+            <line ref={cursorLineRef} x1="0" y1="3" x2="0" y2="95" stroke="#0071e3" strokeWidth="0.5" opacity="0.7" />
+            {/* Cursor dot — updated imperatively */}
+            <circle ref={cursorDotRef} cx="0" cy="50" r="1.6" fill="#0071e3" stroke="white" strokeWidth="0.4" />
+          </svg>
+
+          {/* Altitude label — positioned above cursor dot */}
+          <div
+            ref={altLabelRef}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              pointerEvents: "none",
+              fontSize: 11,
+              fontWeight: 700,
+              fontVariantNumeric: "tabular-nums",
+              color: "#0071e3",
+              background: "rgba(22,24,29,0.85)",
+              padding: "2px 5px",
+              borderRadius: 4,
+              whiteSpace: "nowrap",
+              lineHeight: 1,
+            }}
+          />
+        </div>
+
         <div style={{
           display: "flex", justifyContent: "space-between",
           padding: "2px 10px 8px",

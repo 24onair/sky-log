@@ -12,9 +12,9 @@ export interface IGCParseResult {
   distanceStraightKm: number;
   distanceTrackKm: number;
   distanceXcontestKm: number;
-  /** [lon, lat, alt] — sampled for map display (max 400 pts) */
+  /** [lon, lat, alt] — sampled for map display (max 3000 pts) */
   trackPoints: [number, number, number][];
-  /** altitude values sampled for profile chart (max 200 pts) */
+  /** altitude values sampled for profile chart (max 1000 pts) */
   altitudeProfile: number[];
 }
 
@@ -166,8 +166,8 @@ export function parseIGC(content: string): IGCParseResult {
   const distanceStraight = getStraightDistance(points);
   const distanceTrack = getTrackDistance(points);
 
-  // Track points for map (max 400 pts)
-  const mapStep = Math.max(1, Math.floor(points.length / 400));
+  // Track points for map (max 3000 pts — keeps all points for most flights ≤ 3 hrs)
+  const mapStep = Math.max(1, Math.floor(points.length / 3000));
   const trackPoints: [number, number, number][] = [];
   for (let i = 0; i < points.length; i += mapStep) {
     trackPoints.push([points[i].lon, points[i].lat, points[i].altitude]);
@@ -181,8 +181,8 @@ export function parseIGC(content: string): IGCParseResult {
     }
   }
 
-  // Altitude profile for chart (max 200 pts)
-  const altStep = Math.max(1, Math.floor(points.length / 200));
+  // Altitude profile for chart (max 1000 pts)
+  const altStep = Math.max(1, Math.floor(points.length / 1000));
   const altitudeProfile: number[] = [];
   for (let i = 0; i < points.length; i += altStep) {
     altitudeProfile.push(points[i].altitude);
