@@ -12,8 +12,6 @@ interface TaskMapProps {
   onWaypointMove: (id: string, lat: number, lon: number) => void;
   onWaypointClick?: (id: string) => void;
   flyToTarget?: { center: [number, number]; zoom: number } | null;
-  libraryWaypoints?: Waypoint[];
-  onLibraryWaypointClick?: (wp: Waypoint) => void;
 }
 
 export function TaskMap({
@@ -23,19 +21,15 @@ export function TaskMap({
   onWaypointMove,
   onWaypointClick,
   flyToTarget,
-  libraryWaypoints = [],
-  onLibraryWaypointClick,
 }: TaskMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
-  const libMarkersRef = useRef<mapboxgl.Marker[]>([]);
   const isAddModeRef = useRef(isAddMode);
   const waypointsRef = useRef(waypoints);
   const onMapClickRef = useRef(onMapClick);
   const onWaypointMoveRef = useRef(onWaypointMove);
   const onWaypointClickRef = useRef(onWaypointClick);
-  const onLibraryWaypointClickRef = useRef(onLibraryWaypointClick);
   const styleLoadedRef = useRef(false);
 
   // Keep refs in sync
@@ -44,7 +38,6 @@ export function TaskMap({
   useEffect(() => { onMapClickRef.current = onMapClick; }, [onMapClick]);
   useEffect(() => { onWaypointMoveRef.current = onWaypointMove; }, [onWaypointMove]);
   useEffect(() => { onWaypointClickRef.current = onWaypointClick; }, [onWaypointClick]);
-  useEffect(() => { onLibraryWaypointClickRef.current = onLibraryWaypointClick; }, [onLibraryWaypointClick]);
 
   // Update cursor when add mode changes (keep pan/zoom enabled so user can drag to position)
   useEffect(() => {
@@ -237,8 +230,6 @@ export function TaskMap({
     return () => {
       markersRef.current.forEach((m) => m.remove());
       markersRef.current.clear();
-      libMarkersRef.current.forEach((m) => m.remove());
-      libMarkersRef.current = [];
       map.remove();
       mapRef.current = null;
       styleLoadedRef.current = false;
@@ -250,55 +241,6 @@ export function TaskMap({
     if (!flyToTarget || !mapRef.current) return;
     mapRef.current.flyTo({ center: flyToTarget.center, zoom: flyToTarget.zoom, duration: 900 });
   }, [flyToTarget]);
-
-  // Render library waypoint markers (gray, non-draggable)
-  useEffect(() => {
-    const m = mapRef.current;
-    if (!m) return;
-
-    // Remove old library markers
-    libMarkersRef.current.forEach((mk) => mk.remove());
-    libMarkersRef.current = [];
-
-    // Current task waypoint names for dedup indicator
-    const currentNames = new Set(waypointsRef.current.map((w) => w.name));
-
-    libraryWaypoints.forEach((wp) => {
-      const already = currentNames.has(wp.name);
-      const el = document.createElement("div");
-      el.style.cssText = `
-        width: 22px; height: 22px;
-        background: ${already ? "rgba(0,0,0,0.15)" : "rgba(100,100,110,0.75)"};
-        border: 2px solid ${already ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.9)"};
-        border-radius: 50%;
-        cursor: ${already ? "default" : "pointer"};
-        box-shadow: 0 1px 5px rgba(0,0,0,0.25);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 8px; font-weight: 700; color: white;
-        font-family: -apple-system, sans-serif;
-        user-select: none;
-        transition: transform 0.1s;
-      `;
-      el.textContent = wp.name.slice(0, 2);
-      el.title = already ? `${wp.name} (이미 추가됨)` : `${wp.name} — 탭하여 추가`;
-
-      if (!already) {
-        el.addEventListener("click", (e) => {
-          e.stopPropagation();
-          onLibraryWaypointClickRef.current?.(wp);
-        });
-        el.addEventListener("mouseenter", () => { el.style.transform = "scale(1.2)"; });
-        el.addEventListener("mouseleave", () => { el.style.transform = "scale(1)"; });
-      }
-
-      const marker = new mapboxgl.Marker({ element: el, draggable: false })
-        .setLngLat([wp.lon, wp.lat])
-        .addTo(m);
-
-      libMarkersRef.current.push(marker);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [libraryWaypoints, waypoints]);
 
   // Re-render layers whenever waypoints change
   useEffect(() => {

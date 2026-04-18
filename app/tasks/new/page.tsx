@@ -317,8 +317,6 @@ export default function NewTaskPage() {
             onWaypointMove={moveWaypoint}
             onWaypointClick={setEditingWpId}
             flyToTarget={flyToTarget}
-            libraryWaypoints={libraryWaypoints}
-            onLibraryWaypointClick={addLibraryWaypoint}
           />
 
           {/* Search overlay — top center */}
