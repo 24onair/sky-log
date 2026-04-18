@@ -20,6 +20,7 @@ import {
   downloadBlob,
 } from "@/lib/utils/taskUtils";
 import { setUnsavedChanges } from "@/lib/unsavedChanges";
+import { getTasks } from "@/lib/supabase/tasks";
 
 interface GeoResult {
   id: string;
@@ -67,6 +68,9 @@ export default function NewTaskPage() {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [showQr, setShowQr] = useState(false);
   const [editingWpId, setEditingWpId] = useState<string | null>(null);
+  const [libraryWaypoints, setLibraryWaypoints] = useState<Waypoint[]>([]);
+  const [libQuery, setLibQuery] = useState("");
+  const [showLib, setShowLib] = useState(false);
 
   // Search
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,6 +86,24 @@ export default function NewTaskPage() {
       else setUserId(u.id);
     });
   }, [router]);
+
+  // Load library waypoints from existing tasks (deduplicated by name)
+  useEffect(() => {
+    if (!userId) return;
+    getTasks(userId).then((tasks) => {
+      const seen = new Set<string>();
+      const all: Waypoint[] = [];
+      tasks.forEach((t) =>
+        t.waypoints.forEach((wp) => {
+          if (!seen.has(wp.name)) {
+            seen.add(wp.name);
+            all.push(wp);
+          }
+        })
+      );
+      setLibraryWaypoints(all);
+    }).catch(() => {});
+  }, [userId]);
 
   // Track unsaved changes for nav guard
   useEffect(() => {
@@ -185,6 +207,17 @@ export default function NewTaskPage() {
     });
   };
 
+  const addLibraryWaypoint = useCallback((wp: Waypoint) => {
+    setTask((prev) => {
+      const draft: Waypoint[] = [
+        ...prev.waypoints,
+        { ...wp, id: uuid(), type: "T" },
+      ];
+      const assigned = applyLabels(assignWaypointTypes(draft));
+      return { ...prev, waypoints: assigned, distance_km: calculateTaskDistance(assigned) };
+    });
+  }, [applyLabels]);
+
   const setWpName = (id: string, name: string) => {
     setTask((prev) => ({
       ...prev,
@@ -284,6 +317,8 @@ export default function NewTaskPage() {
             onWaypointMove={moveWaypoint}
             onWaypointClick={setEditingWpId}
             flyToTarget={flyToTarget}
+            libraryWaypoints={libraryWaypoints}
+            onLibraryWaypointClick={addLibraryWaypoint}
           />
 
           {/* Search overlay — top center */}
@@ -631,6 +666,63 @@ export default function NewTaskPage() {
                 </div>
               )}
             </div>
+
+            {/* ── Waypoint Library ──────────────────────────────────── */}
+            {libraryWaypoints.length > 0 && (
+              <div className="sk-card" style={{ padding: "14px 16px" }}>
+                <button
+                  onClick={() => setShowLib((v) => !v)}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                >
+                  <p style={secHead}>기존 웨이포인트 ({libraryWaypoints.length})</p>
+                  <span style={{ fontSize: 11, color: "#0071e3", fontWeight: 500 }}>{showLib ? "접기" : "펼치기"}</span>
+                </button>
+
+                {showLib && (
+                  <div style={{ marginTop: 10 }}>
+                    {/* Search */}
+                    <input
+                      type="text"
+                      value={libQuery}
+                      onChange={(e) => setLibQuery(e.target.value)}
+                      placeholder="웨이포인트 검색..."
+                      className="sk-input"
+                      style={{ fontSize: 13, marginBottom: 8 }}
+                    />
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 200, overflowY: "auto" }}>
+                      {libraryWaypoints
+                        .filter((wp) => !libQuery || wp.name.toLowerCase().includes(libQuery.toLowerCase()))
+                        .map((wp) => {
+                          const alreadyAdded = task.waypoints.some((w) => w.name === wp.name);
+                          return (
+                            <button
+                              key={wp.id}
+                              onClick={() => { if (!alreadyAdded) addLibraryWaypoint(wp); }}
+                              disabled={alreadyAdded}
+                              style={{
+                                display: "flex", alignItems: "center", justifyContent: "space-between",
+                                padding: "8px 10px", borderRadius: 8, background: alreadyAdded ? "rgba(0,0,0,0.03)" : "#fff",
+                                border: "1px solid rgba(0,0,0,0.07)", cursor: alreadyAdded ? "default" : "pointer",
+                                textAlign: "left",
+                              }}
+                            >
+                              <div>
+                                <span style={{ fontSize: 13, fontWeight: 500, color: alreadyAdded ? "rgba(0,0,0,0.3)" : "#1d1d1f" }}>{wp.name}</span>
+                                <span style={{ fontSize: 11, color: "rgba(0,0,0,0.35)", marginLeft: 6 }}>{wp.radius}m</span>
+                              </div>
+                              {alreadyAdded
+                                ? <span style={{ fontSize: 11, color: "rgba(0,0,0,0.3)" }}>추가됨</span>
+                                : <span style={{ fontSize: 11, color: "#0071e3", fontWeight: 600 }}>+ 추가</span>
+                              }
+                            </button>
+                          );
+                        })
+                      }
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* ── Error ─────────────────────────────────────────────── */}
             {error && (
