@@ -53,6 +53,7 @@ export default function TaskDetailPage({ params }: PageProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [showQr, setShowQr] = useState(false);
   const [editingWpId, setEditingWpId] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -69,14 +70,17 @@ export default function TaskDetailPage({ params }: PageProps) {
           name: loaded.name, task_date: loaded.task_date, task_type: loaded.task_type,
           is_public: loaded.is_public, waypoints: loaded.waypoints, distance_km: loaded.distance_km,
         });
+        setIsDirty(false);
       } catch { router.push("/tasks"); }
       finally { setLoading(false); }
     };
     init();
   }, [params, router]);
 
-  const updateField = <K extends keyof TaskInsert>(k: K, v: TaskInsert[K]) =>
+  const updateField = <K extends keyof TaskInsert>(k: K, v: TaskInsert[K]) => {
     setTask((p) => p ? { ...p, [k]: v } : p);
+    setIsDirty(true);
+  };
 
   const addWaypoint = useCallback((lat: number, lon: number) => {
     setTask((prev) => {
@@ -88,6 +92,7 @@ export default function TaskDetailPage({ params }: PageProps) {
       }));
       return { ...prev, waypoints: assigned, distance_km: calculateTaskDistance(assigned) };
     });
+    setIsDirty(true);
     setIsAddMode(false);
   }, []);
 
@@ -97,6 +102,7 @@ export default function TaskDetailPage({ params }: PageProps) {
       const wps = prev.waypoints.map((wp) => wp.id === id ? { ...wp, lat, lon } : wp);
       return { ...prev, waypoints: wps, distance_km: calculateTaskDistance(wps) };
     });
+    setIsDirty(true);
   }, []);
 
   const removeWaypoint = (id: string) => {
@@ -105,17 +111,22 @@ export default function TaskDetailPage({ params }: PageProps) {
       const wps = assignWaypointTypes(prev.waypoints.filter((wp) => wp.id !== id));
       return { ...prev, waypoints: wps, distance_km: calculateTaskDistance(wps) };
     });
+    setIsDirty(true);
   };
 
-  const setWpRadius = (id: string, radius: number) =>
+  const setWpRadius = (id: string, radius: number) => {
     setTask((prev) => {
       if (!prev) return prev;
       const wps = prev.waypoints.map((wp) => wp.id === id ? { ...wp, radius } : wp);
       return { ...prev, waypoints: wps, distance_km: calculateTaskDistance(wps) };
     });
+    setIsDirty(true);
+  };
 
-  const setWpName = (id: string, name: string) =>
+  const setWpName = (id: string, name: string) => {
     setTask((prev) => prev ? { ...prev, waypoints: prev.waypoints.map((wp) => wp.id === id ? { ...wp, name } : wp) } : prev);
+    setIsDirty(true);
+  };
 
   const handleSave = async () => {
     if (!userId || !task || !taskId) return;
@@ -124,6 +135,7 @@ export default function TaskDetailPage({ params }: PageProps) {
     try {
       await updateTask(userId, taskId, task);
       setIsSaved(true);
+      setIsDirty(false);
       setTimeout(() => router.push("/tasks"), 800);
     } catch (e) { setError(e instanceof Error ? e.message : "저장 실패"); }
     finally { setIsSubmitting(false); }
@@ -276,7 +288,7 @@ export default function TaskDetailPage({ params }: PageProps) {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {isOwner && (
-                <button onClick={handleSave} disabled={isSubmitting || isSaved} className="sk-btn-primary" style={{ width: "100%", justifyContent: "center", padding: "12px", fontSize: 15, borderRadius: 12, opacity: isSubmitting ? 0.6 : 1, display: "flex", alignItems: "center", gap: 6 }}>
+                <button onClick={handleSave} disabled={isSubmitting || isSaved || !isDirty} className="sk-btn-primary" style={{ width: "100%", justifyContent: "center", padding: "12px", fontSize: 15, borderRadius: 12, opacity: (isSubmitting || !isDirty) ? 0.4 : 1, display: "flex", alignItems: "center", gap: 6, transition: "opacity 0.2s" }}>
                   {isSaved ? <><CheckCircle2 size={16} strokeWidth={1.5} />저장됨</> : isSubmitting ? "저장 중..." : "변경사항 저장"}
                 </button>
               )}
@@ -323,23 +335,58 @@ export default function TaskDetailPage({ params }: PageProps) {
 function WaypointRow({ wp, isEditing, onToggleEdit, onNameChange, onRadiusChange, onDelete, disabled }: { wp: Waypoint; isEditing: boolean; onToggleEdit: () => void; onNameChange: (n: string) => void; onRadiusChange: (r: number) => void; onDelete: () => void; disabled?: boolean; }) {
   const color = waypointColor(wp.type);
   const typeLabel = wp.type === "D" ? "이륙" : wp.type === "G" ? "도착" : "전환";
+  const [inputVal, setInputVal] = useState(String(wp.radius));
+
+  useEffect(() => { setInputVal(String(wp.radius)); }, [wp.radius]);
+
+  const handleInputCommit = (raw: string) => {
+    const v = parseInt(raw, 10);
+    if (!isNaN(v) && v >= 50 && v <= 50000) onRadiusChange(v);
+    else setInputVal(String(wp.radius));
+  };
+
   return (
     <div style={{ borderRadius: 10, overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}>
       <div onClick={onToggleEdit} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#fff", cursor: "pointer" }}>
         <div style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />
         <span style={{ fontSize: 11, fontWeight: 700, color, letterSpacing: "0.04em", flexShrink: 0 }}>{typeLabel}</span>
         <span style={{ fontSize: 14, fontWeight: 500, color: "#1d1d1f", flex: 1 }}>{wp.name}</span>
-        <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>{wp.radius >= 1000 ? `${wp.radius / 1000}km` : `${wp.radius}m`}</span>
+        <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>{wp.radius >= 1000 ? `${(wp.radius / 1000).toFixed(wp.radius % 1000 === 0 ? 0 : 1)}km` : `${wp.radius}m`}</span>
         {!disabled && <button onClick={(e) => { e.stopPropagation(); onDelete(); }} style={{ padding: 4, background: "none", border: "none", cursor: "pointer", color: "rgba(0,0,0,0.28)", flexShrink: 0 }}><Trash2 size={13} strokeWidth={1.5} /></button>}
       </div>
       {isEditing && !disabled && (
-        <div style={{ padding: "10px 12px", background: "rgba(0,0,0,0.02)", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ padding: "10px 12px", background: "rgba(0,0,0,0.02)", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", gap: 10 }}>
           <div>
             <label style={{ ...label, marginBottom: 4 }}>이름</label>
             <input type="text" value={wp.name} onChange={(e) => onNameChange(e.target.value)} className="sk-input" style={{ fontSize: 13 }} onClick={(e) => e.stopPropagation()} />
           </div>
           <div>
             <label style={{ ...label, marginBottom: 6 }}>반경</label>
+            {/* Slider + number input */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }} onClick={(e) => e.stopPropagation()}>
+              <input
+                type="range"
+                min={50} max={10000} step={50}
+                value={Math.min(wp.radius, 10000)}
+                onChange={(e) => onRadiusChange(Number(e.target.value))}
+                style={{ flex: 1, accentColor: "#0071e3", cursor: "pointer" }}
+              />
+              <div style={{ display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
+                <input
+                  type="number"
+                  value={inputVal}
+                  min={50} max={50000} step={50}
+                  onChange={(e) => setInputVal(e.target.value)}
+                  onBlur={(e) => handleInputCommit(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleInputCommit(inputVal); }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="sk-input"
+                  style={{ width: 72, fontSize: 13, textAlign: "right", padding: "5px 6px" }}
+                />
+                <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>m</span>
+              </div>
+            </div>
+            {/* Preset chips */}
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
               {RADIUS_PRESETS.map((r) => (
                 <button key={r} onClick={(e) => { e.stopPropagation(); onRadiusChange(r); }} style={{ padding: "5px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", background: wp.radius === r ? "#0071e3" : "rgba(0,0,0,0.06)", color: wp.radius === r ? "#fff" : "#1d1d1f", transition: "all 0.1s" }}>
