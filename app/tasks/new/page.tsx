@@ -661,6 +661,7 @@ export default function NewTaskPage() {
                       onNameChange={(n) => setWpName(wp.id, n)}
                       onRadiusChange={(r) => setWpRadius(wp.id, r)}
                       onDelete={() => removeWaypoint(wp.id)}
+                      onReuse={() => { addLibraryWaypoint(wp); setEditingWpId(null); }}
                     />
                   ))}
                 </div>
@@ -805,7 +806,7 @@ export default function NewTaskPage() {
 
 // ── Waypoint row component ───────────────────────────────────────────────────
 function WaypointRow({
-  wp, index, total, isEditing, onToggleEdit, onNameChange, onRadiusChange, onDelete,
+  wp, index, total, isEditing, onToggleEdit, onNameChange, onRadiusChange, onDelete, onReuse,
 }: {
   wp: Waypoint;
   index: number;
@@ -815,6 +816,7 @@ function WaypointRow({
   onNameChange: (n: string) => void;
   onRadiusChange: (r: number) => void;
   onDelete: () => void;
+  onReuse: () => void;
 }) {
   const color = waypointRoleColor(index, total);
   const roleLabel = waypointRoleLabel(index, total);
@@ -928,6 +930,20 @@ function WaypointRow({
               <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)", flexShrink: 0 }}>m</span>
             </div>
           </div>
+
+          {/* Reuse — add same location again as next waypoint */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onReuse(); }}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              width: "100%", padding: "9px 0", borderRadius: 8, border: "1.5px dashed rgba(0,113,227,0.35)",
+              background: "rgba(0,113,227,0.04)", color: "#0071e3",
+              fontSize: 13, fontWeight: 500, cursor: "pointer",
+            }}
+          >
+            <Plus size={13} strokeWidth={2.5} />
+            이 위치를 다음 턴포인트로 재사용
+          </button>
         </div>
       )}
     </div>
