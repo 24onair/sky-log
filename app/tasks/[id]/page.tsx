@@ -83,19 +83,28 @@ export default function TaskDetailPage({ params }: PageProps) {
     setIsDirty(true);
   };
 
+  const isAutoName = (name: string) =>
+    !name ||
+    ["Take Off", "SSS", "ESS", "Landing"].includes(name) ||
+    /^TurnPoint\d+$/.test(name) ||
+    /^[DGT]\d{2}$/.test(name);
+
+  const applyLabels = useCallback((wps: Waypoint[]) =>
+    wps.map((wp, i) => ({
+      ...wp,
+      name: isAutoName(wp.name) ? autoName(wp.type, i) : wp.name,
+    })), []);
+
   const addWaypoint = useCallback((lat: number, lon: number) => {
     setTask((prev) => {
       if (!prev) return prev;
       const draft = [...prev.waypoints, { id: uuid(), name: "", lat, lon, altitude: 0, radius: 400, type: "T" as const }];
-      const assigned = assignWaypointTypes(draft).map((wp, i) => ({
-        ...wp, name: wp.name || autoName(wp.type, i),
-        radius: wp.radius === 400 && wp.type === "T" ? defaultRadius("T") : wp.radius,
-      }));
+      const assigned = applyLabels(assignWaypointTypes(draft));
       return { ...prev, waypoints: assigned, distance_km: calculateTaskDistance(assigned) };
     });
     setIsDirty(true);
     setIsAddMode(false);
-  }, []);
+  }, [applyLabels]);
 
   const moveWaypoint = useCallback((id: string, lat: number, lon: number) => {
     setTask((prev) => {
@@ -109,7 +118,7 @@ export default function TaskDetailPage({ params }: PageProps) {
   const removeWaypoint = (id: string) => {
     setTask((prev) => {
       if (!prev) return prev;
-      const wps = assignWaypointTypes(prev.waypoints.filter((wp) => wp.id !== id));
+      const wps = applyLabels(assignWaypointTypes(prev.waypoints.filter((wp) => wp.id !== id)));
       return { ...prev, waypoints: wps, distance_km: calculateTaskDistance(wps) };
     });
     setIsDirty(true);
