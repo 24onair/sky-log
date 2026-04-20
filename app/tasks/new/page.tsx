@@ -311,6 +311,12 @@ export default function NewTaskPage() {
 
         {/* ══ MAP AREA ══════════════════════════════════════════════════ */}
         <div className="task-map-area" style={{ flex: 1, position: "relative", minHeight: "40vh" }}>
+
+          {/* Banner overlay — top of map */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10, padding: "8px 10px" }}>
+            <BannerAd />
+          </div>
+
           <TaskMap
             waypoints={task.waypoints}
             isAddMode={isAddMode}

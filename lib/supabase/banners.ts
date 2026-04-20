@@ -38,6 +38,7 @@ export async function uploadBannerImage(file: File): Promise<string> {
 }
 
 export async function createBanner(banner: BannerInsert): Promise<Banner> {
+  console.log("[createBanner] calling API route", banner);
   const res = await fetch("/api/admin/banners", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
