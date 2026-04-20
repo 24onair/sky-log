@@ -40,12 +40,16 @@ export async function GET() {
 
 export async function POST(req: Request) {
   if (!await verifyAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const body = await req.json();
-  const res = await sbFetch("banners", "POST", body);
+  const { image_url, link_url, is_active, sort_order } = await req.json();
+  const res = await sbFetch("rpc/admin_insert_banner", "POST", {
+    p_image_url: image_url,
+    p_link_url: link_url,
+    p_is_active: is_active,
+    p_sort_order: sort_order,
+  });
   const text = await res.text();
   if (!res.ok) return NextResponse.json({ error: text }, { status: 500 });
-  const rows = JSON.parse(text);
-  return NextResponse.json(Array.isArray(rows) ? rows[0] : rows);
+  return NextResponse.json(JSON.parse(text));
 }
 
 export async function PATCH(req: Request) {
