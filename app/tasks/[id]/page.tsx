@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { v4 as uuid } from "uuid";
 import { getUser } from "@/lib/supabase/auth";
-import { getTaskById, updateTask, deleteTask } from "@/lib/supabase/tasks";
+import { getTaskById, updateTask, deleteTask, copyTask } from "@/lib/supabase/tasks";
 import { Task, Waypoint, TaskType, TaskInsert } from "@/lib/schemas/task";
 import {
   calculateTaskDistance, assignWaypointTypes, defaultRadius,
@@ -20,7 +20,7 @@ const TaskElevationProfile = dynamic(
 import {
   ChevronLeft, Plus, Minus, Trash2, Lock, Globe,
   Navigation, Download, QrCode, ChevronUp, ChevronDown,
-  MapPin, CheckCircle2, Pencil,
+  MapPin, CheckCircle2, Pencil, Copy,
 } from "lucide-react";
 import QRCodeLib from "qrcode";
 
@@ -54,6 +54,7 @@ export default function TaskDetailPage({ params }: PageProps) {
   const [showQr, setShowQr] = useState(false);
   const [editingWpId, setEditingWpId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -145,6 +146,16 @@ export default function TaskDetailPage({ params }: PageProps) {
     if (!userId || !confirm("타스크를 삭제하시겠습니까?")) return;
     try { await deleteTask(userId, taskId); router.push("/tasks"); }
     catch (e) { setError(e instanceof Error ? e.message : "삭제 실패"); }
+  };
+
+  const handleCopy = async () => {
+    if (!userId || !taskId) return;
+    setIsCopying(true); setError(null);
+    try {
+      const copied = await copyTask(userId, taskId);
+      router.push(`/tasks/${copied.id}`);
+    } catch (e) { setError(e instanceof Error ? e.message : "복사 실패"); }
+    finally { setIsCopying(false); }
   };
 
   const handleShowQR = async () => {
@@ -306,6 +317,10 @@ export default function TaskDetailPage({ params }: PageProps) {
                   </button>
                 </div>
               )}
+
+              <button onClick={handleCopy} disabled={isCopying} style={{ width: "100%", padding: "9px", borderRadius: 10, fontSize: 13, background: "rgba(0,113,227,0.06)", color: "#0071e3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, opacity: isCopying ? 0.5 : 1 }}>
+                <Copy size={13} strokeWidth={1.5} />{isCopying ? "복사 중..." : "타스크 복사"}
+              </button>
 
               {isOwner && (
                 <button onClick={handleDelete} style={{ width: "100%", padding: "9px", borderRadius: 10, fontSize: 13, background: "rgba(255,59,48,0.06)", color: "#ff3b30", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>

@@ -62,3 +62,18 @@ export async function deleteTask(userId: string, taskId: string): Promise<void> 
     .eq("user_id", userId);
   if (error) throw new Error(error.message);
 }
+
+export async function copyTask(userId: string, taskId: string): Promise<Task> {
+  const source = await getTaskById(userId, taskId);
+  if (!source) throw new Error("타스크를 찾을 수 없습니다");
+  const { v4: uuid } = await import("uuid");
+  const newTask: TaskInsert = {
+    name: `${source.name} (복사)`,
+    task_date: new Date().toISOString().slice(0, 10),
+    task_type: source.task_type,
+    is_public: false,
+    waypoints: source.waypoints.map((wp) => ({ ...wp, id: uuid() })),
+    distance_km: source.distance_km,
+  };
+  return createTask(userId, newTask);
+}
