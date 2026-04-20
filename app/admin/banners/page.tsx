@@ -142,7 +142,10 @@ export default function AdminBannersPage() {
 
           {/* Image upload */}
           <div style={{ marginBottom: 12 }}>
-            <label style={label}>이미지 (JPG, GIF)</label>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 5 }}>
+              <label style={{ ...label, marginBottom: 0 }}>이미지 (JPG, GIF)</label>
+              <span style={{ fontSize: 11, color: "rgba(0,0,0,0.36)" }}>권장 사이즈: <strong style={{ color: "rgba(0,0,0,0.5)" }}>760 × 120 px</strong> · 최소 380 × 60 px · 가로 6:1 비율</span>
+            </div>
             <div
               onClick={() => fileRef.current?.click()}
               onDragOver={(e) => e.preventDefault()}
