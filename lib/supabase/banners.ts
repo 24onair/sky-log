@@ -38,24 +38,30 @@ export async function uploadBannerImage(file: File): Promise<string> {
 }
 
 export async function createBanner(banner: BannerInsert): Promise<Banner> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("banners")
-    .insert(banner)
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  return data as Banner;
+  const res = await fetch("/api/admin/banners", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(banner),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? "등록 실패");
+  return json as Banner;
 }
 
 export async function updateBanner(id: string, updates: BannerUpdate): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase.from("banners").update(updates).eq("id", id);
-  if (error) throw new Error(error.message);
+  const res = await fetch("/api/admin/banners", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, ...updates }),
+  });
+  if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? "업데이트 실패"); }
 }
 
 export async function deleteBanner(id: string): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase.from("banners").delete().eq("id", id);
-  if (error) throw new Error(error.message);
+  const res = await fetch("/api/admin/banners", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+  if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? "삭제 실패"); }
 }
