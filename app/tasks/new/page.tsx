@@ -33,6 +33,7 @@ import {
   MapPin, CheckCircle2, Search, X,
 } from "lucide-react";
 import QRCodeLib from "qrcode";
+import { BannerAd } from "@/components/BannerAd";
 
 const TaskMap = dynamic(
   () => import("@/components/TaskMap").then((m) => m.TaskMap),
@@ -770,6 +771,8 @@ export default function NewTaskPage() {
                 </div>
               )}
             </div>
+
+            <BannerAd />
           </div>
         </div>
       </div>
