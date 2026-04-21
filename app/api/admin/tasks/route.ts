@@ -15,13 +15,25 @@ function sbFetch(path: string, method: string, body?: unknown) {
 }
 
 export async function GET() {
-  const res = await sbFetch(
-    "tasks?select=id,name,task_date,task_type,is_public,distance_km,created_at,user_id,profiles!tasks_user_id_fkey(email,name)&order=created_at.desc",
+  const tasksRes = await sbFetch(
+    "tasks?select=id,name,task_date,task_type,is_public,distance_km,created_at,user_id&order=created_at.desc",
     "GET"
   );
-  const text = await res.text();
-  if (!res.ok) return NextResponse.json({ error: text }, { status: 500 });
-  return NextResponse.json(JSON.parse(text));
+  const tasksText = await tasksRes.text();
+  if (!tasksRes.ok) return NextResponse.json({ error: tasksText }, { status: 500 });
+  const tasks = JSON.parse(tasksText);
+
+  const profilesRes = await sbFetch("profiles?select=id,email,name", "GET");
+  const profiles: { id: string; email: string; name: string }[] =
+    profilesRes.ok ? JSON.parse(await profilesRes.text()) : [];
+
+  const profileMap = Object.fromEntries(profiles.map((p) => [p.id, p]));
+  const merged = tasks.map((t: { user_id: string }) => ({
+    ...t,
+    profiles: profileMap[t.user_id] ?? null,
+  }));
+
+  return NextResponse.json(merged);
 }
 
 export async function DELETE(req: Request) {
