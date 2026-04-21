@@ -288,6 +288,7 @@ export default function NewTaskPage() {
         @media (max-width: 767px) {
           .task-sidebar.collapsed { max-height: 88px !important; }
           .task-sidebar.expanded { max-height: 62vh !important; }
+          .map-banner-overlay { display: none !important; }
         }
         .radius-slider {
           -webkit-appearance: none; appearance: none;
@@ -312,8 +313,8 @@ export default function NewTaskPage() {
         {/* ══ MAP AREA ══════════════════════════════════════════════════ */}
         <div className="task-map-area" style={{ flex: 1, position: "relative", minHeight: "40vh" }}>
 
-          {/* Banner overlay — top of map */}
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10, padding: "8px 10px" }}>
+          {/* Banner overlay — top of map (desktop only) */}
+          <div className="map-banner-overlay" style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 9, padding: "8px 10px" }}>
             <BannerAd />
           </div>
 
@@ -560,6 +561,8 @@ export default function NewTaskPage() {
 
           <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
 
+            <div className="sidebar-banner"><BannerAd /></div>
+
             {/* ── Task meta ─────────────────────────────────────────── */}
             <div className="sk-card" style={{ padding: "14px 16px" }}>
               <p style={secHead}>타스크 정보</p>
@@ -778,7 +781,6 @@ export default function NewTaskPage() {
               )}
             </div>
 
-            <BannerAd />
           </div>
         </div>
       </div>
