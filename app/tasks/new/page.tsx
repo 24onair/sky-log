@@ -288,6 +288,10 @@ export default function NewTaskPage() {
         @media (max-width: 767px) {
           .task-sidebar.collapsed { max-height: 88px !important; }
           .task-sidebar.expanded { max-height: 62vh !important; }
+          .map-search-bar { top: 148px !important; }
+          .sidebar-banner { display: none !important; }
+        }
+        @media (min-width: 768px) {
           .map-banner-overlay { display: none !important; }
         }
         .radius-slider {
@@ -328,7 +332,7 @@ export default function NewTaskPage() {
           />
 
           {/* Search overlay — top center */}
-          <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 10, width: "min(300px, calc(100% - 200px))" }}>
+          <div className="map-search-bar" style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 10, width: "min(300px, calc(100% - 200px))" }}>
             <div style={{ position: "relative" }}>
               <div style={{
                 display: "flex", alignItems: "center",
