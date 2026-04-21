@@ -288,10 +288,10 @@ export default function NewTaskPage() {
         @media (max-width: 767px) {
           .task-sidebar.collapsed { max-height: 88px !important; }
           .task-sidebar.expanded { max-height: 62vh !important; }
-          .map-search-bar { top: 148px !important; }
           .sidebar-banner { display: none !important; }
         }
         @media (min-width: 768px) {
+          .mobile-map-banner { display: none !important; }
           .map-banner-overlay { display: none !important; }
         }
         .radius-slider {
@@ -314,14 +314,13 @@ export default function NewTaskPage() {
 
       <div className="task-layout" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}>
 
+        {/* Mobile-only banner strip above map */}
+        <div className="mobile-map-banner" style={{ padding: "6px 10px", background: "#000" }}>
+          <BannerAd />
+        </div>
+
         {/* ══ MAP AREA ══════════════════════════════════════════════════ */}
         <div className="task-map-area" style={{ flex: 1, position: "relative", minHeight: "40vh" }}>
-
-          {/* Banner overlay — top of map (desktop only) */}
-          <div className="map-banner-overlay" style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 9, padding: "8px 10px" }}>
-            <BannerAd />
-          </div>
-
           <TaskMap
             waypoints={task.waypoints}
             isAddMode={isAddMode}
@@ -332,7 +331,7 @@ export default function NewTaskPage() {
           />
 
           {/* Search overlay — top center */}
-          <div className="map-search-bar" style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 10, width: "min(300px, calc(100% - 200px))" }}>
+          <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 10, width: "min(300px, calc(100% - 200px))" }}>
             <div style={{ position: "relative" }}>
               <div style={{
                 display: "flex", alignItems: "center",
