@@ -68,3 +68,9 @@ export async function getUser() {
   const { data: { user } } = await supabase.auth.getUser();
   return user;
 }
+
+export async function getProfile(userId: string) {
+  const supabase = createClient();
+  const { data } = await supabase.from("profiles").select("is_active").eq("id", userId).single();
+  return data as { is_active: boolean | null } | null;
+}

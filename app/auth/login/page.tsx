@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "@/lib/supabase/auth";
+import { signIn, signOut, getProfile } from "@/lib/supabase/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,7 +31,13 @@ export default function LoginPage() {
     try {
       setIsSubmitting(true);
       setError(null);
-      await signIn(form.email, form.password);
+      const { user } = await signIn(form.email, form.password);
+      const profile = user ? await getProfile(user.id) : null;
+      if (!profile?.is_active) {
+        await signOut();
+        setError("관리자 승인 대기 중입니다. 승인 후 로그인하실 수 있습니다.");
+        return;
+      }
       router.push("/logbook");
       router.refresh();
     } catch (err) {

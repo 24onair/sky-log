@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signUp } from "@/lib/supabase/auth";
-import { CheckCircle } from "lucide-react";
+import { Clock } from "lucide-react";
 
 const WING_GRADES = ["EN-A", "EN-B", "EN-C", "EN-D", "CCC"];
 
@@ -57,10 +57,13 @@ export default function SignUpPage() {
     return (
       <div style={{ minHeight: "calc(100vh - 48px)", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <div className="sk-card" style={{ padding: 56, maxWidth: 420, width: "100%", textAlign: "center" }}>
-          <CheckCircle size={56} strokeWidth={1.5} style={{ color: "#34c759", margin: "0 auto 24px" }} />
-          <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.5px", marginBottom: 14, color: "#1E2026" }}>이메일을 확인해주세요</h2>
-          <p style={{ fontSize: 15, color: "#848E9C", lineHeight: 1.6, marginBottom: 32, fontWeight: 500 }}>
-            <strong style={{ color: "#1E2026" }}>{form.email}</strong>로 인증 링크를 보냈습니다.
+          <Clock size={56} strokeWidth={1.5} style={{ color: "#F0B90B", margin: "0 auto 24px" }} />
+          <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.5px", marginBottom: 14, color: "#1E2026" }}>신청이 완료되었습니다</h2>
+          <p style={{ fontSize: 15, color: "#848E9C", lineHeight: 1.6, marginBottom: 8, fontWeight: 500 }}>
+            관리자 승인 후 로그인하실 수 있습니다.
+          </p>
+          <p style={{ fontSize: 14, color: "#848E9C", lineHeight: 1.6, marginBottom: 32 }}>
+            승인 관련 문의는 관리자에게 연락해주세요.
           </p>
           <Link href="/auth/login" className="sk-btn-primary" style={{ display: "inline-flex", justifyContent: "center", padding: "12px 32px", fontSize: 15, fontWeight: 600 }}>
             로그인 페이지로
