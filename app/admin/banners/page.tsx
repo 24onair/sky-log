@@ -128,8 +128,8 @@ export default function AdminBannersPage() {
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Link href="/tasks" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 500, color: "#1d1d1f", textDecoration: "none" }}>
-            <ChevronLeft size={15} strokeWidth={2} />타스크
+          <Link href="/admin" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 500, color: "#1d1d1f", textDecoration: "none" }}>
+            <ChevronLeft size={15} strokeWidth={2} />관리자
           </Link>
           <span style={{ color: "rgba(0,0,0,0.2)", fontSize: 13 }}>/</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f" }}>배너 광고 관리</span>
