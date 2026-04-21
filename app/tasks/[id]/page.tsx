@@ -63,8 +63,13 @@ export default function TaskDetailPage({ params }: PageProps) {
       const user = await getUser();
       if (!user) { router.push("/auth/login"); return; }
       setUserId(user.id);
+      const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com";
       try {
-        const loaded = await getTaskById(user.id, p.id);
+        let loaded = await getTaskById(user.id, p.id);
+        if (!loaded && user.email === ADMIN_EMAIL) {
+          const res = await fetch(`/api/admin/tasks/${p.id}`);
+          if (res.ok) loaded = await res.json();
+        }
         if (!loaded) { router.push("/tasks"); return; }
         setIsOwner(loaded.user_id === user.id);
         setTask({
