@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getUser } from "@/lib/supabase/auth";
-import { ChevronLeft, Image, Users } from "lucide-react";
+import { ChevronLeft, Image, Users, MapPin } from "lucide-react";
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com";
 
@@ -12,6 +12,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const [taskCount, setTaskCount] = useState<number | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -26,6 +27,10 @@ export default function AdminPage() {
           const data = await res.json();
           setPendingCount(data.filter((p: { is_active: boolean | null }) => !p.is_active).length);
         }
+      } catch { /* ignore */ }
+      try {
+        const res = await fetch("/api/admin/tasks");
+        if (res.ok) { const data = await res.json(); setTaskCount(data.length); }
       } catch { /* ignore */ }
     };
     init();
@@ -66,6 +71,21 @@ export default function AdminPage() {
                 <span style={{ background: "#ff3b30", color: "#fff", fontSize: 12, fontWeight: 700, borderRadius: 12, padding: "3px 9px" }}>
                   {pendingCount}
                 </span>
+              )}
+            </div>
+          </Link>
+
+          <Link href="/admin/tasks" style={{ textDecoration: "none" }}>
+            <div className="sk-card" style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(255,149,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <MapPin size={20} strokeWidth={1.5} style={{ color: "#ff9500" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#1d1d1f", margin: 0 }}>타스크 관리</p>
+                <p style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", margin: "2px 0 0" }}>전체 타스크 조회 및 삭제</p>
+              </div>
+              {taskCount !== null && (
+                <span style={{ fontSize: 12, color: "rgba(0,0,0,0.35)", fontWeight: 500 }}>{taskCount}개</span>
               )}
             </div>
           </Link>
