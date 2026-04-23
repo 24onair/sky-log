@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getUser } from "@/lib/supabase/auth";
-import { ChevronLeft, UserCheck, UserX, User } from "lucide-react";
+import { ChevronLeft, UserCheck, UserX, User, Trash2 } from "lucide-react";
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com";
 
@@ -29,6 +29,7 @@ export default function AdminMembersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "active">("all");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -67,6 +68,24 @@ export default function AdminMembersPage() {
       setProfiles((prev) => prev.map((p) => p.id === profile.id ? { ...p, is_active: next } : p));
     } catch (e) {
       setError(e instanceof Error ? e.message : "업데이트 실패");
+    }
+  };
+
+  const handleDelete = async (profile: Profile) => {
+    if (!confirm(`"${profile.name}" (${profile.email}) 회원을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) return;
+    setDeletingId(profile.id);
+    try {
+      const res = await fetch("/api/admin/members", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: profile.id }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? "삭제 실패"); }
+      setProfiles((prev) => prev.filter((p) => p.id !== profile.id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "삭제 실패");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -188,6 +207,20 @@ export default function AdminMembersPage() {
                       ? <><UserX size={13} strokeWidth={1.5} />비활성</>
                       : <><UserCheck size={13} strokeWidth={1.5} />승인</>
                     }
+                  </button>
+
+                  {/* Delete button */}
+                  <button
+                    onClick={() => handleDelete(p)}
+                    disabled={deletingId === p.id}
+                    title="회원 삭제"
+                    style={{
+                      flexShrink: 0, padding: 7, borderRadius: 8, border: "none", cursor: "pointer",
+                      background: "rgba(255,59,48,0.07)", display: "flex", alignItems: "center",
+                      opacity: deletingId === p.id ? 0.5 : 1,
+                    }}
+                  >
+                    <Trash2 size={14} strokeWidth={1.5} style={{ color: "#ff3b30" }} />
                   </button>
                 </div>
               ))}

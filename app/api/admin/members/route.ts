@@ -27,3 +27,18 @@ export async function PATCH(req: Request) {
   if (!res.ok) return NextResponse.json({ error: await res.text() }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
+
+export async function DELETE(req: Request) {
+  const { id } = await req.json();
+  // auth.users 삭제 → profiles는 cascade로 자동 삭제
+  const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users/${id}`;
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "apikey": process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      "Authorization": `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+    },
+  });
+  if (!res.ok) return NextResponse.json({ error: await res.text() }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
