@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { getUser, signOut } from "@/lib/supabase/auth";
 import { hasUnsavedChanges, getUnsavedMessage } from "@/lib/unsavedChanges";
-import { Wind, LogOut, BookOpen, Navigation, Plus } from "lucide-react";
+import { Wind, LogOut, BookOpen, Navigation, Plus, Shield, Users, MapPin } from "lucide-react";
 
 export function Navbar() {
   const router = useRouter();
@@ -22,9 +22,12 @@ export function Navbar() {
     router.push("/auth/login");
   };
 
+  const ADMIN_EMAIL = "24onair@gmail.com";
+  const isAdmin = user?.email === ADMIN_EMAIL;
   const isAuth = pathname?.startsWith("/auth");
   const onLogbook = pathname?.startsWith("/logbook");
   const onTasks = pathname?.startsWith("/tasks");
+  const onAdmin = pathname?.startsWith("/admin");
 
   const navLink = (href: string, icon: React.ReactNode, label: string, active: boolean) => (
     <Link
@@ -70,6 +73,15 @@ export function Navbar() {
             >
               {navLink("/logbook", <BookOpen size={14} strokeWidth={1.5} />, "로그북", !!onLogbook)}
               {navLink("/tasks", <Navigation size={14} strokeWidth={1.5} />, "타스크", !!onTasks)}
+              {isAdmin && (
+                <div style={{ display: "flex", alignItems: "center", gap: 0, marginLeft: 8, paddingLeft: 12, borderLeft: "1px solid rgba(0,0,0,0.1)" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(0,0,0,0.25)", letterSpacing: "0.06em", marginRight: 6, display: "flex", alignItems: "center", gap: 3 }}>
+                    <Shield size={11} strokeWidth={2} />ADMIN
+                  </span>
+                  {navLink("/admin/tasks", <MapPin size={14} strokeWidth={1.5} />, "타스크관리", onAdmin && pathname?.startsWith("/admin/tasks"))}
+                  {navLink("/admin/members", <Users size={14} strokeWidth={1.5} />, "회원관리", onAdmin && pathname?.startsWith("/admin/members"))}
+                </div>
+              )}
             </div>
           )}
 
@@ -144,6 +156,9 @@ export function Navbar() {
           <MobileTab href="/tasks" icon={<Navigation size={20} strokeWidth={1.5} />} label="타스크" active={!!onTasks} onNavigate={setConfirmNav} />
           <MobileTab href="/logbook/new" icon={<Plus size={22} strokeWidth={2} />} label="새 비행" accent onNavigate={setConfirmNav} />
           <MobileTab href="/tasks/new" icon={<Navigation size={18} strokeWidth={1.5} />} label="새 타스크" onNavigate={setConfirmNav} />
+          {isAdmin && (
+            <MobileTab href="/admin" icon={<Shield size={18} strokeWidth={1.5} />} label="관리자" active={!!onAdmin} onNavigate={setConfirmNav} />
+          )}
         </div>
       )}
 
