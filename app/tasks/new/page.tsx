@@ -169,8 +169,9 @@ export default function NewTaskPage() {
   };
 
   const handleSelectWpResult = (wp: Waypoint) => {
+    addLibraryWaypoint(wp);
     setFlyToTarget({ center: [wp.lon, wp.lat], zoom: 14 });
-    setSearchQuery(wp.name);
+    setSearchQuery("");
     setSearchResults([]);
     setWpSearchResults([]);
   };
