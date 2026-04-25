@@ -80,6 +80,7 @@ export default function NewTaskPage() {
   // Search
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<GeoResult[]>([]);
+  const [wpSearchResults, setWpSearchResults] = useState<Waypoint[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [flyToTarget, setFlyToTarget] = useState<{ center: [number, number]; zoom: number } | null>(null);
@@ -119,13 +120,27 @@ export default function NewTaskPage() {
   const handleSearchInput = (q: string) => {
     setSearchQuery(q);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    if (!q.trim()) { setSearchResults([]); return; }
+    if (!q.trim()) { setSearchResults([]); setWpSearchResults([]); return; }
 
+    // Waypoint search — synchronous, from active set + library (deduplicated by name)
+    const lower = q.toLowerCase();
+    const seen = new Set<string>();
+    const wpMatches: Waypoint[] = [];
+    for (const wp of [...(activeSet?.waypoints ?? []), ...libraryWaypoints]) {
+      if (!seen.has(wp.name) && wp.name.toLowerCase().includes(lower)) {
+        seen.add(wp.name);
+        wpMatches.push(wp);
+        if (wpMatches.length >= 5) break;
+      }
+    }
+    setWpSearchResults(wpMatches);
+
+    // Geocoding search — debounced
     searchTimerRef.current = setTimeout(async () => {
       setIsSearching(true);
       try {
         const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${token}&language=ko&limit=6&proximity=128.0,36.5`;
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${token}&language=ko&limit=5&proximity=128.0,36.5`;
         const res = await fetch(url);
         const data = await res.json();
         const results: GeoResult[] = (data.features ?? []).map((f: { id: string; place_name: string; center: [number, number] }) => ({
@@ -134,8 +149,7 @@ export default function NewTaskPage() {
           center: f.center,
         }));
         setSearchResults(results);
-        // Auto-fly when exactly one result
-        if (results.length === 1) {
+        if (results.length === 1 && wpMatches.length === 0) {
           setFlyToTarget({ center: results[0].center, zoom: 13 });
           setSearchResults([]);
         }
@@ -151,11 +165,20 @@ export default function NewTaskPage() {
     setFlyToTarget({ center: r.center, zoom: 13 });
     setSearchQuery(r.place_name.split(",")[0].trim());
     setSearchResults([]);
+    setWpSearchResults([]);
+  };
+
+  const handleSelectWpResult = (wp: Waypoint) => {
+    setFlyToTarget({ center: [wp.lon, wp.lat], zoom: 14 });
+    setSearchQuery(wp.name);
+    setSearchResults([]);
+    setWpSearchResults([]);
   };
 
   const clearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
+    setWpSearchResults([]);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
   };
 
@@ -382,35 +405,73 @@ export default function NewTaskPage() {
               </div>
 
               {/* Results dropdown */}
-              {searchResults.length > 0 && searchOpen && (
+              {(wpSearchResults.length > 0 || searchResults.length > 0) && searchOpen && (
                 <div style={{
                   position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0,
                   background: "#fff", borderRadius: 12,
                   boxShadow: "0 6px 24px rgba(0,0,0,0.14)",
                   overflow: "hidden", zIndex: 20,
                 }}>
-                  {searchResults.map((r, i) => {
-                    const [main, ...rest] = r.place_name.split(",");
-                    return (
-                      <button
-                        key={r.id}
-                        onMouseDown={() => handleSelectResult(r)}
-                        style={{
-                          display: "flex", flexDirection: "column", alignItems: "flex-start",
-                          width: "100%", padding: "10px 14px", background: "none", border: "none",
-                          cursor: "pointer", textAlign: "left",
-                          borderBottom: i < searchResults.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,113,227,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
-                      >
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f" }}>{main.trim()}</span>
-                        {rest.length > 0 && (
-                          <span style={{ fontSize: 11, color: "rgba(0,0,0,0.4)", marginTop: 1 }}>{rest.join(",").trim()}</span>
-                        )}
-                      </button>
-                    );
-                  })}
+                  {/* Waypoint results */}
+                  {wpSearchResults.length > 0 && (
+                    <>
+                      <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 700, color: "rgba(0,0,0,0.3)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                        웨이포인트
+                      </div>
+                      {wpSearchResults.map((wp, i) => (
+                        <button
+                          key={wp.id}
+                          onMouseDown={() => handleSelectWpResult(wp)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 8,
+                            width: "100%", padding: "8px 14px", background: "none", border: "none",
+                            cursor: "pointer", textAlign: "left",
+                            borderBottom: i < wpSearchResults.length - 1 || searchResults.length > 0 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,113,227,0.05)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                        >
+                          <MapPin size={12} strokeWidth={1.8} style={{ color: "#0071e3", flexShrink: 0 }} />
+                          <div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f" }}>{wp.name}</span>
+                            <span style={{ fontSize: 11, color: "rgba(0,0,0,0.35)", marginLeft: 6 }}>{wp.radius}m</span>
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                  {/* Geocoding results */}
+                  {searchResults.length > 0 && (
+                    <>
+                      {wpSearchResults.length > 0 && (
+                        <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 700, color: "rgba(0,0,0,0.3)", letterSpacing: "0.08em", textTransform: "uppercase", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                          지명
+                        </div>
+                      )}
+                      {searchResults.map((r, i) => {
+                        const [main, ...rest] = r.place_name.split(",");
+                        return (
+                          <button
+                            key={r.id}
+                            onMouseDown={() => handleSelectResult(r)}
+                            style={{
+                              display: "flex", flexDirection: "column", alignItems: "flex-start",
+                              width: "100%", padding: "10px 14px", background: "none", border: "none",
+                              cursor: "pointer", textAlign: "left",
+                              borderBottom: i < searchResults.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,113,227,0.05)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                          >
+                            <span style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f" }}>{main.trim()}</span>
+                            {rest.length > 0 && (
+                              <span style={{ fontSize: 11, color: "rgba(0,0,0,0.4)", marginTop: 1 }}>{rest.join(",").trim()}</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
                 </div>
               )}
             </div>
