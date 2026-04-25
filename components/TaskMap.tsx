@@ -13,6 +13,7 @@ interface TaskMapProps {
   onWaypointClick?: (id: string) => void;
   flyToTarget?: { center: [number, number]; zoom: number } | null;
   referenceWaypoints?: Waypoint[]; // waypoint set overlay (gray, non-draggable)
+  onRefWaypointClick?: (wp: Waypoint) => void; // click ref marker → add to task
 }
 
 export function TaskMap({
@@ -23,6 +24,7 @@ export function TaskMap({
   onWaypointClick,
   flyToTarget,
   referenceWaypoints = [],
+  onRefWaypointClick,
 }: TaskMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -228,6 +230,7 @@ export function TaskMap({
 
     wps.forEach((wp) => {
       const el = document.createElement("div");
+      const clickable = !!onRefWaypointClick;
       el.style.cssText = `
         min-width: 22px; height: 22px; padding: 0 4px;
         background: #8e8e93; border: 2px solid white; border-radius: 11px;
@@ -235,14 +238,23 @@ export function TaskMap({
         display: flex; align-items: center; justify-content: center;
         font-size: 8px; font-weight: 700; color: white;
         font-family: -apple-system, sans-serif; user-select: none;
-        cursor: default; pointer-events: none;
+        cursor: ${clickable ? "pointer" : "default"};
+        transition: background 0.12s, transform 0.12s;
       `;
-      el.textContent = wp.name.slice(0, 3);
-      el.title = wp.name;
+      el.textContent = wp.name.slice(0, 4);
+      el.title = clickable ? `${wp.name} — 클릭하여 추가` : wp.name;
+      if (clickable) {
+        el.addEventListener("mouseenter", () => { el.style.background = "#0071e3"; el.style.transform = "scale(1.15)"; });
+        el.addEventListener("mouseleave", () => { el.style.background = "#8e8e93"; el.style.transform = "scale(1)"; });
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          onRefWaypointClick(wp);
+        });
+      }
       const mk = new mapboxgl.Marker({ element: el }).setLngLat([wp.lon, wp.lat]).addTo(m);
       refMarkersRef.current.push(mk);
     });
-  }, []);
+  }, [onRefWaypointClick]);
 
   // Initialize map
   useEffect(() => {
