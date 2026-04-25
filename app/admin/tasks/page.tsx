@@ -30,6 +30,7 @@ export default function AdminTasksPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -53,6 +54,23 @@ export default function AdminTasksPage() {
       setError(e instanceof Error ? e.message : "로드 실패");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTogglePublic = async (task: AdminTask) => {
+    setTogglingId(task.id);
+    try {
+      const res = await fetch("/api/admin/tasks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: task.id, is_public: !task.is_public }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? "변경 실패"); }
+      setTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, is_public: !task.is_public } : t));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "변경 실패");
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -137,13 +155,23 @@ export default function AdminTasksPage() {
                     display: "flex", alignItems: "center", gap: 10,
                   }}
                 >
-                  {/* Public/Private icon */}
-                  <div style={{ flexShrink: 0 }}>
+                  {/* Public/Private toggle */}
+                  <button
+                    onClick={() => handleTogglePublic(t)}
+                    disabled={togglingId === t.id}
+                    title={t.is_public ? "공개 → 비공개로 변경" : "비공개 → 공개로 변경"}
+                    style={{
+                      flexShrink: 0, padding: 6, borderRadius: 6, border: "none",
+                      background: t.is_public ? "rgba(0,113,227,0.08)" : "rgba(0,0,0,0.05)",
+                      cursor: "pointer", display: "flex", alignItems: "center",
+                      opacity: togglingId === t.id ? 0.5 : 1, transition: "opacity 0.15s",
+                    }}
+                  >
                     {t.is_public
                       ? <Globe size={14} strokeWidth={1.5} style={{ color: "#0071e3" }} />
-                      : <Lock size={14} strokeWidth={1.5} style={{ color: "rgba(0,0,0,0.25)" }} />
+                      : <Lock size={14} strokeWidth={1.5} style={{ color: "rgba(0,0,0,0.35)" }} />
                     }
-                  </div>
+                  </button>
 
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>

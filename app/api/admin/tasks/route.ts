@@ -36,6 +36,13 @@ export async function GET() {
   return NextResponse.json(merged);
 }
 
+export async function PATCH(req: Request) {
+  const { id, is_public } = await req.json();
+  const res = await sbFetch(`tasks?id=eq.${id}`, "PATCH", { is_public });
+  if (!res.ok) return NextResponse.json({ error: await res.text() }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
+
 export async function DELETE(req: Request) {
   const { id } = await req.json();
   const res = await sbFetch(`tasks?id=eq.${id}`, "DELETE");
