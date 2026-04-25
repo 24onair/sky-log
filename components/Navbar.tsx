@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { getUser, signOut } from "@/lib/supabase/auth";
 import { hasUnsavedChanges, getUnsavedMessage } from "@/lib/unsavedChanges";
-import { Wind, LogOut, BookOpen, Navigation, Plus, Shield, Users, MapPin } from "lucide-react";
+import { Wind, LogOut, BookOpen, Navigation, Plus, Shield, Users, MapPin, Layers } from "lucide-react";
 
 export function Navbar() {
   const router = useRouter();
@@ -27,6 +27,7 @@ export function Navbar() {
   const isAuth = pathname?.startsWith("/auth");
   const onLogbook = pathname?.startsWith("/logbook");
   const onTasks = pathname?.startsWith("/tasks");
+  const onWaypoints = pathname?.startsWith("/waypoints");
   const onAdmin = pathname?.startsWith("/admin");
 
   const navLink = (href: string, icon: React.ReactNode, label: string, active: boolean) => (
@@ -73,6 +74,7 @@ export function Navbar() {
             >
               {navLink("/logbook", <BookOpen size={14} strokeWidth={1.5} />, "로그북", !!onLogbook)}
               {navLink("/tasks", <Navigation size={14} strokeWidth={1.5} />, "타스크", !!onTasks)}
+              {navLink("/waypoints", <Layers size={14} strokeWidth={1.5} />, "웨이포인트", !!onWaypoints)}
               {isAdmin && (
                 <div style={{ display: "flex", alignItems: "center", gap: 0, marginLeft: 8, paddingLeft: 12, borderLeft: "1px solid rgba(0,0,0,0.1)" }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(0,0,0,0.25)", letterSpacing: "0.06em", marginRight: 6, display: "flex", alignItems: "center", gap: 3 }}>
@@ -154,6 +156,7 @@ export function Navbar() {
           `}</style>
           <MobileTab href="/logbook" icon={<BookOpen size={20} strokeWidth={1.5} />} label="로그북" active={!!onLogbook} onNavigate={setConfirmNav} />
           <MobileTab href="/tasks" icon={<Navigation size={20} strokeWidth={1.5} />} label="타스크" active={!!onTasks} onNavigate={setConfirmNav} />
+          <MobileTab href="/waypoints" icon={<Layers size={20} strokeWidth={1.5} />} label="웨이포인트" active={!!onWaypoints} onNavigate={setConfirmNav} />
           <MobileTab href="/logbook/new" icon={<Plus size={22} strokeWidth={2} />} label="새 비행" accent onNavigate={setConfirmNav} />
           <MobileTab href="/tasks/new" icon={<Navigation size={18} strokeWidth={1.5} />} label="새 타스크" onNavigate={setConfirmNav} />
           {isAdmin && (

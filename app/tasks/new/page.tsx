@@ -21,6 +21,8 @@ import {
 } from "@/lib/utils/taskUtils";
 import { setUnsavedChanges } from "@/lib/unsavedChanges";
 import { getTasks } from "@/lib/supabase/tasks";
+import { getWaypointSets } from "@/lib/supabase/waypointSets";
+import { WaypointSet } from "@/lib/schemas/waypointSet";
 
 interface GeoResult {
   id: string;
@@ -30,7 +32,7 @@ interface GeoResult {
 import {
   ChevronLeft, Plus, Minus, Trash2, Lock, Globe,
   Navigation, Download, QrCode, ChevronUp, ChevronDown,
-  MapPin, CheckCircle2, Search, X,
+  MapPin, CheckCircle2, Search, X, Layers,
 } from "lucide-react";
 import QRCodeLib from "qrcode";
 import { BannerAd } from "@/components/BannerAd";
@@ -72,6 +74,8 @@ export default function NewTaskPage() {
   const [libraryWaypoints, setLibraryWaypoints] = useState<Waypoint[]>([]);
   const [libQuery, setLibQuery] = useState("");
   const [showLib, setShowLib] = useState(false);
+  const [waypointSets, setWaypointSets] = useState<WaypointSet[]>([]);
+  const [activeSetId, setActiveSetId] = useState<string | null>(null);
 
   // Search
   const [searchQuery, setSearchQuery] = useState("");
@@ -88,7 +92,7 @@ export default function NewTaskPage() {
     });
   }, [router]);
 
-  // Load library waypoints from existing tasks (deduplicated by name)
+  // Load library waypoints + waypoint sets
   useEffect(() => {
     if (!userId) return;
     getTasks(userId).then((tasks) => {
@@ -96,14 +100,12 @@ export default function NewTaskPage() {
       const all: Waypoint[] = [];
       tasks.forEach((t) =>
         t.waypoints.forEach((wp) => {
-          if (!seen.has(wp.name)) {
-            seen.add(wp.name);
-            all.push(wp);
-          }
+          if (!seen.has(wp.name)) { seen.add(wp.name); all.push(wp); }
         })
       );
       setLibraryWaypoints(all);
     }).catch(() => {});
+    getWaypointSets(userId).then(setWaypointSets).catch(() => {});
   }, [userId]);
 
   // Track unsaved changes for nav guard
@@ -267,6 +269,18 @@ export default function NewTaskPage() {
     }
   };
 
+  const activeSet = waypointSets.find((s) => s.id === activeSetId) ?? null;
+  const referenceWaypoints = activeSet?.waypoints ?? [];
+
+  const addSetToTask = useCallback(() => {
+    if (!activeSet) return;
+    setTask((prev) => {
+      const draft = [...prev.waypoints, ...activeSet.waypoints.map((wp) => ({ ...wp, id: crypto.randomUUID(), type: "T" as const }))];
+      const assigned = applyLabels(assignWaypointTypes(draft));
+      return { ...prev, waypoints: assigned, distance_km: calculateTaskDistance(assigned) };
+    });
+  }, [activeSet, applyLabels]);
+
   const centerKm = task.waypoints.length >= 2
     ? calculateCenterDistance(task.waypoints)
     : null;
@@ -328,6 +342,7 @@ export default function NewTaskPage() {
             onWaypointMove={moveWaypoint}
             onWaypointClick={setEditingWpId}
             flyToTarget={flyToTarget}
+            referenceWaypoints={referenceWaypoints}
           />
 
           {/* Search overlay — top center */}
@@ -678,6 +693,33 @@ export default function NewTaskPage() {
                 </div>
               )}
             </div>
+
+            {/* ── Waypoint Set ──────────────────────────────────────── */}
+            {waypointSets.length > 0 && (
+              <div className="sk-card" style={{ padding: "14px 16px" }}>
+                <p style={secHead}>웨이포인트 세트</p>
+                <select
+                  value={activeSetId ?? ""}
+                  onChange={(e) => setActiveSetId(e.target.value || null)}
+                  className="sk-input"
+                  style={{ cursor: "pointer", marginBottom: activeSetId ? 8 : 0 }}
+                >
+                  <option value="">세트 선택 (지도에 표시됨)</option>
+                  {waypointSets.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.waypoints.length}개)</option>
+                  ))}
+                </select>
+                {activeSetId && (
+                  <button
+                    onClick={addSetToTask}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "9px 0", borderRadius: 8, border: "1.5px solid rgba(0,113,227,0.35)", background: "rgba(0,113,227,0.06)", color: "#0071e3", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                  >
+                    <Layers size={14} strokeWidth={2} />
+                    세트 전체 타스크에 추가
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* ── Waypoint Library ──────────────────────────────────── */}
             {libraryWaypoints.length > 0 && (

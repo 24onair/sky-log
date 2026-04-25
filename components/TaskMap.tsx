@@ -12,6 +12,7 @@ interface TaskMapProps {
   onWaypointMove: (id: string, lat: number, lon: number) => void;
   onWaypointClick?: (id: string) => void;
   flyToTarget?: { center: [number, number]; zoom: number } | null;
+  referenceWaypoints?: Waypoint[]; // waypoint set overlay (gray, non-draggable)
 }
 
 export function TaskMap({
@@ -21,10 +22,12 @@ export function TaskMap({
   onWaypointMove,
   onWaypointClick,
   flyToTarget,
+  referenceWaypoints = [],
 }: TaskMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
+  const refMarkersRef = useRef<mapboxgl.Marker[]>([]);
   const isAddModeRef = useRef(isAddMode);
   const waypointsRef = useRef(waypoints);
   const onMapClickRef = useRef(onMapClick);
@@ -190,6 +193,57 @@ export function TaskMap({
     });
   }, []);
 
+  // Render reference waypoints (gray, non-draggable)
+  const renderRefLayers = useCallback((wps: Waypoint[]) => {
+    const m = mapRef.current;
+    if (!m || !styleLoadedRef.current) return;
+
+    // Remove old ref markers
+    refMarkersRef.current.forEach((mk) => mk.remove());
+    refMarkersRef.current = [];
+
+    const circles = wps.map((wp) => ({
+      type: "Feature" as const,
+      properties: { id: wp.id },
+      geometry: {
+        type: "Polygon" as const,
+        coordinates: [circlePolygon([wp.lon, wp.lat], wp.radius)],
+      },
+    }));
+    const circleData: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: circles };
+
+    if (m.getSource("ref-circles")) {
+      (m.getSource("ref-circles") as mapboxgl.GeoJSONSource).setData(circleData);
+    } else {
+      m.addSource("ref-circles", { type: "geojson", data: circleData });
+      m.addLayer(
+        { id: "ref-circles-fill", type: "fill", source: "ref-circles", paint: { "fill-color": "#636366", "fill-opacity": 0.07 } },
+        "circles-fill"
+      );
+      m.addLayer(
+        { id: "ref-circles-outline", type: "line", source: "ref-circles", paint: { "line-color": "#636366", "line-width": 1, "line-opacity": 0.4, "line-dasharray": [3, 3] } },
+        "circles-fill"
+      );
+    }
+
+    wps.forEach((wp) => {
+      const el = document.createElement("div");
+      el.style.cssText = `
+        min-width: 22px; height: 22px; padding: 0 4px;
+        background: #8e8e93; border: 2px solid white; border-radius: 11px;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.22);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 8px; font-weight: 700; color: white;
+        font-family: -apple-system, sans-serif; user-select: none;
+        cursor: default; pointer-events: none;
+      `;
+      el.textContent = wp.name.slice(0, 3);
+      el.title = wp.name;
+      const mk = new mapboxgl.Marker({ element: el }).setLngLat([wp.lon, wp.lat]).addTo(m);
+      refMarkersRef.current.push(mk);
+    });
+  }, []);
+
   // Initialize map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -218,6 +272,7 @@ export function TaskMap({
     map.on("load", () => {
       styleLoadedRef.current = true;
       renderLayers(waypointsRef.current);
+      renderRefLayers(referenceWaypoints);
     });
 
     map.on("click", (e) => {
@@ -230,11 +285,13 @@ export function TaskMap({
     return () => {
       markersRef.current.forEach((m) => m.remove());
       markersRef.current.clear();
+      refMarkersRef.current.forEach((m) => m.remove());
+      refMarkersRef.current = [];
       map.remove();
       mapRef.current = null;
       styleLoadedRef.current = false;
     };
-  }, [renderLayers]);
+  }, [renderLayers, renderRefLayers]);
 
   // Fly to target when search result is selected
   useEffect(() => {
@@ -256,6 +313,11 @@ export function TaskMap({
       mapRef.current.fitBounds(bounds, { padding: 80, maxZoom: 13, duration: 600 });
     }
   }, [waypoints, renderLayers]);
+
+  // Re-render reference layer when referenceWaypoints changes
+  useEffect(() => {
+    renderRefLayers(referenceWaypoints);
+  }, [referenceWaypoints, renderRefLayers]);
 
   return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }
