@@ -14,6 +14,8 @@ interface TaskMapProps {
   flyToTarget?: { center: [number, number]; zoom: number } | null;
   referenceWaypoints?: Waypoint[]; // waypoint set overlay (gray, non-draggable)
   onRefWaypointClick?: (wp: Waypoint) => void; // click ref marker → add to task
+  noFlyZones?: GeoJSON.FeatureCollection;
+  onBoundsChange?: (swLat: number, swLon: number, neLat: number, neLon: number) => void;
 }
 
 export function TaskMap({
@@ -25,6 +27,8 @@ export function TaskMap({
   flyToTarget,
   referenceWaypoints = [],
   onRefWaypointClick,
+  noFlyZones,
+  onBoundsChange,
 }: TaskMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -35,6 +39,7 @@ export function TaskMap({
   const onMapClickRef = useRef(onMapClick);
   const onWaypointMoveRef = useRef(onWaypointMove);
   const onWaypointClickRef = useRef(onWaypointClick);
+  const onBoundsChangeRef = useRef(onBoundsChange);
   const styleLoadedRef = useRef(false);
 
   // Keep refs in sync
@@ -43,6 +48,7 @@ export function TaskMap({
   useEffect(() => { onMapClickRef.current = onMapClick; }, [onMapClick]);
   useEffect(() => { onWaypointMoveRef.current = onWaypointMove; }, [onWaypointMove]);
   useEffect(() => { onWaypointClickRef.current = onWaypointClick; }, [onWaypointClick]);
+  useEffect(() => { onBoundsChangeRef.current = onBoundsChange; }, [onBoundsChange]);
 
   // Update cursor when add mode changes (keep pan/zoom enabled so user can drag to position)
   useEffect(() => {
@@ -281,11 +287,21 @@ export function TaskMap({
       "bottom-left"
     );
 
+    const emitBounds = () => {
+      if (!onBoundsChangeRef.current) return;
+      const b = map.getBounds();
+      if (!b) return;
+      onBoundsChangeRef.current(b.getSouth(), b.getWest(), b.getNorth(), b.getEast());
+    };
+
     map.on("load", () => {
       styleLoadedRef.current = true;
       renderLayers(waypointsRef.current);
       renderRefLayers(referenceWaypoints);
+      emitBounds();
     });
+
+    map.on("moveend", emitBounds);
 
     map.on("click", (e) => {
       if (!isAddModeRef.current) return;
@@ -330,6 +346,42 @@ export function TaskMap({
   useEffect(() => {
     renderRefLayers(referenceWaypoints);
   }, [referenceWaypoints, renderRefLayers]);
+
+  // Render no-fly zones
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m || !styleLoadedRef.current) return;
+
+    const data: GeoJSON.FeatureCollection = noFlyZones ?? { type: "FeatureCollection", features: [] };
+
+    if (m.getSource("nofly")) {
+      (m.getSource("nofly") as mapboxgl.GeoJSONSource).setData(data);
+    } else {
+      m.addSource("nofly", { type: "geojson", data });
+      m.addLayer(
+        {
+          id: "nofly-fill",
+          type: "fill",
+          source: "nofly",
+          paint: { "fill-color": ["get", "color"], "fill-opacity": 0.18 },
+        },
+        "circles-fill"
+      );
+      m.addLayer(
+        {
+          id: "nofly-outline",
+          type: "line",
+          source: "nofly",
+          paint: {
+            "line-color": ["get", "color"],
+            "line-width": 1.5,
+            "line-opacity": 0.85,
+          },
+        },
+        "circles-fill"
+      );
+    }
+  }, [noFlyZones]);
 
   return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }

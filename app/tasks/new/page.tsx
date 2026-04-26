@@ -32,7 +32,7 @@ interface GeoResult {
 import {
   ChevronLeft, Plus, Minus, Trash2, Lock, Globe,
   Navigation, Download, QrCode, ChevronUp, ChevronDown,
-  MapPin, CheckCircle2, Search, X, Layers,
+  MapPin, CheckCircle2, Search, X, Layers, ShieldAlert,
 } from "lucide-react";
 import QRCodeLib from "qrcode";
 import { BannerAd } from "@/components/BannerAd";
@@ -85,6 +85,26 @@ export default function NewTaskPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [flyToTarget, setFlyToTarget] = useState<{ center: [number, number]; zoom: number } | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Airspace (no-fly zones)
+  const [noFlyZones, setNoFlyZones] = useState<GeoJSON.FeatureCollection>({ type: "FeatureCollection", features: [] });
+  const [showNoFly, setShowNoFly] = useState(true);
+  const airspaceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchAirspace = useCallback((swLat: number, swLon: number, neLat: number, neLon: number) => {
+    if (airspaceTimerRef.current) clearTimeout(airspaceTimerRef.current);
+    airspaceTimerRef.current = setTimeout(async () => {
+      try {
+        const url = `/api/airspace?swLat=${swLat}&swLon=${swLon}&neLat=${neLat}&neLon=${neLon}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data: GeoJSON.FeatureCollection = await res.json();
+        setNoFlyZones(data);
+      } catch {
+        // silently ignore — zones are non-critical
+      }
+    }, 600);
+  }, []);
 
   useEffect(() => {
     getUser().then((u) => {
@@ -368,6 +388,8 @@ export default function NewTaskPage() {
             flyToTarget={flyToTarget}
             referenceWaypoints={referenceWaypoints}
             onRefWaypointClick={addLibraryWaypoint}
+            noFlyZones={showNoFly ? noFlyZones : undefined}
+            onBoundsChange={fetchAirspace}
           />
 
           {/* Search overlay — top center */}
@@ -516,6 +538,25 @@ export default function NewTaskPage() {
             </div>
           </div>
 
+          {/* No-fly zone toggle — top-right below navigation controls */}
+          <button
+            onClick={() => setShowNoFly((v) => !v)}
+            title={showNoFly ? "비행금지구역 숨기기" : "비행금지구역 표시"}
+            style={{
+              position: "absolute", top: 12, right: 52,
+              width: 36, height: 36, borderRadius: 8,
+              background: showNoFly ? "rgba(255,59,48,0.12)" : "rgba(255,255,255,0.9)",
+              border: showNoFly ? "1.5px solid rgba(255,59,48,0.5)" : "1.5px solid rgba(0,0,0,0.1)",
+              backdropFilter: "blur(8px)",
+              boxShadow: "0 1px 6px rgba(0,0,0,0.12)",
+              cursor: "pointer", zIndex: 10,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.15s",
+            }}
+          >
+            <ShieldAlert size={16} strokeWidth={1.8} color={showNoFly ? "#ff3b30" : "rgba(0,0,0,0.45)"} />
+          </button>
+
           {/* Add mode hint banner — top just below search */}
           {isAddMode && (
             <div style={{
@@ -588,22 +629,30 @@ export default function NewTaskPage() {
           )}
 
           {/* Legend */}
-          {task.waypoints.length > 0 && (
-            <div style={{ position: "absolute", bottom: 16, left: 12, display: "flex", gap: 6, flexWrap: "wrap", pointerEvents: "none" }}>
-              {[
-                { color: "#34c759", label: "Take Off" },
-                { color: "#ff9500", label: "SSS" },
-                { color: "#0071e3", label: "TP" },
-                { color: "#bf5af2", label: "ESS" },
-                { color: "#ff3b30", label: "Landing" },
-              ].map(({ color, label: lbl }) => (
-                <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(6px)", borderRadius: 20, padding: "4px 9px", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }}>
-                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: color }} />
-                  <span style={{ fontSize: 11, fontWeight: 500, color: "#1d1d1f" }}>{lbl}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          <div style={{ position: "absolute", bottom: 16, left: 12, display: "flex", gap: 6, flexWrap: "wrap", pointerEvents: "none" }}>
+            {task.waypoints.length > 0 && [
+              { color: "#34c759", label: "Take Off" },
+              { color: "#ff9500", label: "SSS" },
+              { color: "#0071e3", label: "TP" },
+              { color: "#bf5af2", label: "ESS" },
+              { color: "#ff3b30", label: "Landing" },
+            ].map(({ color, label: lbl }) => (
+              <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(6px)", borderRadius: 20, padding: "4px 9px", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }}>
+                <div style={{ width: 7, height: 7, borderRadius: "50%", background: color }} />
+                <span style={{ fontSize: 11, fontWeight: 500, color: "#1d1d1f" }}>{lbl}</span>
+              </div>
+            ))}
+            {showNoFly && noFlyZones.features.length > 0 && [
+              { color: "#ff3b30", label: "비행금지" },
+              { color: "#ff9500", label: "비행제한" },
+              { color: "#0071e3", label: "관제권" },
+            ].map(({ color, label: lbl }) => (
+              <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(6px)", borderRadius: 20, padding: "4px 9px", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }}>
+                <div style={{ width: 7, height: 7, borderRadius: 2, background: color }} />
+                <span style={{ fontSize: 11, fontWeight: 500, color: "#1d1d1f" }}>{lbl}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* ══ SIDEBAR / BOTTOM SHEET ════════════════════════════════════ */}
