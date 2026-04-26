@@ -18,7 +18,8 @@ type Result = {
   raw?: unknown;
 };
 
-type DebugResult = unknown;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DebugResult = Record<string, any>;
 
 export default function TestAirspacePage() {
   const [result, setResult] = useState<Result | null>(null);
