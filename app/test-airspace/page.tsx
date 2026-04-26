@@ -68,13 +68,13 @@ export default function TestAirspacePage() {
           id: "ctr-fill",
           type: "fill",
           source: "ctr",
-          paint: { "fill-color": "#0071e3", "fill-opacity": 0.12 },
+          paint: { "fill-color": "#ff3b30", "fill-opacity": 0.18 },
         });
         map.addLayer({
           id: "ctr-outline",
           type: "line",
           source: "ctr",
-          paint: { "line-color": "#0071e3", "line-width": 1.5, "line-opacity": 0.7, "line-dasharray": [4, 2] },
+          paint: { "line-color": "#ff3b30", "line-width": 1.8, "line-opacity": 0.85, "line-dasharray": [4, 2] },
         });
 
         // 구역명 라벨
@@ -87,7 +87,7 @@ export default function TestAirspacePage() {
             "text-size": 10,
             "text-anchor": "center",
           },
-          paint: { "text-color": "#0071e3", "text-halo-color": "white", "text-halo-width": 1.5 },
+          paint: { "text-color": "#cc1a12", "text-halo-color": "white", "text-halo-width": 1.5 },
         });
 
         // 호버 팝업
@@ -220,7 +220,7 @@ export default function TestAirspacePage() {
         <div style={{ fontSize: "0.85rem", color: ctrColor, marginBottom: "0.5rem", fontWeight: 600 }}>{ctrLabel}</div>
         <div ref={ctrMapRef} style={{ width: "100%", height: 380, borderRadius: 10, overflow: "hidden", border: "1px solid #d1d1d6" }} />
         <div style={{ fontSize: "0.75rem", color: "#636366", marginTop: "0.4rem" }}>
-          파란색 원 = 관제권(CTR) · 마커 위에 마우스를 올리면 구역명/반경 표시
+          붉은색 원 = 관제권(CTR) · 마커 위에 마우스를 올리면 구역명/반경 표시
         </div>
       </section>
 
