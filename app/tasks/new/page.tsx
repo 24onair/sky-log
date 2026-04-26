@@ -86,52 +86,8 @@ export default function NewTaskPage() {
   const [flyToTarget, setFlyToTarget] = useState<{ center: [number, number]; zoom: number } | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Airspace (no-fly zones)
-  const [noFlyZones, setNoFlyZones] = useState<GeoJSON.FeatureCollection>({ type: "FeatureCollection", features: [] });
+  // Airspace (no-fly zones) — shown via V-World WMS tiles in TaskMap
   const [showNoFly, setShowNoFly] = useState(true);
-  const airspaceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const fetchAirspace = useCallback((swLat: number, swLon: number, neLat: number, neLon: number) => {
-    if (airspaceTimerRef.current) clearTimeout(airspaceTimerRef.current);
-    airspaceTimerRef.current = setTimeout(async () => {
-      const apiKey = process.env.NEXT_PUBLIC_VWORLD_API_KEY;
-      if (!apiKey) return;
-      const VWORLD = "https://api.vworld.kr/req/data";
-      const LAYERS = [
-        { id: "LT_C_AISPRHC", type: "P", color: "#ff3b30" },
-        { id: "LT_C_AISRESC", type: "R", color: "#ff9500" },
-      ] as const;
-      const box = `BOX(${swLon},${swLat},${neLon},${neLat})`;
-      try {
-        const results = await Promise.all(
-          LAYERS.map(async ({ id, type, color }) => {
-            const url = new URL(VWORLD);
-            url.searchParams.set("service", "data");
-            url.searchParams.set("request", "GetFeature");
-            url.searchParams.set("data", id);
-            url.searchParams.set("key", apiKey);
-            url.searchParams.set("format", "json");
-            url.searchParams.set("size", "1000");
-            url.searchParams.set("page", "1");
-            url.searchParams.set("geometry", "true");
-            url.searchParams.set("attribute", "true");
-            url.searchParams.set("crs", "EPSG:4326");
-            url.searchParams.set("geomFilter", box);
-            const res = await fetch(url.toString());
-            if (!res.ok) return [];
-            const json = await res.json();
-            if (json?.response?.status !== "OK") return [];
-            const features: GeoJSON.Feature[] = json?.response?.result?.featureCollection?.features ?? [];
-            return features.map((f: GeoJSON.Feature) => ({ ...f, properties: { ...f.properties, zoneType: type, color } }));
-          })
-        );
-        const features = results.flat();
-        setNoFlyZones({ type: "FeatureCollection", features });
-      } catch {
-        // silently ignore — zones are non-critical
-      }
-    }, 600);
-  }, []);
 
   useEffect(() => {
     getUser().then((u) => {
@@ -415,8 +371,8 @@ export default function NewTaskPage() {
             flyToTarget={flyToTarget}
             referenceWaypoints={referenceWaypoints}
             onRefWaypointClick={addLibraryWaypoint}
-            noFlyZones={showNoFly ? noFlyZones : undefined}
-            onBoundsChange={fetchAirspace}
+            showNoFly={showNoFly}
+            airspaceApiKey={process.env.NEXT_PUBLIC_VWORLD_API_KEY}
           />
 
           {/* Search overlay — top center */}
@@ -669,10 +625,9 @@ export default function NewTaskPage() {
                 <span style={{ fontSize: 11, fontWeight: 500, color: "#1d1d1f" }}>{lbl}</span>
               </div>
             ))}
-            {showNoFly && noFlyZones.features.length > 0 && [
+            {showNoFly && [
               { color: "#ff3b30", label: "비행금지" },
               { color: "#ff9500", label: "비행제한" },
-              { color: "#0071e3", label: "관제권" },
             ].map(({ color, label: lbl }) => (
               <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(6px)", borderRadius: 20, padding: "4px 9px", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }}>
                 <div style={{ width: 7, height: 7, borderRadius: 2, background: color }} />
