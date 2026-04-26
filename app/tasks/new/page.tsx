@@ -94,12 +94,39 @@ export default function NewTaskPage() {
   const fetchAirspace = useCallback((swLat: number, swLon: number, neLat: number, neLon: number) => {
     if (airspaceTimerRef.current) clearTimeout(airspaceTimerRef.current);
     airspaceTimerRef.current = setTimeout(async () => {
+      const apiKey = process.env.NEXT_PUBLIC_VWORLD_API_KEY;
+      if (!apiKey) return;
+      const VWORLD = "https://api.vworld.kr/req/data";
+      const LAYERS = [
+        { id: "LT_C_AISPRHC", type: "P", color: "#ff3b30" },
+        { id: "LT_C_AISRESC", type: "R", color: "#ff9500" },
+      ] as const;
+      const box = `BOX(${swLon},${swLat},${neLon},${neLat})`;
       try {
-        const url = `/api/airspace?swLat=${swLat}&swLon=${swLon}&neLat=${neLat}&neLon=${neLon}`;
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const data: GeoJSON.FeatureCollection = await res.json();
-        setNoFlyZones(data);
+        const results = await Promise.all(
+          LAYERS.map(async ({ id, type, color }) => {
+            const url = new URL(VWORLD);
+            url.searchParams.set("service", "data");
+            url.searchParams.set("request", "GetFeature");
+            url.searchParams.set("data", id);
+            url.searchParams.set("key", apiKey);
+            url.searchParams.set("format", "json");
+            url.searchParams.set("size", "1000");
+            url.searchParams.set("page", "1");
+            url.searchParams.set("geometry", "true");
+            url.searchParams.set("attribute", "true");
+            url.searchParams.set("crs", "EPSG:4326");
+            url.searchParams.set("geomFilter", box);
+            const res = await fetch(url.toString());
+            if (!res.ok) return [];
+            const json = await res.json();
+            if (json?.response?.status !== "OK") return [];
+            const features: GeoJSON.Feature[] = json?.response?.result?.featureCollection?.features ?? [];
+            return features.map((f: GeoJSON.Feature) => ({ ...f, properties: { ...f.properties, zoneType: type, color } }));
+          })
+        );
+        const features = results.flat();
+        setNoFlyZones({ type: "FeatureCollection", features });
       } catch {
         // silently ignore — zones are non-critical
       }
