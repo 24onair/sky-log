@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
-import dynamic from "next/dynamic";
-
-const AnnouncementPopup = dynamic(() => import("@/components/AnnouncementPopup"), { ssr: false });
+import AnnouncementPopup from "@/components/AnnouncementPopup";
 
 export const metadata: Metadata = {
   title: "Sky Log — 패러글라이딩 비행 로그",
