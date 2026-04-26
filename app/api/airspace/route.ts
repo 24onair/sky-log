@@ -1,84 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// 드론원스톱 Open API — https://drone.onestop.go.kr
-// API 키 발급: 드론원스톱 → 마이페이지 → Open API 신청
-// .env.local 에 DRONE_ONESTOP_API_KEY 추가 필요
+// 국토교통부 V-World 공간정보오픈플랫폼
+// API 키 발급: https://www.vworld.kr/dev/v4dv_apifirst2_s001.do
+// .env.local 에 VWORLD_API_KEY 추가 필요
 
-const BASE = "https://drone.onestop.go.kr/api/v1";
+const VWORLD = "https://api.vworld.kr/req/data";
 
-type ZoneType = "P" | "R" | "D" | "CTR" | string;
+// 비행금지구역 (P) — 빨강, 비행제한구역 (R) — 주황
+const LAYERS = [
+  { id: "LT_C_AISPRHC", type: "P", color: "#ff3b30" },
+  { id: "LT_C_AISRESC", type: "R", color: "#ff9500" },
+] as const;
 
-interface RawZone {
-  zoneId?: string;
-  zoneName?: string;
-  zoneType?: ZoneType;
-  centerLat?: number;
-  centerLon?: number;
-  radius?: number;       // meters
-  minAlt?: number;
-  maxAlt?: number;
-  geometry?: GeoJSON.Geometry;
-}
-
-function zoneColor(type: ZoneType): string {
-  if (type === "P") return "#ff3b30";   // 비행금지구역
-  if (type === "R") return "#ff9500";   // 비행제한구역
-  if (type === "D") return "#ffcc00";   // 위험구역
-  return "#0071e3";                      // 관제권/기타
-}
-
-function circleToPolygon(lon: number, lat: number, radiusM: number): number[][] {
-  const steps = 64;
-  const R = 6371000;
-  const lat1 = (lat * Math.PI) / 180;
-  const lon1 = (lon * Math.PI) / 180;
-  const d = radiusM / R;
-  const coords: number[][] = [];
-
-  for (let i = 0; i <= steps; i++) {
-    const θ = (i / steps) * 2 * Math.PI;
-    const lat2 = Math.asin(
-      Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(θ)
-    );
-    const lon2 =
-      lon1 +
-      Math.atan2(
-        Math.sin(θ) * Math.sin(d) * Math.cos(lat1),
-        Math.cos(d) - Math.sin(lat1) * Math.sin(lat2)
-      );
-    coords.push([(lon2 * 180) / Math.PI, (lat2 * 180) / Math.PI]);
-  }
-  return coords;
-}
-
-function toFeature(zone: RawZone): GeoJSON.Feature | null {
-  let geometry: GeoJSON.Geometry | null = null;
-
-  if (zone.geometry) {
-    geometry = zone.geometry;
-  } else if (
-    zone.centerLat != null && zone.centerLon != null && zone.radius != null
-  ) {
-    geometry = {
-      type: "Polygon",
-      coordinates: [circleToPolygon(zone.centerLon, zone.centerLat, zone.radius)],
+type VWorldResponse = {
+  response?: {
+    status?: string;
+    result?: {
+      featureCollection?: GeoJSON.FeatureCollection;
     };
+  };
+};
+
+async function fetchLayer(
+  layerId: string,
+  type: string,
+  color: string,
+  box: string,
+  apiKey: string
+): Promise<GeoJSON.Feature[]> {
+  const url = new URL(VWORLD);
+  url.searchParams.set("service", "data");
+  url.searchParams.set("request", "GetFeature");
+  url.searchParams.set("data", layerId);
+  url.searchParams.set("key", apiKey);
+  url.searchParams.set("format", "json");
+  url.searchParams.set("size", "1000");
+  url.searchParams.set("page", "1");
+  url.searchParams.set("geometry", "true");
+  url.searchParams.set("attribute", "true");
+  url.searchParams.set("crs", "EPSG:4326");
+  url.searchParams.set("geomFilter", box);
+
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 300 }, // 5분 캐시
+  });
+
+  if (!res.ok) {
+    console.error(`[airspace] ${layerId} error ${res.status}`);
+    return [];
   }
 
-  if (!geometry) return null;
+  const json: VWorldResponse = await res.json();
+  if (json?.response?.status !== "OK") return [];
 
-  return {
-    type: "Feature",
-    properties: {
-      id: zone.zoneId ?? "",
-      name: zone.zoneName ?? "",
-      type: zone.zoneType ?? "",
-      color: zoneColor(zone.zoneType ?? ""),
-      minAlt: zone.minAlt ?? 0,
-      maxAlt: zone.maxAlt ?? 0,
-    },
-    geometry,
-  };
+  const features = json?.response?.result?.featureCollection?.features ?? [];
+
+  // V-World GeoJSON 에 color/zoneType property 를 추가해 반환
+  return features.map((f) => ({
+    ...f,
+    properties: { ...f.properties, zoneType: type, color },
+  }));
 }
 
 export async function GET(req: NextRequest) {
@@ -92,36 +73,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "swLat, swLon, neLat, neLon required" }, { status: 400 });
   }
 
-  const apiKey = process.env.DRONE_ONESTOP_API_KEY;
+  const apiKey = process.env.VWORLD_API_KEY;
   if (!apiKey) {
-    // API 키 미설정 시 빈 컬렉션 반환 (지도는 정상 작동)
     return NextResponse.json({ type: "FeatureCollection", features: [] });
   }
 
+  // BOX(minX,minY,maxX,maxY) = BOX(minLon,minLat,maxLon,maxLat)
+  const box = `BOX(${swLon},${swLat},${neLon},${neLat})`;
+
   try {
-    const url = new URL(`${BASE}/restriction/zone/list`);
-    url.searchParams.set("minLat", swLat);
-    url.searchParams.set("minLon", swLon);
-    url.searchParams.set("maxLat", neLat);
-    url.searchParams.set("maxLon", neLon);
-    url.searchParams.set("serviceKey", apiKey);
+    const results = await Promise.all(
+      LAYERS.map(({ id, type, color }) => fetchLayer(id, type, color, box, apiKey))
+    );
 
-    const res = await fetch(url.toString(), {
-      headers: { Accept: "application/json" },
-      next: { revalidate: 300 }, // 5분 캐시
-    });
-
-    if (!res.ok) {
-      console.error("[airspace] API error", res.status, await res.text());
-      return NextResponse.json({ type: "FeatureCollection", features: [] });
-    }
-
-    const json = await res.json();
-
-    // 드론원스톱 API 응답 구조: { code, data: [...] }
-    const raw: RawZone[] = Array.isArray(json?.data) ? json.data : [];
-    const features = raw.map(toFeature).filter(Boolean) as GeoJSON.Feature[];
-
+    const features = results.flat();
     const geojson: GeoJSON.FeatureCollection = { type: "FeatureCollection", features };
     return NextResponse.json(geojson);
   } catch (err) {
