@@ -49,6 +49,15 @@ const secHead = { fontSize: 10, fontWeight: 700, letterSpacing: "0.10em", color:
 const TASK_TYPES: TaskType[] = ["RACE", "CLASSIC", "FAI"];
 const SLIDER_MAX = 5000; // slider covers up to 5 km; beyond → direct input
 
+function haversineDistanceM(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000;
+  const φ1 = (lat1 * Math.PI) / 180, φ2 = (lat2 * Math.PI) / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
 // ── default task state ─────────────────────────────────────────────────────
 const blankTask = (): TaskInsert => ({
   name: "새 타스크",
@@ -88,6 +97,43 @@ export default function NewTaskPage() {
 
   // Airspace (no-fly zones) — shown via V-World WMS tiles in TaskMap
   const [showNoFly, setShowNoFly] = useState(true);
+
+  // CTR conflict detection
+  const ctrFeaturesRef = useRef<{ name: string; lat: number; lon: number; radiusNm: number }[]>([]);
+  const waypointsRef = useRef(task.waypoints);
+  const [airspaceError, setAirspaceError] = useState<string | null>(null);
+  const airspaceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => { waypointsRef.current = task.waypoints; }, [task.waypoints]);
+
+  useEffect(() => {
+    fetch("/airspace-ctr.geojson")
+      .then((r) => r.json())
+      .then((g: GeoJSON.FeatureCollection) => {
+        ctrFeaturesRef.current = g.features.map((f) => ({
+          name: f.properties?.name ?? "",
+          lat: f.properties?.lat ?? 0,
+          lon: f.properties?.lon ?? 0,
+          radiusNm: f.properties?.radiusNm ?? 0,
+        }));
+      })
+      .catch(() => {});
+  }, []);
+
+  const showAirspaceError = useCallback((zoneName: string) => {
+    if (airspaceTimerRef.current) clearTimeout(airspaceTimerRef.current);
+    setAirspaceError(`관제권(CTR) 충돌: ${zoneName}`);
+    airspaceTimerRef.current = setTimeout(() => setAirspaceError(null), 3500);
+  }, []);
+
+  const findCtrConflict = useCallback((lat: number, lon: number, radiusM: number): string | null => {
+    for (const ctr of ctrFeaturesRef.current) {
+      if (haversineDistanceM(lat, lon, ctr.lat, ctr.lon) < ctr.radiusNm * 1852 + radiusM) {
+        return ctr.name;
+      }
+    }
+    return null;
+  }, []);
 
   useEffect(() => {
     getUser().then((u) => {
@@ -202,6 +248,8 @@ export default function NewTaskPage() {
     })), []);
 
   const addWaypoint = useCallback((lat: number, lon: number) => {
+    const conflict = findCtrConflict(lat, lon, 0);
+    if (conflict) { showAirspaceError(conflict); return; }
     setTask((prev) => {
       const draft: Waypoint[] = [
         ...prev.waypoints,
@@ -210,16 +258,23 @@ export default function NewTaskPage() {
       const assigned = applyLabels(assignWaypointTypes(draft));
       return { ...prev, waypoints: assigned, distance_km: calculateTaskDistance(assigned) };
     });
-  }, [applyLabels]);
+  }, [applyLabels, findCtrConflict, showAirspaceError]);
 
   const moveWaypoint = useCallback((id: string, lat: number, lon: number) => {
+    const radius = waypointsRef.current.find((w) => w.id === id)?.radius ?? 0;
+    const conflict = findCtrConflict(lat, lon, radius);
+    if (conflict) {
+      showAirspaceError(conflict);
+      setTask((prev) => ({ ...prev })); // force re-render → marker snaps back
+      return;
+    }
     setTask((prev) => {
       const wps = prev.waypoints.map((wp) =>
         wp.id === id ? { ...wp, lat, lon } : wp
       );
       return { ...prev, waypoints: wps, distance_km: calculateTaskDistance(wps) };
     });
-  }, []);
+  }, [findCtrConflict, showAirspaceError]);
 
   const removeWaypoint = (id: string) => {
     setTask((prev) => {
@@ -229,6 +284,15 @@ export default function NewTaskPage() {
   };
 
   const setWpRadius = (id: string, radius: number) => {
+    const wp = task.waypoints.find((w) => w.id === id);
+    if (wp) {
+      const conflict = findCtrConflict(wp.lat, wp.lon, radius);
+      if (conflict) {
+        showAirspaceError(conflict);
+        setTask((prev) => ({ ...prev })); // force re-render → slider snaps back
+        return;
+      }
+    }
     setTask((prev) => {
       const wps = prev.waypoints.map((wp) =>
         wp.id === id ? { ...wp, radius } : wp
@@ -238,6 +302,8 @@ export default function NewTaskPage() {
   };
 
   const addLibraryWaypoint = useCallback((wp: Waypoint) => {
+    const conflict = findCtrConflict(wp.lat, wp.lon, 0);
+    if (conflict) { showAirspaceError(conflict); return; }
     setTask((prev) => {
       const draft: Waypoint[] = [
         ...prev.waypoints,
@@ -246,7 +312,7 @@ export default function NewTaskPage() {
       const assigned = applyLabels(assignWaypointTypes(draft));
       return { ...prev, waypoints: assigned, distance_km: calculateTaskDistance(assigned) };
     });
-  }, [applyLabels]);
+  }, [applyLabels, findCtrConflict, showAirspaceError]);
 
   const setWpName = (id: string, name: string) => {
     setTask((prev) => ({
@@ -537,6 +603,21 @@ export default function NewTaskPage() {
           >
             <ShieldAlert size={16} strokeWidth={1.8} color={showNoFly ? "#ff3b30" : "rgba(0,0,0,0.45)"} />
           </button>
+
+          {/* Airspace conflict toast */}
+          {airspaceError && (
+            <div style={{
+              position: "absolute", bottom: 82, left: "50%", transform: "translateX(-50%)",
+              background: "rgba(255,59,48,0.94)", backdropFilter: "blur(8px)",
+              borderRadius: 20, padding: "8px 18px",
+              fontSize: 13, fontWeight: 600, color: "#fff",
+              zIndex: 200, whiteSpace: "nowrap",
+              boxShadow: "0 4px 16px rgba(255,59,48,0.35)",
+              pointerEvents: "none",
+            }}>
+              ⚠ {airspaceError} — 배치 불가
+            </div>
+          )}
 
           {/* Add mode hint banner — top just below search */}
           {isAddMode && (
