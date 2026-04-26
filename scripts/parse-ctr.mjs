@@ -61,12 +61,12 @@ for (const block of rawBlocks) {
     continue;
   }
 
-  const key = `${name}|${center.lat.toFixed(4)}|${center.lon.toFixed(4)}`;
-  if (seen.has(key)) {
+  const normalizedName = name.replace(/_/g, " ").trim().toUpperCase();
+  if (seen.has(normalizedName)) {
     console.log(`  DUP skip: ${name}`);
     continue;
   }
-  seen.add(key);
+  seen.add(normalizedName);
 
   const coords = circlePolygon(center.lon, center.lat, dc);
   features.push({
