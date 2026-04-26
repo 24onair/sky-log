@@ -14,8 +14,6 @@ interface TaskMapProps {
   flyToTarget?: { center: [number, number]; zoom: number } | null;
   referenceWaypoints?: Waypoint[]; // waypoint set overlay (gray, non-draggable)
   onRefWaypointClick?: (wp: Waypoint) => void; // click ref marker → add to task
-  showNoFly?: boolean;
-  airspaceApiKey?: string;
 }
 
 export function TaskMap({
@@ -27,8 +25,6 @@ export function TaskMap({
   flyToTarget,
   referenceWaypoints = [],
   onRefWaypointClick,
-  showNoFly = true,
-  airspaceApiKey,
 }: TaskMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -290,18 +286,7 @@ export function TaskMap({
       renderLayers(waypointsRef.current);
       renderRefLayers(referenceWaypoints);
 
-      // V-World WMS airspace overlay (browser fetches tiles directly — no CORS issue)
-      if (airspaceApiKey) {
-        const wmsUrl =
-          `https://api.vworld.kr/req/wms?service=WMS&request=GetMap&version=1.3.0` +
-          `&layers=LT_C_AISPRHC,LT_C_AISRESC&styles=&format=image/png&transparent=true` +
-          `&width=256&height=256&crs=EPSG:3857&bbox={bbox-epsg-3857}&key=${airspaceApiKey}`;
-        map.addSource("vworld-airspace", { type: "raster", tiles: [wmsUrl], tileSize: 256 });
-        map.addLayer({ id: "vworld-airspace", type: "raster", source: "vworld-airspace",
-          paint: { "raster-opacity": 0.65 },
-          layout: { visibility: showNoFly ? "visible" : "none" },
-        });
-      }
+
     });
 
     map.on("click", (e) => {
@@ -348,12 +333,6 @@ export function TaskMap({
     renderRefLayers(referenceWaypoints);
   }, [referenceWaypoints, renderRefLayers]);
 
-  // Toggle WMS airspace layer visibility
-  useEffect(() => {
-    const m = mapRef.current;
-    if (!m || !styleLoadedRef.current || !m.getLayer("vworld-airspace")) return;
-    m.setLayoutProperty("vworld-airspace", "visibility", showNoFly ? "visible" : "none");
-  }, [showNoFly]);
 
   return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }

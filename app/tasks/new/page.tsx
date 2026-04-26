@@ -371,8 +371,6 @@ export default function NewTaskPage() {
             flyToTarget={flyToTarget}
             referenceWaypoints={referenceWaypoints}
             onRefWaypointClick={addLibraryWaypoint}
-            showNoFly={showNoFly}
-            airspaceApiKey={process.env.NEXT_PUBLIC_VWORLD_API_KEY}
           />
 
           {/* Search overlay — top center */}
