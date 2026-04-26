@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getUser } from "@/lib/supabase/auth";
-import { ChevronLeft, Image, Users, MapPin } from "lucide-react";
+import { ChevronLeft, Image, Users, MapPin, Bell } from "lucide-react";
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com";
 
@@ -98,6 +98,18 @@ export default function AdminPage() {
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 15, fontWeight: 600, color: "#1d1d1f", margin: 0 }}>배너 광고 관리</p>
                 <p style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", margin: "2px 0 0" }}>광고 이미지 등록 및 노출 관리</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/announcements" style={{ textDecoration: "none" }}>
+            <div className="sk-card" style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(255,149,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Bell size={20} strokeWidth={1.5} style={{ color: "#ff9500" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#1d1d1f", margin: 0 }}>팝업 공지 관리</p>
+                <p style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", margin: "2px 0 0" }}>팝업 공지 등록 및 노출 관리</p>
               </div>
             </div>
           </Link>
