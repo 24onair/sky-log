@@ -18,9 +18,13 @@ type Result = {
   raw?: unknown;
 };
 
+type DebugResult = unknown;
+
 export default function TestAirspacePage() {
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
+  const [debug, setDebug] = useState<DebugResult | null>(null);
+  const [debugLoading, setDebugLoading] = useState(false);
 
   async function runTest() {
     setLoading(true);
@@ -52,8 +56,22 @@ export default function TestAirspacePage() {
     }
   }
 
+  async function runDebug() {
+    setDebugLoading(true);
+    setDebug(null);
+    try {
+      const res = await fetch("/api/airspace-debug");
+      const data = await res.json();
+      setDebug(data);
+    } catch (e) {
+      setDebug({ error: String(e) });
+    } finally {
+      setDebugLoading(false);
+    }
+  }
+
   return (
-    <div style={{ fontFamily: "monospace", padding: "2rem", maxWidth: 640 }}>
+    <div style={{ fontFamily: "monospace", padding: "2rem", maxWidth: 720 }}>
       <h1 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>V-World Airspace API Test</h1>
       <p style={{ color: "#666", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
         테스트 범위: 서울 일대 ({TEST_BOUNDS.swLat},{TEST_BOUNDS.swLon} → {TEST_BOUNDS.neLat},{TEST_BOUNDS.neLon})
@@ -74,6 +92,32 @@ export default function TestAirspacePage() {
       >
         {loading ? "요청 중…" : "API 테스트 실행"}
       </button>
+
+      <button
+        onClick={runDebug}
+        disabled={debugLoading}
+        style={{
+          marginLeft: "0.75rem",
+          padding: "0.6rem 1.4rem",
+          background: debugLoading ? "#999" : "#636366",
+          color: "white",
+          border: "none",
+          borderRadius: 8,
+          cursor: debugLoading ? "not-allowed" : "pointer",
+          fontSize: "0.95rem",
+        }}
+      >
+        {debugLoading ? "확인 중…" : "V-World 원본 응답 확인"}
+      </button>
+
+      {debug && (
+        <div style={{ marginTop: "1.5rem", padding: "1rem", borderRadius: 8, background: "#f5f5f7", border: "1px solid #d1d1d6" }}>
+          <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>V-World 원본 응답</div>
+          <pre style={{ fontSize: "0.75rem", overflow: "auto", maxHeight: 400, margin: 0 }}>
+            {JSON.stringify(debug, null, 2)}
+          </pre>
+        </div>
+      )}
 
       {result && (
         <div
