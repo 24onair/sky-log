@@ -286,7 +286,40 @@ export function TaskMap({
       renderLayers(waypointsRef.current);
       renderRefLayers(referenceWaypoints);
 
+      // CTR airspace overlay (static GeoJSON, no API needed)
+      (async () => {
+        try {
+          const res = await fetch("/airspace-ctr.geojson");
+          if (!res.ok) return;
+          const geojson: GeoJSON.FeatureCollection = await res.json();
+          if (map.getSource("ctr")) return;
+          map.addSource("ctr", { type: "geojson", data: geojson });
+          map.addLayer(
+            { id: "ctr-fill", type: "fill", source: "ctr", paint: { "fill-color": "#ff3b30", "fill-opacity": 0.18 } },
+            "circles-fill"
+          );
+          map.addLayer(
+            { id: "ctr-outline", type: "line", source: "ctr", paint: { "line-color": "#ff3b30", "line-width": 1.8, "line-opacity": 0.85, "line-dasharray": [4, 2] } },
+            "circles-fill"
+          );
+          map.addLayer({ id: "ctr-label", type: "symbol", source: "ctr", layout: { "text-field": ["get", "name"], "text-size": 10, "text-anchor": "center" }, paint: { "text-color": "#cc1a12", "text-halo-color": "white", "text-halo-width": 1.5 } });
 
+          const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false });
+          map.on("mouseenter", "ctr-fill", (e) => {
+            map.getCanvas().style.cursor = "pointer";
+            const f = e.features?.[0];
+            if (!f) return;
+            const p = f.properties ?? {};
+            popup.setLngLat(e.lngLat).setHTML(`<b>${p.name}</b><br/>반경 ${p.radiusNm}nm<br/>${p.altLow} ~ ${p.altHigh}`).addTo(map);
+          });
+          map.on("mouseleave", "ctr-fill", () => {
+            map.getCanvas().style.cursor = isAddModeRef.current ? "crosshair" : "";
+            popup.remove();
+          });
+        } catch {
+          // silently ignore CTR load failure
+        }
+      })();
     });
 
     map.on("click", (e) => {
