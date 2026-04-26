@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const preferredRegion = ["sin1", "hnd1"];
+
 export async function GET(req: NextRequest) {
   const apiKey = process.env.VWORLD_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "VWORLD_API_KEY not set" });
@@ -20,7 +22,9 @@ export async function GET(req: NextRequest) {
   const reqUrl = url.toString().replace(apiKey, "***");
 
   try {
-    const res = await fetch(url.toString());
+    const res = await fetch(url.toString(), {
+      headers: { Referer: "https://sky-log-brown.vercel.app/" },
+    });
     const text = await res.text();
     let json: unknown;
     try { json = JSON.parse(text); } catch { json = text; }

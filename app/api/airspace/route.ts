@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const preferredRegion = ["sin1", "hnd1"]; // 싱가포르/도쿄 — V-World IP 차단 우회
+
 // 국토교통부 V-World 공간정보오픈플랫폼
 // API 키 발급: https://www.vworld.kr/dev/v4dv_apifirst2_s001.do
 // .env.local 에 VWORLD_API_KEY 추가 필요
@@ -42,6 +44,7 @@ async function fetchLayer(
   url.searchParams.set("geomFilter", box);
 
   const res = await fetch(url.toString(), {
+    headers: { Referer: "https://sky-log-brown.vercel.app/" },
     next: { revalidate: 300 }, // 5분 캐시
   });
 
