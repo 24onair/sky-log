@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getUser } from "@/lib/supabase/auth";
-import { ChevronLeft, Image, Users, MapPin, Bell } from "lucide-react";
+import { ChevronLeft, Image, Users, MapPin, Bell, BookOpen } from "lucide-react";
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com";
 
@@ -13,6 +13,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [taskCount, setTaskCount] = useState<number | null>(null);
+  const [logCount, setLogCount] = useState<number | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -31,6 +32,10 @@ export default function AdminPage() {
       try {
         const res = await fetch("/api/admin/tasks");
         if (res.ok) { const data = await res.json(); setTaskCount(data.length); }
+      } catch { /* ignore */ }
+      try {
+        const res = await fetch("/api/admin/logs");
+        if (res.ok) { const data = await res.json(); setLogCount(data.length); }
       } catch { /* ignore */ }
     };
     init();
@@ -86,6 +91,21 @@ export default function AdminPage() {
               </div>
               {taskCount !== null && (
                 <span style={{ fontSize: 12, color: "rgba(0,0,0,0.35)", fontWeight: 500 }}>{taskCount}개</span>
+              )}
+            </div>
+          </Link>
+
+          <Link href="/admin/logs" style={{ textDecoration: "none" }}>
+            <div className="sk-card" style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(88,86,214,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <BookOpen size={20} strokeWidth={1.5} style={{ color: "#5856d6" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#1d1d1f", margin: 0 }}>로그 관리</p>
+                <p style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", margin: "2px 0 0" }}>전체 비행 로그 조회 및 삭제</p>
+              </div>
+              {logCount !== null && (
+                <span style={{ fontSize: 12, color: "rgba(0,0,0,0.35)", fontWeight: 500 }}>{logCount}개</span>
               )}
             </div>
           </Link>
