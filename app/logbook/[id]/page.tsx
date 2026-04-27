@@ -74,7 +74,12 @@ export default function FlightDetailPage({ params }: PageProps) {
         const user = await getUser();
         if (!user) { router.push("/auth/login"); return; }
         setCurrentUserId(user.id);
-        const data = await getFlightLogById(user.id, p.id);
+        let data = await getFlightLogById(user.id, p.id);
+        if (!data && user.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com")) {
+          // Admin viewing another member's log — fetch via service role API
+          const res = await fetch(`/api/admin/logs/${p.id}`);
+          if (res.ok) data = await res.json();
+        }
         if (!data) setError("비행 기록을 찾을 수 없습니다");
         else setLog(data);
       } catch (err) {
