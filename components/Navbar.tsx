@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { getUser, signOut } from "@/lib/supabase/auth";
 import { hasUnsavedChanges, getUnsavedMessage } from "@/lib/unsavedChanges";
-import { Wind, LogOut, BookOpen, Navigation, Plus, Shield, Users, MapPin, Layers } from "lucide-react";
+import { Wind, LogOut, BookOpen, Navigation, Plus, Shield, Users, MapPin, Layers, FileText } from "lucide-react";
 
 export function Navbar() {
   const router = useRouter();
@@ -81,6 +81,7 @@ export function Navbar() {
                     <Shield size={11} strokeWidth={2} />ADMIN
                   </span>
                   {navLink("/admin/tasks", <MapPin size={14} strokeWidth={1.5} />, "타스크관리", onAdmin && pathname?.startsWith("/admin/tasks"))}
+                  {navLink("/admin/logs", <FileText size={14} strokeWidth={1.5} />, "로그관리", onAdmin && pathname?.startsWith("/admin/logs"))}
                   {navLink("/admin/members", <Users size={14} strokeWidth={1.5} />, "회원관리", onAdmin && pathname?.startsWith("/admin/members"))}
                 </div>
               )}
