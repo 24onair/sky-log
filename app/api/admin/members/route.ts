@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/supabase/adminGuard";
 
 function sbFetch(path: string, method: string, body?: unknown) {
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/${path}`;
@@ -15,6 +16,9 @@ function sbFetch(path: string, method: string, body?: unknown) {
 }
 
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const res = await sbFetch("profiles?select=*&order=created_at.desc", "GET");
   const text = await res.text();
   if (!res.ok) return NextResponse.json({ error: text }, { status: 500 });
@@ -22,6 +26,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id, is_active } = await req.json();
   const res = await sbFetch(`profiles?id=eq.${id}`, "PATCH", { is_active });
   if (!res.ok) return NextResponse.json({ error: await res.text() }, { status: 500 });
@@ -29,6 +36,9 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id } = await req.json();
   // auth.users 삭제 → profiles는 cascade로 자동 삭제
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users/${id}`;

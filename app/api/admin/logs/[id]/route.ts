@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/supabase/adminGuard";
 
 function sbFetch(path: string) {
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/${path}`;
@@ -15,6 +16,9 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id } = await params;
   const res = await sbFetch(`flight_logs?id=eq.${id}&limit=1`);
   const text = await res.text();

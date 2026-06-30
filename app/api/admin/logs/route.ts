@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/supabase/adminGuard";
 
 function sbFetch(path: string, method: string, body?: unknown) {
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/${path}`;
@@ -15,6 +16,9 @@ function sbFetch(path: string, method: string, body?: unknown) {
 }
 
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const logsRes = await sbFetch(
     "flight_logs?select=id,user_id,flight_date,duration_sec,distance_xcontest_km,distance_straight_km,site_id,memo,igc_parsed,created_at&order=flight_date.desc",
     "GET"
@@ -37,6 +41,9 @@ export async function GET() {
 }
 
 export async function DELETE(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id } = await req.json();
   const res = await sbFetch(`flight_logs?id=eq.${id}`, "DELETE");
   if (!res.ok) return NextResponse.json({ error: await res.text() }, { status: 500 });

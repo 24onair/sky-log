@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/supabase/adminGuard";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id } = await params;
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/tasks?id=eq.${id}&select=*`;
   const res = await fetch(url, {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/supabase/adminGuard";
 
 function sbFetch(path: string, method: string, body?: unknown) {
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/${path}`;
@@ -15,6 +16,9 @@ function sbFetch(path: string, method: string, body?: unknown) {
 }
 
 export async function POST(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { image_url, link_url, is_active, sort_order } = await req.json();
   const res = await sbFetch("rpc/admin_insert_banner", "POST", {
     p_image_url: image_url,
@@ -28,6 +32,9 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id, ...updates } = await req.json();
   const res = await sbFetch(`banners?id=eq.${id}`, "PATCH", updates);
   if (!res.ok) return NextResponse.json({ error: await res.text() }, { status: 500 });
@@ -35,6 +42,9 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id } = await req.json();
   const res = await sbFetch(`banners?id=eq.${id}`, "DELETE");
   if (!res.ok) return NextResponse.json({ error: await res.text() }, { status: 500 });
