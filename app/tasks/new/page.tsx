@@ -365,6 +365,16 @@ export default function NewTaskPage() {
   const activeSet = waypointSets.find((s) => s.id === activeSetId) ?? null;
   const referenceWaypoints = activeSet?.waypoints ?? [];
 
+  // 검색·선택 가능한 웨이포인트 목록 = 선택된 세트 + 과거 타스크 라이브러리 (이름 중복 제거)
+  const selectableWaypoints = useMemo(() => {
+    const seen = new Set<string>();
+    const out: Waypoint[] = [];
+    for (const wp of [...referenceWaypoints, ...libraryWaypoints]) {
+      if (!seen.has(wp.name)) { seen.add(wp.name); out.push(wp); }
+    }
+    return out;
+  }, [referenceWaypoints, libraryWaypoints]);
+
   const addSetToTask = useCallback(() => {
     if (!activeSet) return;
     setTask((prev) => {
@@ -895,13 +905,13 @@ export default function NewTaskPage() {
             )}
 
             {/* ── Waypoint Library ──────────────────────────────────── */}
-            {libraryWaypoints.length > 0 && (
+            {selectableWaypoints.length > 0 && (
               <div className="sk-card" style={{ padding: "14px 16px" }}>
                 <button
                   onClick={() => setShowLib((v) => !v)}
                   style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                 >
-                  <p style={secHead}>기존 웨이포인트 ({libraryWaypoints.length})</p>
+                  <p style={secHead}>웨이포인트 ({selectableWaypoints.length})</p>
                   <span style={{ fontSize: 11, color: "#0071e3", fontWeight: 500 }}>{showLib ? "접기" : "펼치기"}</span>
                 </button>
 
@@ -917,7 +927,7 @@ export default function NewTaskPage() {
                       style={{ fontSize: 13, marginBottom: 8 }}
                     />
                     <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 200, overflowY: "auto" }}>
-                      {libraryWaypoints
+                      {selectableWaypoints
                         .filter((wp) => !libQuery || wp.name.toLowerCase().includes(libQuery.toLowerCase()))
                         .map((wp) => {
                           const alreadyAdded = task.waypoints.some((w) => w.name === wp.name);

@@ -229,9 +229,13 @@ export function TaskMap({
     }
 
     wps.forEach((wp) => {
-      const el = document.createElement("div");
       const clickable = !!onRefWaypointClick;
-      el.style.cssText = `
+      // el은 Mapbox가 위치 지정(transform: translate)에 쓰는 래퍼다.
+      // 여기에 transform(scale)을 주면 위치 transform을 덮어써서 마커가 튄다.
+      // 시각 스타일과 hover 확대는 반드시 inner에만 적용한다.
+      const el = document.createElement("div");
+      const inner = document.createElement("div");
+      inner.style.cssText = `
         min-width: 22px; height: 22px; padding: 0 4px;
         background: #8e8e93; border: 2px solid white; border-radius: 11px;
         box-shadow: 0 1px 5px rgba(0,0,0,0.22);
@@ -241,11 +245,12 @@ export function TaskMap({
         cursor: ${clickable ? "pointer" : "default"};
         transition: background 0.12s, transform 0.12s;
       `;
-      el.textContent = wp.name.slice(0, 4);
+      inner.textContent = wp.name.slice(0, 4);
+      el.appendChild(inner);
       el.title = clickable ? `${wp.name} — 클릭하여 추가` : wp.name;
       if (clickable) {
-        el.addEventListener("mouseenter", () => { el.style.background = "#0071e3"; el.style.transform = "scale(1.15)"; });
-        el.addEventListener("mouseleave", () => { el.style.background = "#8e8e93"; el.style.transform = "scale(1)"; });
+        el.addEventListener("mouseenter", () => { inner.style.background = "#0071e3"; inner.style.transform = "scale(1.15)"; });
+        el.addEventListener("mouseleave", () => { inner.style.background = "#8e8e93"; inner.style.transform = "scale(1)"; });
         el.addEventListener("click", (e) => {
           e.stopPropagation();
           onRefWaypointClick(wp);
