@@ -33,15 +33,15 @@ export function AltitudeProfile({ altitudes, maxAlt }: AltitudeProfileProps) {
     >
       <defs>
         <linearGradient id="altFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0071e3" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#0071e3" stopOpacity="0.04" />
+          <stop offset="0%" stopColor="#2F77C2" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#2F77C2" stopOpacity="0.04" />
         </linearGradient>
       </defs>
       <polygon points={area} fill="url(#altFill)" />
       <polyline
         points={pts}
         fill="none"
-        stroke="#0071e3"
+        stroke="#2F77C2"
         strokeWidth="1.6"
         strokeLinejoin="round"
         strokeLinecap="round"

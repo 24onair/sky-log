@@ -167,7 +167,7 @@ export default function NewFlightPage() {
           <span style={{ color: "rgba(0,0,0,0.36)" }}>{icon}</span>
           <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", color: "rgba(0,0,0,0.36)", textTransform: "uppercase" }}>{lbl}</span>
         </div>
-        <p style={{ fontSize: 18, fontWeight: 600, color: accent ? "#0071e3" : "#1d1d1f", letterSpacing: "-0.4px", lineHeight: 1 }}>
+        <p style={{ fontSize: 18, fontWeight: 600, color: accent ? "#2F77C2" : "#1d1d1f", letterSpacing: "-0.4px", lineHeight: 1 }}>
           {value}
           {unit && <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(0,0,0,0.4)", marginLeft: 2 }}>{unit}</span>}
         </p>
@@ -336,7 +336,7 @@ export default function NewFlightPage() {
                 display: "block",
                 padding: "20px 20px",
                 cursor: igcLoading ? "default" : "pointer",
-                background: isDragging ? "rgba(0,113,227,0.04)" : fileName ? "rgba(52,199,89,0.04)" : "#fff",
+                background: isDragging ? "rgba(47, 119, 194,0.04)" : fileName ? "rgba(52,199,89,0.04)" : "#fff",
                 transition: "background 0.2s",
                 borderBottom: (igcError) ? "none" : "none",
               }}
@@ -363,7 +363,7 @@ export default function NewFlightPage() {
 
               {igcLoading ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 22, height: 22, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
+                  <div style={{ width: 22, height: 22, border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
                   <p style={{ fontSize: 13, color: "rgba(0,0,0,0.56)" }}>IGC 분석 중...</p>
                   <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                 </div>
@@ -377,8 +377,8 @@ export default function NewFlightPage() {
                 </div>
               ) : (
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 36, height: 36, background: "rgba(0,113,227,0.08)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Upload size={17} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+                  <div style={{ width: 36, height: 36, background: "rgba(47, 119, 194,0.08)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Upload size={17} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
                   </div>
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 500, color: "#1d1d1f" }}>IGC 파일 업로드</p>

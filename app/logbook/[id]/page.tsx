@@ -127,7 +127,7 @@ export default function FlightDetailPage({ params }: PageProps) {
     return (
       <div style={{ background: "#f5f5f7", minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
-          <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+          <div style={{ width: 28, height: 28, border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
           <p style={{ fontSize: 14, color: "rgba(0,0,0,0.4)" }}>불러오는 중...</p>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
@@ -281,7 +281,7 @@ export default function FlightDetailPage({ params }: PageProps) {
                   {log.distance_xcontest_km != null && (
                     <div>
                       <p style={statLabel}><Navigation size={11} strokeWidth={1.5} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />XC 거리</p>
-                      <p className="ld-stat-value" style={{ color: "#0071e3" }}>{log.distance_xcontest_km.toFixed(1)} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>km</span></p>
+                      <p className="ld-stat-value" style={{ color: "#2F77C2" }}>{log.distance_xcontest_km.toFixed(1)} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>km</span></p>
                     </div>
                   )}
                   {log.max_altitude_m != null && (
@@ -314,7 +314,7 @@ export default function FlightDetailPage({ params }: PageProps) {
                     </div>
                     <div>
                       <p style={statLabel}>XC 거리</p>
-                      <p className="ld-stat-value" style={{ color: log.distance_xcontest_km != null ? "#0071e3" : "#1d1d1f" }}>{log.distance_xcontest_km != null ? `${log.distance_xcontest_km.toFixed(1)}` : "—"} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>{log.distance_xcontest_km != null ? "km" : ""}</span></p>
+                      <p className="ld-stat-value" style={{ color: log.distance_xcontest_km != null ? "#2F77C2" : "#1d1d1f" }}>{log.distance_xcontest_km != null ? `${log.distance_xcontest_km.toFixed(1)}` : "—"} <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(0,0,0,0.4)" }}>{log.distance_xcontest_km != null ? "km" : ""}</span></p>
                     </div>
                   </div>
                 </div>

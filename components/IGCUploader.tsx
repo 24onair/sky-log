@@ -49,8 +49,8 @@ export function IGCUploader({ onParsed }: IGCUploaderProps) {
     }
   };
 
-  const borderColor = isDragging ? "#0071e3" : fileName ? "#34c759" : error ? "#ff3b30" : "rgba(0,0,0,0.12)";
-  const bgColor = isDragging ? "rgba(0,113,227,0.04)" : fileName ? "rgba(52,199,89,0.04)" : "#fafafa";
+  const borderColor = isDragging ? "#2F77C2" : fileName ? "#34c759" : error ? "#ff3b30" : "rgba(0,0,0,0.12)";
+  const bgColor = isDragging ? "rgba(47, 119, 194,0.04)" : fileName ? "rgba(52,199,89,0.04)" : "#fafafa";
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -88,7 +88,7 @@ export function IGCUploader({ onParsed }: IGCUploaderProps) {
 
         {isLoading ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 32, height: 32, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            <div style={{ width: 32, height: 32, border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
             <p style={{ fontSize: 14, color: "rgba(0,0,0,0.56)" }}>파일 분석 중...</p>
           </div>
         ) : fileName ? (
@@ -99,7 +99,7 @@ export function IGCUploader({ onParsed }: IGCUploaderProps) {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-            <Upload size={28} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+            <Upload size={28} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
             <p style={{ fontSize: 14, fontWeight: 500, color: "#1d1d1f" }}>IGC 파일 드래그 또는 클릭하여 업로드</p>
             <p style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>비행 데이터를 자동으로 입력합니다</p>
           </div>

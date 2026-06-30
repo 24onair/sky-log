@@ -103,7 +103,7 @@ export default function AdminTasksPage() {
 
   if (loading) return (
     <div style={{ minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f7" }}>
-      <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <div style={{ width: 28, height: 28, border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -161,13 +161,13 @@ export default function AdminTasksPage() {
                     title={t.is_public ? "공개 → 비공개로 변경" : "비공개 → 공개로 변경"}
                     style={{
                       flexShrink: 0, padding: 6, borderRadius: 6, border: "none",
-                      background: t.is_public ? "rgba(0,113,227,0.08)" : "rgba(0,0,0,0.05)",
+                      background: t.is_public ? "rgba(47, 119, 194,0.08)" : "rgba(0,0,0,0.05)",
                       cursor: "pointer", display: "flex", alignItems: "center",
                       opacity: togglingId === t.id ? 0.5 : 1, transition: "opacity 0.15s",
                     }}
                   >
                     {t.is_public
-                      ? <Globe size={14} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+                      ? <Globe size={14} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
                       : <Lock size={14} strokeWidth={1.5} style={{ color: "rgba(0,0,0,0.35)" }} />
                     }
                   </button>

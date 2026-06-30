@@ -183,7 +183,7 @@ export default function TaskDetailPage({ params }: PageProps) {
 
   if (loading || !task) return (
     <div style={{ background: "#f5f5f7", minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <div style={{ width: 28, height: 28, border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -230,7 +230,7 @@ export default function TaskDetailPage({ params }: PageProps) {
                   <div style={{ width: 1, background: "rgba(0,0,0,0.1)", alignSelf: "stretch" }} />
                   <div>
                     <p style={{ fontSize: 9, fontWeight: 600, color: "rgba(0,0,0,0.35)", letterSpacing: "0.06em", marginBottom: 1 }}>최적화 경로</p>
-                    <p style={{ fontSize: 18, fontWeight: 700, color: "#0071e3", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: "#2F77C2", letterSpacing: "-0.5px", lineHeight: 1 }}>
                       {optimumKm != null ? optimumKm.toFixed(1) : "—"}<span style={{ fontSize: 11, fontWeight: 500, marginLeft: 2 }}>km</span>
                     </p>
                   </div>
@@ -242,20 +242,20 @@ export default function TaskDetailPage({ params }: PageProps) {
           </div>
 
           {isAddMode && (
-            <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "rgba(0,113,227,0.9)", borderRadius: 16, padding: "12px 20px", pointerEvents: "none" }}>
+            <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "rgba(47, 119, 194,0.9)", borderRadius: 16, padding: "12px 20px", pointerEvents: "none" }}>
               <p style={{ fontSize: 14, fontWeight: 500, color: "#fff", textAlign: "center" }}>지도를 탭하여 웨이포인트 추가</p>
             </div>
           )}
 
           {isOwner && (
-            <button onClick={() => setIsAddMode((v) => !v)} style={{ position: "absolute", bottom: task.waypoints.length >= 2 ? 148 : 16, right: 16, width: 52, height: 52, borderRadius: "50%", background: isAddMode ? "#ff3b30" : "#0071e3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.24)", transition: "background 0.2s, bottom 0.3s", zIndex: 10 }}>
+            <button onClick={() => setIsAddMode((v) => !v)} style={{ position: "absolute", bottom: task.waypoints.length >= 2 ? 148 : 16, right: 16, width: 52, height: 52, borderRadius: "50%", background: isAddMode ? "#ff3b30" : "#2F77C2", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.24)", transition: "background 0.2s, bottom 0.3s", zIndex: 10 }}>
               {isAddMode ? <Minus size={22} strokeWidth={2.5} style={{ color: "#fff" }} /> : <Plus size={22} strokeWidth={2.5} style={{ color: "#fff" }} />}
             </button>
           )}
 
           {task.waypoints.length > 0 && (
             <div style={{ position: "absolute", bottom: task.waypoints.length >= 2 ? 148 : 16, left: 12, display: "flex", gap: 8, flexWrap: "wrap", pointerEvents: "none" }}>
-              {[{ color: "#34c759", label: "이륙" }, { color: "#0071e3", label: "전환점" }, { color: "#ff3b30", label: "도착" }].map(({ color, label: lbl }) => (
+              {[{ color: "#34c759", label: "이륙" }, { color: "#2F77C2", label: "전환점" }, { color: "#ff3b30", label: "도착" }].map(({ color, label: lbl }) => (
                 <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(6px)", borderRadius: 20, padding: "4px 9px", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }}>
                   <div style={{ width: 7, height: 7, borderRadius: "50%", background: color }} /><span style={{ fontSize: 11, fontWeight: 500, color: "#1d1d1f" }}>{lbl}</span>
                 </div>
@@ -271,9 +271,9 @@ export default function TaskDetailPage({ params }: PageProps) {
         <div className={`task-sidebar ${sheetExpanded ? "expanded" : "collapsed"}`} style={{ background: "#f5f5f7", overflowY: "auto", borderTop: "1px solid rgba(0,0,0,0.1)", transition: "max-height 0.3s ease" }}>
           <button className="sheet-toggle" onClick={() => setSheetExpanded((v) => !v)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 16px", background: "none", border: "none", cursor: "pointer", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Navigation size={14} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+              <Navigation size={14} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
               <span style={{ fontSize: 14, fontWeight: 600, color: "#1d1d1f" }}>{task.waypoints.length}개 웨이포인트</span>
-              {task.distance_km != null && task.distance_km > 0 && <span style={{ fontSize: 13, color: "#0071e3", fontWeight: 500 }}>{task.distance_km.toFixed(1)} km</span>}
+              {task.distance_km != null && task.distance_km > 0 && <span style={{ fontSize: 13, color: "#2F77C2", fontWeight: 500 }}>{task.distance_km.toFixed(1)} km</span>}
             </div>
             {sheetExpanded ? <ChevronDown size={16} strokeWidth={1.5} style={{ color: "rgba(0,0,0,0.4)" }} /> : <ChevronUp size={16} strokeWidth={1.5} style={{ color: "rgba(0,0,0,0.4)" }} />}
           </button>
@@ -324,7 +324,7 @@ export default function TaskDetailPage({ params }: PageProps) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <p style={secHead}>웨이포인트</p>
                 {isOwner && (
-                  <button onClick={() => setIsAddMode((v) => !v)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", background: isAddMode ? "rgba(255,59,48,0.1)" : "rgba(0,113,227,0.1)", color: isAddMode ? "#ff3b30" : "#0071e3" }}>
+                  <button onClick={() => setIsAddMode((v) => !v)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", background: isAddMode ? "rgba(255,59,48,0.1)" : "rgba(47, 119, 194,0.1)", color: isAddMode ? "#ff3b30" : "#2F77C2" }}>
                     {isAddMode ? <><Minus size={12} />추가 취소</> : <><MapPin size={12} />지도에서 추가</>}
                   </button>
                 )}
@@ -351,7 +351,7 @@ export default function TaskDetailPage({ params }: PageProps) {
                   <div style={{ width: 1, background: "rgba(0,0,0,0.08)", alignSelf: "stretch" }} />
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,0,0,0.4)", marginBottom: 4 }}>최적화 경로 <span style={{ fontWeight: 500, color: "rgba(0,0,0,0.3)" }}>(최단)</span></p>
-                    <p style={{ fontSize: 20, fontWeight: 700, color: "#0071e3", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                    <p style={{ fontSize: 20, fontWeight: 700, color: "#2F77C2", letterSpacing: "-0.5px", lineHeight: 1 }}>
                       {optimumKm != null ? optimumKm.toFixed(1) : "—"}<span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>km</span>
                     </p>
                   </div>
@@ -376,13 +376,13 @@ export default function TaskDetailPage({ params }: PageProps) {
                   <button onClick={() => downloadBlob(exportToXCTrack(task), `${task.name}.xctsk`, "application/json")} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "9px", borderRadius: 10, fontSize: 12, fontWeight: 500, background: "#fff", border: "none", cursor: "pointer", color: "#1d1d1f", boxShadow: "rgba(0,0,0,0.08) 0 1px 6px" }}>
                     <Download size={13} strokeWidth={1.5} />XCTrack
                   </button>
-                  <button onClick={handleShowQR} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "9px", borderRadius: 10, fontSize: 12, fontWeight: 500, background: "#fff", border: "none", cursor: "pointer", color: "#0071e3", boxShadow: "rgba(0,0,0,0.08) 0 1px 6px" }}>
+                  <button onClick={handleShowQR} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "9px", borderRadius: 10, fontSize: 12, fontWeight: 500, background: "#fff", border: "none", cursor: "pointer", color: "#2F77C2", boxShadow: "rgba(0,0,0,0.08) 0 1px 6px" }}>
                     <QrCode size={13} strokeWidth={1.5} />QR
                   </button>
                 </div>
               )}
 
-              <button onClick={handleCopy} disabled={isCopying} style={{ width: "100%", padding: "9px", borderRadius: 10, fontSize: 13, background: "rgba(0,113,227,0.06)", color: "#0071e3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, opacity: isCopying ? 0.5 : 1 }}>
+              <button onClick={handleCopy} disabled={isCopying} style={{ width: "100%", padding: "9px", borderRadius: 10, fontSize: 13, background: "rgba(47, 119, 194,0.06)", color: "#2F77C2", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, opacity: isCopying ? 0.5 : 1 }}>
                 <Copy size={13} strokeWidth={1.5} />{isCopying ? "복사 중..." : "타스크 복사"}
               </button>
 
@@ -448,7 +448,7 @@ function WaypointRow({ wp, isEditing, onToggleEdit, onNameChange, onRadiusChange
                 min={50} max={10000} step={50}
                 value={Math.min(wp.radius, 10000)}
                 onChange={(e) => onRadiusChange(Number(e.target.value))}
-                style={{ flex: 1, accentColor: "#0071e3", cursor: "pointer" }}
+                style={{ flex: 1, accentColor: "#2F77C2", cursor: "pointer" }}
               />
               <div style={{ display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
                 <input
@@ -468,7 +468,7 @@ function WaypointRow({ wp, isEditing, onToggleEdit, onNameChange, onRadiusChange
             {/* Preset chips */}
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
               {RADIUS_PRESETS.map((r) => (
-                <button key={r} onClick={(e) => { e.stopPropagation(); onRadiusChange(r); }} style={{ padding: "5px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", background: wp.radius === r ? "#0071e3" : "rgba(0,0,0,0.06)", color: wp.radius === r ? "#fff" : "#1d1d1f", transition: "all 0.1s" }}>
+                <button key={r} onClick={(e) => { e.stopPropagation(); onRadiusChange(r); }} style={{ padding: "5px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", background: wp.radius === r ? "#2F77C2" : "rgba(0,0,0,0.06)", color: wp.radius === r ? "#fff" : "#1d1d1f", transition: "all 0.1s" }}>
                   {r >= 1000 ? `${r / 1000}km` : `${r}m`}
                 </button>
               ))}

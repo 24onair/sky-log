@@ -76,7 +76,7 @@ export function FlightMap({ trackPoints }: FlightMapProps) {
         type: "line",
         source: "track-shadow",
         paint: {
-          "line-color": "#0071e3",
+          "line-color": "#2F77C2",
           "line-width": 6,
           "line-opacity": 0.18,
           "line-blur": 4,
@@ -97,7 +97,7 @@ export function FlightMap({ trackPoints }: FlightMapProps) {
         type: "line",
         source: "track",
         paint: {
-          "line-color": "#0071e3",
+          "line-color": "#2F77C2",
           "line-width": 2.5,
           "line-opacity": 0.92,
         },

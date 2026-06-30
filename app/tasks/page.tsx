@@ -75,7 +75,7 @@ export default function TasksPage() {
 
         {loading ? (
           <div style={{ textAlign: "center", padding: "80px 20px" }}>
-            <div style={{ width: 32, height: 32, border: "3px solid #F0B90B", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+            <div style={{ width: 32, height: 32, border: "3px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         ) : (
@@ -106,8 +106,8 @@ export default function TasksPage() {
 
             {myTasks.length === 0 && publicTasks.length === 0 && (
               <div style={{ textAlign: "center", padding: "100px 20px" }}>
-                <div style={{ width: 64, height: 64, background: "rgba(240, 185, 11, 0.1)", borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-                  <Navigation size={32} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
+                <div style={{ width: 64, height: 64, background: "rgba(47, 119, 194, 0.1)", borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+                  <Navigation size={32} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
                 </div>
                 <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1E2026", marginBottom: 10 }}>타스크가 없습니다</h3>
                 <p style={{ fontSize: 15, color: "#848E9C", marginBottom: 28, fontWeight: 500 }}>첫 번째 XC 타스크를 만들어보세요</p>
@@ -156,7 +156,7 @@ function TaskCard({ task, isOwner, onDelete }: { task: Task; isOwner: boolean; o
           <span style={{ fontSize: 13, color: "#848E9C", fontWeight: 500 }}>{task.task_date}</span>
           <span style={{ fontSize: 13, color: "#848E9C", fontWeight: 500 }}>{task.task_type}</span>
           {task.distance_km != null && (
-            <span style={{ fontSize: 13, color: "#F0B90B", fontWeight: 600 }}>
+            <span style={{ fontSize: 13, color: "#2F77C2", fontWeight: 600 }}>
               {task.distance_km.toFixed(1)} km
             </span>
           )}

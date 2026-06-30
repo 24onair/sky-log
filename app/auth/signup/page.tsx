@@ -155,7 +155,7 @@ export default function SignUpPage() {
                 <p style={{ fontSize: 13, color: "#848E9C", textAlign: "center", lineHeight: 1.6 }}>
                   관리자 승인 후 로그인하실 수 있습니다.
                 </p>
-                <Link href="/auth/login" style={{ fontSize: 14, color: "#F0B90B", fontWeight: 600, textDecoration: "none" }}>
+                <Link href="/auth/login" style={{ fontSize: 14, color: "#2F77C2", fontWeight: 600, textDecoration: "none" }}>
                   로그인 페이지로 →
                 </Link>
               </div>
@@ -169,7 +169,7 @@ export default function SignUpPage() {
 
         <p style={{ textAlign: "center", fontSize: 14, color: "#848E9C", marginTop: 28, fontWeight: 500 }}>
           이미 계정이 있으신가요?{" "}
-          <Link href="/auth/login" style={{ color: "#F0B90B", textDecoration: "none", fontWeight: 700 }}>로그인</Link>
+          <Link href="/auth/login" style={{ color: "#2F77C2", textDecoration: "none", fontWeight: 700 }}>로그인</Link>
         </p>
       </div>
     </div>

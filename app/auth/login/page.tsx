@@ -105,7 +105,7 @@ export default function LoginPage() {
 
         <p style={{ textAlign: "center", fontSize: 14, color: "#848E9C", marginTop: 24, fontWeight: 500 }}>
           계정이 없으신가요?{" "}
-          <Link href="/auth/signup" style={{ color: "#F0B90B", textDecoration: "none", fontWeight: 700 }}>
+          <Link href="/auth/signup" style={{ color: "#2F77C2", textDecoration: "none", fontWeight: 700 }}>
             회원가입
           </Link>
         </p>

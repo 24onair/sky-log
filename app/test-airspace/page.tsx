@@ -237,7 +237,7 @@ export default function TestAirspacePage() {
       {/* ── ③ 데이터 API 직접 호출 ── */}
       <section style={{ marginBottom: "1.5rem" }}>
         <div style={{ fontWeight: 700, marginBottom: "0.4rem" }}>③ 브라우저→V-World 데이터 API (fetch)</div>
-        {btn("테스트 실행", clientLoading, runClientTest, "#0071e3")}
+        {btn("테스트 실행", clientLoading, runClientTest, "#2F77C2")}
         {clientResult && (
           <div style={{ marginTop: "0.6rem", padding: "0.75rem", borderRadius: 8,
             background: clientResult.ok ? "#f0fdf4" : "#fff1f2",

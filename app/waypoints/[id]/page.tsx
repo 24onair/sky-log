@@ -113,7 +113,7 @@ export default function WaypointSetDetailPage() {
 
   if (loading) return (
     <div style={{ minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f7" }}>
-      <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <div style={{ width: 28, height: 28, border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -153,15 +153,15 @@ export default function WaypointSetDetailPage() {
             </div>
           </div>
           {isOwn && isAddMode && (
-            <div style={{ position: "absolute", top: 58, left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 10, background: "rgba(0,113,227,0.92)", borderRadius: 20, padding: "7px 10px 7px 18px", whiteSpace: "nowrap", zIndex: 200 }}>
+            <div style={{ position: "absolute", top: 58, left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 10, background: "rgba(47, 119, 194,0.92)", borderRadius: 20, padding: "7px 10px 7px 18px", whiteSpace: "nowrap", zIndex: 200 }}>
               <p style={{ fontSize: 13, fontWeight: 500, color: "#fff" }}>탭하여 포인트 추가</p>
-              <button onClick={() => setIsAddMode(false)} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "none", cursor: "pointer", borderRadius: 14, padding: "5px 12px", fontSize: 13, fontWeight: 600, color: "#0071e3" }}>
+              <button onClick={() => setIsAddMode(false)} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "none", cursor: "pointer", borderRadius: 14, padding: "5px 12px", fontSize: 13, fontWeight: 600, color: "#2F77C2" }}>
                 <CheckCircle2 size={13} strokeWidth={2.5} />완료
               </button>
             </div>
           )}
           {isOwn && (
-            <button onClick={() => setIsAddMode((v) => !v)} style={{ position: "absolute", bottom: 16, right: 16, width: 52, height: 52, borderRadius: "50%", background: isAddMode ? "#34c759" : "#0071e3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.24)", zIndex: 200 }}>
+            <button onClick={() => setIsAddMode((v) => !v)} style={{ position: "absolute", bottom: 16, right: 16, width: 52, height: 52, borderRadius: "50%", background: isAddMode ? "#34c759" : "#2F77C2", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.24)", zIndex: 200 }}>
               {isAddMode ? <CheckCircle2 size={20} strokeWidth={2} style={{ color: "#fff" }} /> : <Plus size={22} strokeWidth={2.5} style={{ color: "#fff" }} />}
             </button>
           )}
@@ -171,7 +171,7 @@ export default function WaypointSetDetailPage() {
         <div className={`wsd-sidebar ${sheetExpanded ? "expanded" : "collapsed"}`} style={{ background: "#f5f5f7", overflowY: "auto", borderTop: "1px solid rgba(0,0,0,0.1)", transition: "max-height 0.3s ease" }}>
           <button className="wsd-toggle" onClick={() => setSheetExpanded((v) => !v)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 16px", background: "none", border: "none", cursor: "pointer", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: "#1d1d1f" }}>{waypoints.length}개 웨이포인트{isDirty ? " •" : ""}</span>
-            <span style={{ fontSize: 12, color: "#0071e3" }}>{sheetExpanded ? "접기" : "펼치기"}</span>
+            <span style={{ fontSize: 12, color: "#2F77C2" }}>{sheetExpanded ? "접기" : "펼치기"}</span>
           </button>
 
           <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -202,9 +202,9 @@ export default function WaypointSetDetailPage() {
                   <div>
                     <p style={{ fontSize: 14, fontWeight: 600, color: "#1d1d1f" }}>{name}</p>
                     {description && <p style={{ fontSize: 12, color: "rgba(0,0,0,0.5)", marginTop: 4 }}>{description}</p>}
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, background: "rgba(0,113,227,0.08)", borderRadius: 6, padding: "3px 8px" }}>
-                      <Globe size={11} strokeWidth={1.5} style={{ color: "#0071e3" }} />
-                      <span style={{ fontSize: 11, color: "#0071e3", fontWeight: 600 }}>공개 세트</span>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, background: "rgba(47, 119, 194,0.08)", borderRadius: 6, padding: "3px 8px" }}>
+                      <Globe size={11} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
+                      <span style={{ fontSize: 11, color: "#2F77C2", fontWeight: 600 }}>공개 세트</span>
                     </div>
                   </div>
                 )}
@@ -216,7 +216,7 @@ export default function WaypointSetDetailPage() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <p style={secHead}>웨이포인트 ({waypoints.length})</p>
                 {isOwn && (
-                  <button onClick={() => setIsAddMode((v) => !v)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", background: isAddMode ? "#34c759" : "rgba(0,113,227,0.1)", color: isAddMode ? "#fff" : "#0071e3" }}>
+                  <button onClick={() => setIsAddMode((v) => !v)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", background: isAddMode ? "#34c759" : "rgba(47, 119, 194,0.1)", color: isAddMode ? "#fff" : "#2F77C2" }}>
                     <MapPin size={12} />지도에서 추가
                   </button>
                 )}

@@ -99,7 +99,7 @@ export default function AdminAnnouncementsPage() {
 
   if (loading) return (
     <div style={{ minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f7" }}>
-      <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <div style={{ width: 28, height: 28, border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -277,8 +277,8 @@ export default function AdminAnnouncementsPage() {
         </div>
 
         {/* SQL setup */}
-        <div style={{ background: "rgba(0,113,227,0.06)", border: "1px solid rgba(0,113,227,0.15)", borderRadius: 10, padding: "12px 14px" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#0071e3", letterSpacing: "0.06em", marginBottom: 6 }}>SUPABASE 설정 안내</p>
+        <div style={{ background: "rgba(47, 119, 194,0.06)", border: "1px solid rgba(47, 119, 194,0.15)", borderRadius: 10, padding: "12px 14px" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#2F77C2", letterSpacing: "0.06em", marginBottom: 6 }}>SUPABASE 설정 안내</p>
           <p style={{ fontSize: 12, color: "rgba(0,0,0,0.56)", lineHeight: 1.6 }}>
             SQL Editor에서 아래 쿼리 실행 후, Storage에서 <strong>announcements</strong> 버킷(공개)을 생성하세요.
           </p>

@@ -56,7 +56,7 @@ export default function WaypointsPage() {
 
   if (loading) return (
     <div style={{ minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f7" }}>
-      <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <div style={{ width: 28, height: 28, border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -71,12 +71,12 @@ export default function WaypointsPage() {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Navigation size={18} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+            <Navigation size={18} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
             <h1 style={{ fontSize: 20, fontWeight: 700, color: "#1d1d1f" }}>웨이포인트 세트</h1>
           </div>
           <Link
             href="/waypoints/new"
-            style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 16px", borderRadius: 20, fontSize: 13, background: "#0071e3", color: "#fff", textDecoration: "none", fontWeight: 600 }}
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 16px", borderRadius: 20, fontSize: 13, background: "#2F77C2", color: "#fff", textDecoration: "none", fontWeight: 600 }}
           >
             <Plus size={14} strokeWidth={2} />새 세트
           </Link>
@@ -94,7 +94,7 @@ export default function WaypointsPage() {
           {mine.length === 0 ? (
             <div style={{ textAlign: "center", padding: "24px 0" }}>
               <p style={{ fontSize: 13, color: "rgba(0,0,0,0.4)", marginBottom: 12 }}>아직 세트가 없습니다</p>
-              <Link href="/waypoints/new" style={{ fontSize: 13, color: "#0071e3", fontWeight: 600, textDecoration: "none" }}>
+              <Link href="/waypoints/new" style={{ fontSize: 13, color: "#2F77C2", fontWeight: 600, textDecoration: "none" }}>
                 + 첫 세트 만들기
               </Link>
             </div>
@@ -150,7 +150,7 @@ function SetCard({ set, isOwn, isDeleting, onDelete, onDownload }: {
       {/* Public/Private */}
       <div style={{ flexShrink: 0 }}>
         {set.is_public
-          ? <Globe size={14} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+          ? <Globe size={14} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
           : <Lock size={14} strokeWidth={1.5} style={{ color: "rgba(0,0,0,0.25)" }} />}
       </div>
 
@@ -166,7 +166,7 @@ function SetCard({ set, isOwn, isDeleting, onDelete, onDownload }: {
       {/* Actions */}
       <Link
         href={`/waypoints/${set.id}`}
-        style={{ flexShrink: 0, padding: 6, borderRadius: 6, display: "flex", alignItems: "center", color: "#0071e3", textDecoration: "none", background: "rgba(0,113,227,0.08)" }}
+        style={{ flexShrink: 0, padding: 6, borderRadius: 6, display: "flex", alignItems: "center", color: "#2F77C2", textDecoration: "none", background: "rgba(47, 119, 194,0.08)" }}
         title="지도에서 보기"
       >
         <Map size={14} strokeWidth={1.5} />

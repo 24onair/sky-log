@@ -271,16 +271,16 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
         id: "progress",
         type: "line",
         source: "progress",
-        paint: { "line-color": "#0071e3", "line-width": 3 },
+        paint: { "line-color": "#2F77C2", "line-width": 3 },
       });
     });
 
     const el = document.createElement("div");
     el.style.cssText = `
       width:14px;height:14px;
-      background:#0071e3;border:2.5px solid #fff;
+      background:#2F77C2;border:2.5px solid #fff;
       border-radius:50%;
-      box-shadow:0 2px 10px rgba(0,113,227,0.6);
+      box-shadow:0 2px 10px rgba(47, 119, 194,0.6);
     `;
     const marker = new mapboxgl.Marker({ element: el })
       .setLngLat([trackPoints[0][0], trackPoints[0][1]])
@@ -323,7 +323,7 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
           style={{
             width: 34, height: 34, flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
-            background: "#0071e3", border: "none", borderRadius: 8,
+            background: "#2F77C2", border: "none", borderRadius: 8,
             cursor: "pointer",
           }}
           title={playing ? "일시정지" : "재생"}
@@ -341,9 +341,9 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
               onClick={() => changeSpeed(s)}
               style={{
                 padding: "4px 9px", fontSize: 12, fontWeight: 600,
-                background: speed === s ? "rgba(0,113,227,0.22)" : "rgba(255,255,255,0.06)",
+                background: speed === s ? "rgba(47, 119, 194,0.22)" : "rgba(255,255,255,0.06)",
                 color: speed === s ? "#4DA3FF" : "rgba(255,255,255,0.4)",
-                border: `1px solid ${speed === s ? "rgba(0,113,227,0.4)" : "transparent"}`,
+                border: `1px solid ${speed === s ? "rgba(47, 119, 194,0.4)" : "transparent"}`,
                 borderRadius: 6, cursor: "pointer",
               }}
             >
@@ -360,7 +360,7 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
           <span style={{ color: "rgba(255,255,255,0.25)" }}>/</span>
           <span style={{ color: "rgba(255,255,255,0.4)" }}>{fmtTime(durationSec)}</span>
           <span style={{
-            background: "rgba(240,185,11,0.12)", color: "#F0B90B",
+            background: "rgba(47, 119, 194,0.12)", color: "#2F77C2",
             fontWeight: 700, padding: "3px 8px", borderRadius: 6,
           }}>
             {altitudes[displayIdx] ?? 0} m
@@ -379,17 +379,17 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
             onClick={handleScrub}
           >
             {/* Static background fill */}
-            <path d={fullFillPath} fill="rgba(0,113,227,0.1)" />
+            <path d={fullFillPath} fill="rgba(47, 119, 194,0.1)" />
             {/* Static full track line */}
             <path d={fullLinePath} fill="none" stroke="rgba(255,255,255,0.13)" strokeWidth="0.5" />
             {/* Progress fill — updated imperatively */}
-            <path ref={progressFillRef} d="" fill="rgba(0,113,227,0.22)" />
+            <path ref={progressFillRef} d="" fill="rgba(47, 119, 194,0.22)" />
             {/* Progress line — updated imperatively */}
-            <path ref={progressLineRef} d="" fill="none" stroke="#0071e3" strokeWidth="0.7" />
+            <path ref={progressLineRef} d="" fill="none" stroke="#2F77C2" strokeWidth="0.7" />
             {/* Cursor line — updated imperatively */}
-            <line ref={cursorLineRef} x1="0" y1="3" x2="0" y2="95" stroke="#0071e3" strokeWidth="0.5" opacity="0.7" />
+            <line ref={cursorLineRef} x1="0" y1="3" x2="0" y2="95" stroke="#2F77C2" strokeWidth="0.5" opacity="0.7" />
             {/* Cursor dot — updated imperatively */}
-            <circle ref={cursorDotRef} cx="0" cy="50" r="1.6" fill="#0071e3" stroke="white" strokeWidth="0.4" />
+            <circle ref={cursorDotRef} cx="0" cy="50" r="1.6" fill="#2F77C2" stroke="white" strokeWidth="0.4" />
           </svg>
 
           {/* Altitude label — positioned above cursor dot */}
@@ -403,7 +403,7 @@ export function FlightReplay({ trackPoints, durationSec }: FlightReplayProps) {
               fontSize: 11,
               fontWeight: 700,
               fontVariantNumeric: "tabular-nums",
-              color: "#0071e3",
+              color: "#2F77C2",
               background: "rgba(22,24,29,0.85)",
               padding: "2px 5px",
               borderRadius: 4,

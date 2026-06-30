@@ -45,24 +45,24 @@ export function FlightLogCard({ log }: FlightLogCardProps) {
           {/* Stats row */}
           <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "#32313A", fontWeight: 500 }}>
-              <Clock size={14} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
+              <Clock size={14} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
               {formatDuration(log.duration_sec)}
             </span>
             {log.distance_xcontest_km && (
               <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "#32313A", fontWeight: 500 }}>
-                <Navigation size={14} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
+                <Navigation size={14} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
                 {log.distance_xcontest_km.toFixed(1)} km
               </span>
             )}
             {log.max_altitude_m && (
               <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "#32313A", fontWeight: 500 }}>
-                <MoveUp size={14} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
+                <MoveUp size={14} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
                 {log.max_altitude_m.toLocaleString()} m
               </span>
             )}
             {log.wind_speed_kmh && (
               <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "#32313A", fontWeight: 500 }}>
-                <Wind size={14} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
+                <Wind size={14} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
                 {log.wind_speed_kmh.toFixed(0)} km/h
               </span>
             )}
@@ -73,7 +73,7 @@ export function FlightLogCard({ log }: FlightLogCardProps) {
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
           {log.distance_xcontest_km ? (
             <div style={{ textAlign: "right" }}>
-              <p style={{ fontSize: 22, fontWeight: 700, color: "#F0B90B", letterSpacing: "-0.5px", lineHeight: 1 }}>
+              <p style={{ fontSize: 22, fontWeight: 700, color: "#2F77C2", letterSpacing: "-0.5px", lineHeight: 1 }}>
                 {log.distance_xcontest_km.toFixed(1)}
               </p>
               <p style={{ fontSize: 12, color: "#848E9C", marginTop: 4, fontWeight: 500 }}>km XC</p>

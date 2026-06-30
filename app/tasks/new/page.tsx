@@ -416,13 +416,13 @@ export default function NewTaskPage() {
         .radius-slider::-webkit-slider-thumb {
           -webkit-appearance: none; appearance: none;
           width: 18px; height: 18px; border-radius: 50%;
-          background: #0071e3; border: 2.5px solid #fff;
-          box-shadow: 0 1px 6px rgba(0,113,227,0.4); cursor: grab;
+          background: #2F77C2; border: 2.5px solid #fff;
+          box-shadow: 0 1px 6px rgba(47, 119, 194,0.4); cursor: grab;
         }
         .radius-slider::-moz-range-thumb {
           width: 18px; height: 18px; border-radius: 50%;
-          background: #0071e3; border: 2.5px solid #fff;
-          box-shadow: 0 1px 6px rgba(0,113,227,0.4); cursor: grab;
+          background: #2F77C2; border: 2.5px solid #fff;
+          box-shadow: 0 1px 6px rgba(47, 119, 194,0.4); cursor: grab;
         }
       `}</style>
 
@@ -453,7 +453,7 @@ export default function NewTaskPage() {
                 display: "flex", alignItems: "center",
                 background: "rgba(255,255,255,0.96)", backdropFilter: "blur(12px)",
                 borderRadius: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
-                border: searchOpen ? "1.5px solid rgba(0,113,227,0.4)" : "1.5px solid transparent",
+                border: searchOpen ? "1.5px solid rgba(47, 119, 194,0.4)" : "1.5px solid transparent",
                 transition: "border-color 0.15s",
               }}>
                 <Search size={14} strokeWidth={1.8} style={{ margin: "0 10px", color: "rgba(0,0,0,0.35)", flexShrink: 0 }} />
@@ -470,7 +470,7 @@ export default function NewTaskPage() {
                   }}
                 />
                 {isSearching && (
-                  <div style={{ width: 14, height: 14, margin: "0 10px", border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.6s linear infinite", flexShrink: 0 }} />
+                  <div style={{ width: 14, height: 14, margin: "0 10px", border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.6s linear infinite", flexShrink: 0 }} />
                 )}
                 {searchQuery && !isSearching && (
                   <button
@@ -506,10 +506,10 @@ export default function NewTaskPage() {
                             cursor: "pointer", textAlign: "left",
                             borderBottom: i < wpSearchResults.length - 1 || searchResults.length > 0 ? "1px solid rgba(0,0,0,0.05)" : "none",
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,113,227,0.05)")}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(47, 119, 194,0.05)")}
                           onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
                         >
-                          <MapPin size={12} strokeWidth={1.8} style={{ color: "#0071e3", flexShrink: 0 }} />
+                          <MapPin size={12} strokeWidth={1.8} style={{ color: "#2F77C2", flexShrink: 0 }} />
                           <div>
                             <span style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f" }}>{wp.name}</span>
                             <span style={{ fontSize: 11, color: "rgba(0,0,0,0.35)", marginLeft: 6 }}>{wp.radius}m</span>
@@ -538,7 +538,7 @@ export default function NewTaskPage() {
                               cursor: "pointer", textAlign: "left",
                               borderBottom: i < searchResults.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,113,227,0.05)")}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(47, 119, 194,0.05)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
                           >
                             <span style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f" }}>{main.trim()}</span>
@@ -580,7 +580,7 @@ export default function NewTaskPage() {
                   {/* Optimum (edge-to-edge) */}
                   <div>
                     <p style={{ fontSize: 9, fontWeight: 600, color: "rgba(0,0,0,0.35)", letterSpacing: "0.06em", marginBottom: 1 }}>최단거리</p>
-                    <p style={{ fontSize: 18, fontWeight: 700, color: "#0071e3", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: "#2F77C2", letterSpacing: "-0.5px", lineHeight: 1 }}>
                       {optimumKm != null ? `${optimumKm.toFixed(1)}` : "—"}
                       <span style={{ fontSize: 11, fontWeight: 500, marginLeft: 2 }}>km</span>
                     </p>
@@ -631,7 +631,7 @@ export default function NewTaskPage() {
             <div style={{
               position: "absolute", top: 58, left: "50%", transform: "translateX(-50%)",
               display: "flex", alignItems: "center", gap: 10,
-              background: "rgba(0,113,227,0.92)", backdropFilter: "blur(8px)",
+              background: "rgba(47, 119, 194,0.92)", backdropFilter: "blur(8px)",
               borderRadius: 20, padding: "7px 10px 7px 18px", whiteSpace: "nowrap",
               zIndex: 200,
             }}>
@@ -645,7 +645,7 @@ export default function NewTaskPage() {
                   display: "flex", alignItems: "center", gap: 5,
                   background: "#fff", border: "none", cursor: "pointer",
                   borderRadius: 14, padding: "5px 12px",
-                  fontSize: 13, fontWeight: 600, color: "#0071e3",
+                  fontSize: 13, fontWeight: 600, color: "#2F77C2",
                   touchAction: "none",
                 }}
               >
@@ -685,7 +685,7 @@ export default function NewTaskPage() {
                 position: "absolute", bottom: 16, right: 16,
                 width: 52, height: 52,
                 borderRadius: "50%",
-                background: "#0071e3",
+                background: "#2F77C2",
                 border: "none", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 boxShadow: "0 4px 16px rgba(0,0,0,0.24)",
@@ -702,7 +702,7 @@ export default function NewTaskPage() {
             {task.waypoints.length > 0 && [
               { color: "#34c759", label: "Take Off" },
               { color: "#ff9500", label: "SSS" },
-              { color: "#0071e3", label: "TP" },
+              { color: "#2F77C2", label: "TP" },
               { color: "#bf5af2", label: "ESS" },
               { color: "#ff3b30", label: "Landing" },
             ].map(({ color, label: lbl }) => (
@@ -740,7 +740,7 @@ export default function NewTaskPage() {
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 16px", background: "none", border: "none", cursor: "pointer", borderBottom: "1px solid rgba(0,0,0,0.06)" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Navigation size={14} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+              <Navigation size={14} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
               <span style={{ fontSize: 14, fontWeight: 600, color: "#1d1d1f" }}>
                 {task.waypoints.length}개 웨이포인트
               </span>
@@ -748,7 +748,7 @@ export default function NewTaskPage() {
                 <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)", fontWeight: 500 }}>
                   중심 <span style={{ color: "#636366", fontWeight: 600 }}>{centerKm?.toFixed(1)}</span>
                   {" / "}
-                  최단 <span style={{ color: "#0071e3", fontWeight: 600 }}>{optimumKm?.toFixed(1)}</span> km
+                  최단 <span style={{ color: "#2F77C2", fontWeight: 600 }}>{optimumKm?.toFixed(1)}</span> km
                 </span>
               )}
             </div>
@@ -860,8 +860,8 @@ export default function NewTaskPage() {
                     display: "flex", alignItems: "center", gap: 4,
                     padding: "6px 12px", borderRadius: 6,
                     fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer",
-                    background: isAddMode ? "#34c759" : "rgba(0,113,227,0.1)",
-                    color: isAddMode ? "#fff" : "#0071e3",
+                    background: isAddMode ? "#34c759" : "rgba(47, 119, 194,0.1)",
+                    color: isAddMode ? "#fff" : "#2F77C2",
                   }}
                 >
                   {isAddMode
@@ -905,7 +905,7 @@ export default function NewTaskPage() {
                   <div style={{ width: 1, background: "rgba(0,0,0,0.08)", alignSelf: "stretch" }} />
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,0,0,0.4)", marginBottom: 4 }}>최적화 경로 <span style={{ fontWeight: 500, color: "rgba(0,0,0,0.3)" }}>(최단)</span></p>
-                    <p style={{ fontSize: 20, fontWeight: 700, color: "#0071e3", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                    <p style={{ fontSize: 20, fontWeight: 700, color: "#2F77C2", letterSpacing: "-0.5px", lineHeight: 1 }}>
                       {optimumKm != null ? optimumKm.toFixed(1) : "—"}<span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>km</span>
                     </p>
                   </div>
@@ -931,7 +931,7 @@ export default function NewTaskPage() {
                 {activeSetId && (
                   <button
                     onClick={addSetToTask}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "9px 0", borderRadius: 8, border: "1.5px solid rgba(0,113,227,0.35)", background: "rgba(0,113,227,0.06)", color: "#0071e3", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "9px 0", borderRadius: 8, border: "1.5px solid rgba(47, 119, 194,0.35)", background: "rgba(47, 119, 194,0.06)", color: "#2F77C2", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
                   >
                     <Layers size={14} strokeWidth={2} />
                     세트 전체 타스크에 추가
@@ -948,7 +948,7 @@ export default function NewTaskPage() {
                   style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                 >
                   <p style={secHead}>웨이포인트 ({selectableWaypoints.length})</p>
-                  <span style={{ fontSize: 11, color: "#0071e3", fontWeight: 500 }}>{showLib ? "접기" : "펼치기"}</span>
+                  <span style={{ fontSize: 11, color: "#2F77C2", fontWeight: 500 }}>{showLib ? "접기" : "펼치기"}</span>
                 </button>
 
                 {showLib && (
@@ -985,7 +985,7 @@ export default function NewTaskPage() {
                               </div>
                               {alreadyAdded
                                 ? <span style={{ fontSize: 11, color: "rgba(0,0,0,0.3)" }}>추가됨</span>
-                                : <span style={{ fontSize: 11, color: "#0071e3", fontWeight: 600 }}>+ 추가</span>
+                                : <span style={{ fontSize: 11, color: "#2F77C2", fontWeight: 600 }}>+ 추가</span>
                               }
                             </button>
                           );
@@ -1036,7 +1036,7 @@ export default function NewTaskPage() {
                   </button>
                   <button
                     onClick={handleShowQR}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "9px", borderRadius: 10, fontSize: 12, fontWeight: 500, background: "#fff", border: "none", cursor: "pointer", color: "#0071e3", boxShadow: "rgba(0,0,0,0.08) 0 1px 6px" }}
+                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "9px", borderRadius: 10, fontSize: 12, fontWeight: 500, background: "#fff", border: "none", cursor: "pointer", color: "#2F77C2", boxShadow: "rgba(0,0,0,0.08) 0 1px 6px" }}
                   >
                     <QrCode size={13} strokeWidth={1.5} />
                     QR
@@ -1109,7 +1109,7 @@ function WaypointRow({
     () => Math.round((Math.min(wp.radius, SLIDER_MAX) / SLIDER_MAX) * 100),
     [wp.radius]
   );
-  const sliderBg = `linear-gradient(to right, #0071e3 ${sliderPct}%, rgba(0,0,0,0.1) ${sliderPct}%)`;
+  const sliderBg = `linear-gradient(to right, #2F77C2 ${sliderPct}%, rgba(0,0,0,0.1) ${sliderPct}%)`;
 
   const displayRadius = wp.radius >= 1000
     ? `${(wp.radius / 1000 % 1 === 0 ? wp.radius / 1000 : (wp.radius / 1000).toFixed(1))} km`
@@ -1157,7 +1157,7 @@ function WaypointRow({
           <div onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <label style={label}>반경</label>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#0071e3" }}>{displayRadius}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#2F77C2" }}>{displayRadius}</span>
             </div>
 
             {/* Slider — 100 m to 5 km */}
@@ -1209,8 +1209,8 @@ function WaypointRow({
             onClick={(e) => { e.stopPropagation(); onReuse(); }}
             style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              width: "100%", padding: "9px 0", borderRadius: 8, border: "1.5px dashed rgba(0,113,227,0.35)",
-              background: "rgba(0,113,227,0.04)", color: "#0071e3",
+              width: "100%", padding: "9px 0", borderRadius: 8, border: "1.5px dashed rgba(47, 119, 194,0.35)",
+              background: "rgba(47, 119, 194,0.04)", color: "#2F77C2",
               fontSize: 13, fontWeight: 500, cursor: "pointer",
             }}
           >

@@ -42,7 +42,7 @@ export default function AdminPage() {
 
   if (loading) return (
     <div style={{ minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f7" }}>
-      <div style={{ width: 28, height: 28, border: "2px solid #0071e3", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <div style={{ width: 28, height: 28, border: "2px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -111,8 +111,8 @@ export default function AdminPage() {
 
           <Link href="/admin/banners" style={{ textDecoration: "none" }}>
             <div className="sk-card" style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(0,113,227,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Image size={20} strokeWidth={1.5} style={{ color: "#0071e3" }} />
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(47, 119, 194,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Image size={20} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
               </div>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 15, fontWeight: 600, color: "#1d1d1f", margin: 0 }}>배너 광고 관리</p>

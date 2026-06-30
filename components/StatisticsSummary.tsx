@@ -54,7 +54,7 @@ export function StatisticsSummary({ stats }: { stats: StatisticsCard }) {
       {items.map(({ icon: Icon, label, value, sub }) => (
         <div key={label} style={statCard}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <Icon size={18} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
+            <Icon size={18} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
             <p style={{ fontSize: 13, fontWeight: 600, color: "#848E9C", letterSpacing: "0.02em" }}>{label}</p>
           </div>
           <p style={{ fontSize: 26, fontWeight: 700, color: "#1E2026", letterSpacing: "-0.5px", lineHeight: 1.1 }}>{value}</p>

@@ -143,7 +143,7 @@ export function TaskMap({
           type: "line",
           source: "optline",
           paint: {
-            "line-color": "#F0B90B",
+            "line-color": "#2F77C2",
             "line-width": 2,
             "line-opacity": 0.9,
           },
@@ -249,7 +249,7 @@ export function TaskMap({
       el.appendChild(inner);
       el.title = clickable ? `${wp.name} — 클릭하여 추가` : wp.name;
       if (clickable) {
-        el.addEventListener("mouseenter", () => { inner.style.background = "#0071e3"; inner.style.transform = "scale(1.15)"; });
+        el.addEventListener("mouseenter", () => { inner.style.background = "#2F77C2"; inner.style.transform = "scale(1.15)"; });
         el.addEventListener("mouseleave", () => { inner.style.background = "#8e8e93"; inner.style.transform = "scale(1)"; });
         el.addEventListener("click", (e) => {
           e.stopPropagation();

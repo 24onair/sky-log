@@ -104,7 +104,7 @@ export default function LogbookPage() {
                   fontWeight: 600,
                   border: "none",
                   cursor: "pointer",
-                  background: period === key ? "#F0B90B" : "transparent",
+                  background: period === key ? "#2F77C2" : "transparent",
                   color: period === key ? "#1E2026" : "#848E9C",
                   transition: "all 0.2s",
                 }}
@@ -120,12 +120,12 @@ export default function LogbookPage() {
             <div style={{
               display: "flex", alignItems: "center", gap: 10, marginTop: 12,
               padding: "14px 16px",
-              background: "rgba(240,185,11,0.06)",
+              background: "rgba(47, 119, 194,0.06)",
               borderRadius: 12,
-              border: "1px solid rgba(240,185,11,0.2)",
+              border: "1px solid rgba(47, 119, 194,0.2)",
               flexWrap: "wrap",
             }}>
-              <CalendarDays size={15} strokeWidth={1.8} style={{ color: "#F0B90B", flexShrink: 0 }} />
+              <CalendarDays size={15} strokeWidth={1.8} style={{ color: "#2F77C2", flexShrink: 0 }} />
               <input
                 type="date"
                 value={customStart}
@@ -175,7 +175,7 @@ export default function LogbookPage() {
         {/* Loading */}
         {loading && (
           <div style={{ textAlign: "center", padding: "80px 20px" }}>
-            <div style={{ width: 32, height: 32, border: "3px solid #F0B90B", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+            <div style={{ width: 32, height: 32, border: "3px solid #2F77C2", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
             <p style={{ fontSize: 15, color: "#848E9C", fontWeight: 500 }}>불러오는 중...</p>
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
@@ -184,8 +184,8 @@ export default function LogbookPage() {
         {/* Empty state */}
         {!loading && logs.length === 0 && (
           <div style={{ textAlign: "center", padding: "100px 20px" }}>
-            <div style={{ width: 64, height: 64, background: "rgba(240, 185, 11, 0.1)", borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-              <Wind size={32} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
+            <div style={{ width: 64, height: 64, background: "rgba(47, 119, 194, 0.1)", borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+              <Wind size={32} strokeWidth={1.5} style={{ color: "#2F77C2" }} />
             </div>
             <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1E2026", marginBottom: 10, letterSpacing: "-0.3px" }}>아직 비행 기록이 없습니다</h3>
             <p style={{ fontSize: 15, color: "#848E9C", marginBottom: 28, fontWeight: 500 }}>첫 번째 비행을 기록해보세요</p>

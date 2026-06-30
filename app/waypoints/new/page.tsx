@@ -119,9 +119,9 @@ export default function NewWaypointSetPage() {
           </div>
           {/* Add mode hint */}
           {isAddMode && (
-            <div style={{ position: "absolute", top: 58, left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 10, background: "rgba(0,113,227,0.92)", borderRadius: 20, padding: "7px 10px 7px 18px", whiteSpace: "nowrap", zIndex: 200 }}>
+            <div style={{ position: "absolute", top: 58, left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 10, background: "rgba(47, 119, 194,0.92)", borderRadius: 20, padding: "7px 10px 7px 18px", whiteSpace: "nowrap", zIndex: 200 }}>
               <p style={{ fontSize: 13, fontWeight: 500, color: "#fff" }}>탭하여 포인트 추가</p>
-              <button onClick={() => setIsAddMode(false)} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "none", cursor: "pointer", borderRadius: 14, padding: "5px 12px", fontSize: 13, fontWeight: 600, color: "#0071e3" }}>
+              <button onClick={() => setIsAddMode(false)} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "none", cursor: "pointer", borderRadius: 14, padding: "5px 12px", fontSize: 13, fontWeight: 600, color: "#2F77C2" }}>
                 <CheckCircle2 size={13} strokeWidth={2.5} />완료
               </button>
             </div>
@@ -129,7 +129,7 @@ export default function NewWaypointSetPage() {
           {/* FAB */}
           <button
             onClick={() => setIsAddMode((v) => !v)}
-            style={{ position: "absolute", bottom: 16, right: 16, width: 52, height: 52, borderRadius: "50%", background: isAddMode ? "#34c759" : "#0071e3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.24)", zIndex: 200 }}
+            style={{ position: "absolute", bottom: 16, right: 16, width: 52, height: 52, borderRadius: "50%", background: isAddMode ? "#34c759" : "#2F77C2", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.24)", zIndex: 200 }}
           >
             {isAddMode ? <CheckCircle2 size={20} strokeWidth={2} style={{ color: "#fff" }} /> : <Plus size={22} strokeWidth={2.5} style={{ color: "#fff" }} />}
           </button>
@@ -139,7 +139,7 @@ export default function NewWaypointSetPage() {
         <div className={`ws-sidebar ${sheetExpanded ? "expanded" : "collapsed"}`} style={{ background: "#f5f5f7", overflowY: "auto", borderTop: "1px solid rgba(0,0,0,0.1)", transition: "max-height 0.3s ease" }}>
           <button className="ws-toggle" onClick={() => setSheetExpanded((v) => !v)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 16px", background: "none", border: "none", cursor: "pointer", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: "#1d1d1f" }}>{waypoints.length}개 웨이포인트</span>
-            <span style={{ fontSize: 12, color: "#0071e3" }}>{sheetExpanded ? "접기" : "펼치기"}</span>
+            <span style={{ fontSize: 12, color: "#2F77C2" }}>{sheetExpanded ? "접기" : "펼치기"}</span>
           </button>
 
           <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -173,9 +173,9 @@ export default function NewWaypointSetPage() {
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
                 onClick={() => fileRef.current?.click()}
-                style={{ border: "1.5px dashed rgba(0,113,227,0.35)", borderRadius: 10, padding: "20px", textAlign: "center", cursor: "pointer", background: "rgba(0,113,227,0.03)" }}
+                style={{ border: "1.5px dashed rgba(47, 119, 194,0.35)", borderRadius: 10, padding: "20px", textAlign: "center", cursor: "pointer", background: "rgba(47, 119, 194,0.03)" }}
               >
-                <Upload size={20} strokeWidth={1.5} style={{ color: "#0071e3", margin: "0 auto 8px" }} />
+                <Upload size={20} strokeWidth={1.5} style={{ color: "#2F77C2", margin: "0 auto 8px" }} />
                 <p style={{ fontSize: 13, color: "rgba(0,0,0,0.5)" }}>CUP / WPT 파일 드래그 또는 클릭</p>
                 <p style={{ fontSize: 11, color: "rgba(0,0,0,0.3)", marginTop: 4 }}>기존 웨이포인트에 추가됩니다</p>
               </div>
@@ -188,7 +188,7 @@ export default function NewWaypointSetPage() {
               <div className="sk-card" style={{ padding: "14px 16px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                   <p style={secHead}>웨이포인트 ({waypoints.length})</p>
-                  <button onClick={() => setIsAddMode((v) => !v)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", background: isAddMode ? "#34c759" : "rgba(0,113,227,0.1)", color: isAddMode ? "#fff" : "#0071e3" }}>
+                  <button onClick={() => setIsAddMode((v) => !v)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", background: isAddMode ? "#34c759" : "rgba(47, 119, 194,0.1)", color: isAddMode ? "#fff" : "#2F77C2" }}>
                     <MapPin size={12} />지도에서 추가
                   </button>
                 </div>

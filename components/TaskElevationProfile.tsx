@@ -180,7 +180,7 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
       {/* Status label — always visible so we can confirm rendering */}
       {status === "loading" && (
         <div style={{ position: "absolute", bottom: 8, right: 14, display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 10, height: 10, border: "1.5px solid rgba(255,255,255,0.2)", borderTopColor: "#F0B90B", borderRadius: "50%", animation: "elSpin 0.8s linear infinite" }} />
+          <div style={{ width: 10, height: 10, border: "1.5px solid rgba(255,255,255,0.2)", borderTopColor: "#2F77C2", borderRadius: "50%", animation: "elSpin 0.8s linear infinite" }} />
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: "-apple-system,sans-serif" }}>고도 로딩 중…</span>
         </div>
       )}
@@ -194,13 +194,13 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
         <svg width={w} height={h} style={{ display: "block" }}>
           <defs>
             <linearGradient id="tElevGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#F0B90B" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#F0B90B" stopOpacity="0.05" />
+              <stop offset="0%" stopColor="#2F77C2" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#2F77C2" stopOpacity="0.05" />
             </linearGradient>
           </defs>
 
           <path d={areaD} fill="url(#tElevGrad)" />
-          <path d={linePts} fill="none" stroke="#F0B90B" strokeWidth="1.5" />
+          <path d={linePts} fill="none" stroke="#2F77C2" strokeWidth="1.5" />
 
           {wpDists.map((d, i) => {
             const cx = toX(d);
@@ -243,7 +243,7 @@ export function TaskElevationProfile({ waypoints }: { waypoints: Waypoint[] }) {
                 <line x1={cursor.x} y1={PT} x2={cursor.x} y2={h - PB}
                   stroke="rgba(255,255,255,0.8)" strokeWidth="1" />
                 <circle cx={cursor.x} cy={cy} r="4"
-                  fill="#F0B90B" stroke="white" strokeWidth="1.5" />
+                  fill="#2F77C2" stroke="white" strokeWidth="1.5" />
                 <text
                   x={flip ? cursor.x - 6 : cursor.x + 6}
                   y={cy - 6}
