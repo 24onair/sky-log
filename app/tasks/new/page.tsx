@@ -759,6 +759,27 @@ export default function NewTaskPage() {
 
           <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
 
+            {/* ── Distance summary ──────────────────────────────────── */}
+            {task.waypoints.length >= 2 && (
+              <div className="sk-card" style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,0,0,0.4)", marginBottom: 4 }}>전체 길이 <span style={{ fontWeight: 500, color: "rgba(0,0,0,0.3)" }}>(중심간)</span></p>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: "#636366", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                    {centerKm != null ? centerKm.toFixed(1) : "—"}
+                    <span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>km</span>
+                  </p>
+                </div>
+                <div style={{ width: 1, background: "rgba(0,0,0,0.08)", alignSelf: "stretch" }} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,0,0,0.4)", marginBottom: 4 }}>최적화 경로 <span style={{ fontWeight: 500, color: "rgba(0,0,0,0.3)" }}>(최단)</span></p>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: "#0071e3", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                    {optimumKm != null ? optimumKm.toFixed(1) : "—"}
+                    <span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>km</span>
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="sidebar-banner"><BannerAd /></div>
 
             {/* ── Task meta ─────────────────────────────────────────── */}
