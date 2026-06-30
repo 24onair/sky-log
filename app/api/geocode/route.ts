@@ -40,9 +40,24 @@ export async function GET(req: Request) {
   url.searchParams.set("crs", "EPSG:4326");
   url.searchParams.set("key", key);
 
+  const debug = new URL(req.url).searchParams.get("debug") === "1";
+
   try {
     const res = await fetch(url.toString());
-    const data = await res.json();
+    const raw = await res.text();
+    let data: { response?: { status?: string; error?: unknown; result?: { items?: VWorldItem[] } } } = {};
+    try { data = JSON.parse(raw); } catch { /* non-JSON upstream */ }
+
+    if (debug) {
+      return NextResponse.json({
+        keyUsed: process.env.VWORLD_API_KEY ? "VWORLD_API_KEY" : "NEXT_PUBLIC_VWORLD_API_KEY",
+        upstreamHttp: res.status,
+        vworldStatus: data?.response?.status ?? null,
+        vworldError: data?.response?.error ?? null,
+        rawSnippet: raw.slice(0, 300),
+      });
+    }
+
     const items: VWorldItem[] =
       data?.response?.status === "OK" ? data.response.result?.items ?? [] : [];
 
