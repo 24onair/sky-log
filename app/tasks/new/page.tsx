@@ -19,6 +19,7 @@ import {
   exportToXCTrack,
   downloadBlob,
 } from "@/lib/utils/taskUtils";
+import { parseXCTSK } from "@/lib/utils/parseXCTSK";
 import { setUnsavedChanges } from "@/lib/unsavedChanges";
 import { getTasks } from "@/lib/supabase/tasks";
 import { getWaypointSets } from "@/lib/supabase/waypointSets";
@@ -32,7 +33,7 @@ interface GeoResult {
 import {
   ChevronLeft, Plus, Minus, Trash2, Lock, Globe,
   Navigation, Download, QrCode, ChevronUp, ChevronDown,
-  MapPin, CheckCircle2, Search, X, Layers, ShieldAlert,
+  MapPin, CheckCircle2, Search, X, Layers, ShieldAlert, Upload,
 } from "lucide-react";
 import QRCodeLib from "qrcode";
 import { BannerAd } from "@/components/BannerAd";
@@ -380,6 +381,33 @@ export default function NewTaskPage() {
       return { ...prev, waypoints: assigned, distance_km: calculateTaskDistance(assigned) };
     });
   }, [activeSet, applyLabels]);
+
+  // ── XCTrack 타스크 파일(.xctsk) 불러오기 ──────────────────────────
+  const taskFileRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+
+  const handleTaskFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // 같은 파일 재선택 허용
+    if (!file) return;
+    try {
+      const parsed = parseXCTSK(await file.text());
+      const assigned = applyLabels(assignWaypointTypes(parsed.waypoints));
+      const baseName = file.name.replace(/\.(xctsk|json)$/i, "").trim();
+      setTask((prev) => ({
+        ...prev,
+        name: baseName || prev.name,
+        task_type: parsed.task_type,
+        waypoints: assigned,
+        distance_km: calculateTaskDistance(assigned),
+        start_time: parsed.start_time,
+        deadline: parsed.deadline,
+      }));
+      setImportError(null);
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : "파일을 불러오지 못했습니다.");
+    }
+  };
 
   const centerKm = task.waypoints.length >= 2
     ? calculateCenterDistance(task.waypoints)
@@ -854,25 +882,54 @@ export default function NewTaskPage() {
             <div className="sk-card" style={{ padding: "14px 16px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <p style={secHead}>웨이포인트</p>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setIsAddMode((v) => !v); }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 4,
-                    padding: "6px 12px", borderRadius: 6,
-                    fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer",
-                    background: isAddMode ? "#34c759" : "rgba(47, 119, 194,0.1)",
-                    color: isAddMode ? "#fff" : "#2F77C2",
-                  }}
-                >
-                  {isAddMode
-                    ? <><CheckCircle2 size={12} />추가 완료</>
-                    : <><MapPin size={12} />지도에서 추가</>}
-                </button>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <input ref={taskFileRef} type="file" accept=".xctsk,application/json" onChange={handleTaskFile} style={{ display: "none" }} />
+                  <button
+                    onClick={() => taskFileRef.current?.click()}
+                    title="XCTrack 타스크 파일(.xctsk) 불러오기"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      padding: "6px 12px", borderRadius: 6,
+                      fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer",
+                      background: "rgba(47, 119, 194, 0.1)", color: "#2F77C2",
+                    }}
+                  >
+                    <Upload size={12} />파일
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setIsAddMode((v) => !v); }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      padding: "6px 12px", borderRadius: 6,
+                      fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer",
+                      background: isAddMode ? "#34c759" : "rgba(47, 119, 194,0.1)",
+                      color: isAddMode ? "#fff" : "#2F77C2",
+                    }}
+                  >
+                    {isAddMode
+                      ? <><CheckCircle2 size={12} />추가 완료</>
+                      : <><MapPin size={12} />지도에서 추가</>}
+                  </button>
+                </div>
               </div>
 
+              {importError && (
+                <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 8, padding: "8px 10px", marginBottom: 10 }}>
+                  <p style={{ fontSize: 12, color: "#ff3b30" }}>{importError}</p>
+                </div>
+              )}
+
               {task.waypoints.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "16px 0" }}>
-                  <p style={{ fontSize: 13, color: "rgba(0,0,0,0.4)" }}>지도를 탭하거나 + 버튼을 눌러 웨이포인트를 추가하세요</p>
+                <div style={{ textAlign: "center", padding: "18px 8px" }}>
+                  <p style={{ fontSize: 13, color: "rgba(0,0,0,0.4)", marginBottom: 12 }}>
+                    지도를 탭해 직접 그리거나, 기존 타스크 파일을 불러오세요.
+                  </p>
+                  <button
+                    onClick={() => taskFileRef.current?.click()}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 8, border: "1.5px solid rgba(47,119,194,0.35)", background: "rgba(47,119,194,0.06)", color: "#2F77C2", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                  >
+                    <Upload size={14} />타스크 파일 불러오기 (.xctsk)
+                  </button>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
