@@ -47,6 +47,29 @@ export async function GET(req: Request) {
 
   const debug = new URL(req.url).searchParams.get("debug") === "1";
 
+  if (debug) {
+    const tryKey = async (label: string, k: string | undefined) => {
+      if (!k) return { label, present: false };
+      const u = new URL(VWORLD_SEARCH);
+      u.search = new URLSearchParams({
+        service: "search", request: "search", version: "2.0", size: "3", page: "1",
+        query: q, type: "place", format: "json", errorformat: "json", crs: "EPSG:4326", key: k,
+      }).toString();
+      try {
+        const r = await fetch(u.toString());
+        const t = await r.text();
+        let st: string | null = null;
+        try { st = JSON.parse(t)?.response?.status ?? null; } catch { /* */ }
+        return { label, present: true, http: r.status, vworldStatus: st, snippet: t.slice(0, 120) };
+      } catch (e) {
+        return { label, present: true, error: e instanceof Error ? e.message : String(e) };
+      }
+    };
+    const service = await tryKey("VWORLD_API_KEY", process.env.VWORLD_API_KEY);
+    const pub = await tryKey("NEXT_PUBLIC_VWORLD_API_KEY", process.env.NEXT_PUBLIC_VWORLD_API_KEY);
+    return NextResponse.json({ region: process.env.VERCEL_REGION ?? null, service, pub });
+  }
+
   try {
     const res = await fetch(url.toString());
     const raw = await res.text();
