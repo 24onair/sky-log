@@ -73,7 +73,10 @@ export async function GET(req: Request) {
       .filter((r) => Number.isFinite(r.center[0]) && Number.isFinite(r.center[1]));
 
     return NextResponse.json({ results });
-  } catch {
+  } catch (e) {
+    if (debug) {
+      return NextResponse.json({ caught: true, message: e instanceof Error ? e.message : String(e) });
+    }
     return NextResponse.json({ results: [] });
   }
 }
