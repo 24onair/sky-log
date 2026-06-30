@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 
+// V-World(국토부)는 해외 IP를 차단(502)하므로 이 라우트는 반드시 서울 리전에서 실행한다.
+// (기본 리전 iad1=US 에서 호출하면 V-World가 502 Bad Gateway 반환)
+export const preferredRegion = "icn1";
+export const dynamic = "force-dynamic";
+
 // 국내 지명 검색 — 국토부 V-World 지명검색 API 프록시.
 // Mapbox는 한국 지도 데이터 반출 규제로 국내 지명 커버리지가 빈약해 V-World로 대체.
 // 서버에서 호출(CORS 회피 + 키 보관). type=place 가 지명·POI·동네까지 폭넓게 커버.
