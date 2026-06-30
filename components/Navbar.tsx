@@ -6,7 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { getUser, signOut } from "@/lib/supabase/auth";
 import { checkIsAdmin } from "@/lib/auth/isAdmin";
 import { hasUnsavedChanges, getUnsavedMessage } from "@/lib/unsavedChanges";
-import { Wind, LogOut, BookOpen, Navigation, Plus, Shield, Users, MapPin, Layers, FileText } from "lucide-react";
+import { LogOut, BookOpen, Navigation, Plus, Shield, Users, MapPin, Layers, FileText } from "lucide-react";
 
 export function Navbar() {
   const router = useRouter();
@@ -44,8 +44,8 @@ export function Navbar() {
         borderRadius: 8,
         fontSize: 14,
         fontWeight: active ? 600 : 500,
-        color: active ? "#F0B90B" : "#848E9C",
-        background: active ? "rgba(240, 185, 11, 0.08)" : "none",
+        color: active ? "#2F77C2" : "#848E9C",
+        background: active ? "rgba(47, 119, 194, 0.08)" : "none",
         textDecoration: "none",
         transition: "background 0.15s, color 0.15s",
       }}
@@ -63,10 +63,13 @@ export function Navbar() {
           {/* Logo */}
           <Link
             href={user ? "/logbook" : "/"}
-            style={{ display: "flex", alignItems: "center", gap: 7, textDecoration: "none", color: "#1E2026", flexShrink: 0, fontSize: 15, fontWeight: 600 }}
+            style={{ display: "flex", alignItems: "center", gap: 7, textDecoration: "none", color: "#0E2238", flexShrink: 0, fontSize: 16, fontWeight: 600 }}
           >
-            <Wind size={18} strokeWidth={1.5} style={{ color: "#F0B90B" }} />
-            <span style={{ letterSpacing: "-0.3px" }}>Sky Log</span>
+            <svg width={20} height={20} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path d="M3 25 L13 15 L19 19 L28 7" stroke="#0E2238" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="28" cy="7" r="3.3" fill="#FF7A45" />
+            </svg>
+            <span style={{ letterSpacing: "-0.3px" }}>Soarline</span>
           </Link>
 
           {/* Center nav links (desktop) */}
@@ -100,7 +103,7 @@ export function Navbar() {
                   {onLogbook && (
                     <Link
                       href="/logbook/new"
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 16px", borderRadius: 20, fontSize: 13, background: "#F0B90B", color: "#1E2026", textDecoration: "none", fontWeight: 600 }}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 16px", borderRadius: 20, fontSize: 13, background: "#2F77C2", color: "#fff", textDecoration: "none", fontWeight: 600 }}
                     >
                       <Plus size={14} strokeWidth={2} />새 비행
                     </Link>
@@ -108,7 +111,7 @@ export function Navbar() {
                   {onTasks && (
                     <Link
                       href="/tasks/new"
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 16px", borderRadius: 20, fontSize: 13, background: "#F0B90B", color: "#1E2026", textDecoration: "none", fontWeight: 600 }}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 16px", borderRadius: 20, fontSize: 13, background: "#2F77C2", color: "#fff", textDecoration: "none", fontWeight: 600 }}
                     >
                       <Plus size={14} strokeWidth={2} />새 타스크
                     </Link>

@@ -1,48 +1,56 @@
 @import "tailwindcss";
 @import "mapbox-gl/dist/mapbox-gl.css";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css");
 
 :root {
-  /* Binance Design System */
-  /* Primary */
-  --bn-yellow-primary: #F0B90B;
-  --bn-yellow-light: #F8D12F;
-  --bn-yellow-dark: #D0980B;
-  --bn-yellow-gold: #FFD000;
-  
+  /* ── Soarline Brand Palette ─────────────────────────────────────── */
+  --so-night-ink: #0E2238;   /* 기본 텍스트·심볼·다크 배경 */
+  --so-horizon-blue: #2F77C2;/* 주요 액션·링크·라인 */
+  --so-horizon-blue-dark: #245d99;
+  --so-sunrise-coral: #FF7A45;/* 강조·턴포인트·에너지 */
+  --so-sky-cyan: #74C6EC;
+  --so-thermal-gold: #F4B740;
+  --so-paper: #F5F2EC;       /* 라이트 배경 */
+  --so-slate: #46535F;
+
+  /* Display / body fonts */
+  --so-font-display: var(--font-space-grotesk), "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+  --so-font-body: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+
   /* Surface & Background */
   --bn-bg-light: #FFFFFF;
-  --bn-bg-snow: #F5F5F5;
-  --bn-bg-dark: #222126;
-  --bn-bg-card-dark: #2B2F36;
-  
+  --bn-bg-snow: var(--so-paper);
+  --bn-bg-dark: var(--so-night-ink);
+  --bn-bg-card-dark: #16314d;
+
   /* Text & Neutrals */
-  --bn-text-primary: #1E2026;
+  --bn-text-primary: var(--so-night-ink);
   --bn-text-secondary: #32313A;
-  --bn-text-tertiary: #848E9C;
-  --bn-text-muted: #777E90;
-  --bn-text-ink: #1E2026;
-  --bn-text-steel: #686A6C;
-  --bn-text-hover: #1A1A1A;
-  
+  --bn-text-tertiary: #6b7682;
+  --bn-text-muted: var(--so-slate);
+  --bn-text-ink: var(--so-night-ink);
+  --bn-text-steel: var(--so-slate);
+  --bn-text-hover: #0a1929;
+
   /* Accent */
-  --bn-focus-blue: #1EAEDB;
-  
+  --bn-focus-blue: var(--so-horizon-blue);
+
   /* Derived */
   --sk-bg-light: var(--bn-bg-light);
-  --sk-bg-dark: var(--bn-bg-dark);
+  --sk-bg-dark: var(--so-night-ink);
   --sk-text-primary-light: var(--bn-text-primary);
   --sk-text-primary-dark: var(--bn-bg-light);
   --sk-text-secondary: var(--bn-text-tertiary);
-  --sk-accent: var(--bn-yellow-primary);
-  --sk-accent-dark: var(--bn-yellow-gold);
-  --sk-link-light: var(--bn-yellow-primary);
-  --sk-link-dark: var(--bn-yellow-light);
-  --sk-focus-color: var(--bn-focus-blue);
-  --sk-card-shadow: rgba(0, 0, 0, 0.05) 0px 2px 12px 0px;
+  --sk-accent: var(--so-horizon-blue);
+  --sk-accent-dark: var(--so-sunrise-coral);
+  --sk-link-light: var(--so-horizon-blue);
+  --sk-link-dark: var(--so-sky-cyan);
+  --sk-focus-color: var(--so-horizon-blue);
+  --sk-card-shadow: rgba(14, 34, 56, 0.06) 0px 2px 12px 0px;
   --sk-nav-bg: rgba(255, 255, 255, 0.95);
   --sk-surface: var(--bn-bg-light);
-  --sk-surface-dark: var(--bn-bg-dark);
-  --sk-border: rgba(0, 0, 0, 0.08);
+  --sk-surface-dark: var(--so-night-ink);
+  --sk-border: rgba(14, 34, 56, 0.1);
   --sk-radius: 12px;
   --sk-radius-sm: 8px;
   --sk-radius-pill: 50px;
@@ -68,15 +76,21 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 17px;
-  line-height: 1.47;
-  letter-spacing: -0.374px;
+  font-family: var(--so-font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  letter-spacing: -0.2px;
 }
 
 h1, h2, h3, h4 {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--so-font-display);
   letter-spacing: -0.5px;
+}
+
+/* Space Grotesk for Latin display / numerals */
+.so-display {
+  font-family: var(--so-font-display);
+  font-feature-settings: "tnum" 1;
 }
 
 /* Sticky nav glass effect */
@@ -91,10 +105,10 @@ h1, h2, h3, h4 {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Binance pill-shaped button */
+/* Soarline pill-shaped button */
 .sk-btn-primary {
-  background: var(--bn-yellow-primary);
-  color: var(--bn-text-ink);
+  background: var(--so-horizon-blue);
+  color: #fff;
   padding: 12px 32px;
   border-radius: var(--sk-radius-pill);
   font-size: 15px;
@@ -102,27 +116,27 @@ h1, h2, h3, h4 {
   letter-spacing: normal;
   border: none;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
 }
-.sk-btn-primary:hover { 
-  background: var(--bn-yellow-gold);
-  box-shadow: 0 4px 12px rgba(240, 185, 11, 0.2);
+.sk-btn-primary:hover {
+  background: var(--so-horizon-blue-dark);
+  box-shadow: 0 6px 18px rgba(47, 119, 194, 0.28);
 }
-.sk-btn-primary:active { background: var(--bn-yellow-dark); }
-.sk-btn-primary:focus { outline: 2px solid var(--bn-focus-blue); outline-offset: 2px; }
+.sk-btn-primary:active { transform: translateY(1px); }
+.sk-btn-primary:focus { outline: 2px solid var(--so-horizon-blue); outline-offset: 2px; }
 
 .sk-btn-secondary {
   background: transparent;
-  color: var(--bn-yellow-primary);
+  color: var(--so-horizon-blue);
   padding: 12px 32px;
   border-radius: var(--sk-radius-pill);
   font-size: 15px;
   font-weight: 600;
-  border: 2px solid var(--bn-yellow-primary);
+  border: 2px solid var(--so-horizon-blue);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
   display: inline-flex;
@@ -130,9 +144,9 @@ h1, h2, h3, h4 {
   justify-content: center;
   gap: 6px;
 }
-.sk-btn-secondary:hover { 
-  background: rgba(240, 185, 11, 0.1);
-  color: var(--bn-yellow-dark);
+.sk-btn-secondary:hover {
+  background: rgba(47, 119, 194, 0.08);
+  color: var(--so-horizon-blue-dark);
 }
 
 /* Input */
@@ -149,8 +163,8 @@ h1, h2, h3, h4 {
   outline: none;
 }
 .sk-input:focus {
-  border-color: var(--bn-yellow-primary);
-  box-shadow: 0 0 0 3px rgba(240, 185, 11, 0.15);
+  border-color: var(--so-horizon-blue);
+  box-shadow: 0 0 0 3px rgba(47, 119, 194, 0.15);
 }
 .sk-input.error { border-color: #ff3b30; }
 
