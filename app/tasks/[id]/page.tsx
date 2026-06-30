@@ -279,23 +279,6 @@ export default function TaskDetailPage({ params }: PageProps) {
           </button>
 
           <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
-            {task.waypoints.length >= 2 && (
-              <div className="sk-card" style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,0,0,0.4)", marginBottom: 4 }}>전체 길이 <span style={{ fontWeight: 500, color: "rgba(0,0,0,0.3)" }}>(중심간)</span></p>
-                  <p style={{ fontSize: 22, fontWeight: 700, color: "#636366", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                    {centerKm != null ? centerKm.toFixed(1) : "—"}<span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>km</span>
-                  </p>
-                </div>
-                <div style={{ width: 1, background: "rgba(0,0,0,0.08)", alignSelf: "stretch" }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,0,0,0.4)", marginBottom: 4 }}>최적화 경로 <span style={{ fontWeight: 500, color: "rgba(0,0,0,0.3)" }}>(최단)</span></p>
-                  <p style={{ fontSize: 22, fontWeight: 700, color: "#0071e3", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                    {optimumKm != null ? optimumKm.toFixed(1) : "—"}<span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>km</span>
-                  </p>
-                </div>
-              </div>
-            )}
             <div className="sk-card" style={{ padding: "14px 16px" }}>
               <p style={secHead}>타스크 정보</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -353,6 +336,25 @@ export default function TaskDetailPage({ params }: PageProps) {
                   {task.waypoints.map((wp) => (
                     <WaypointRow key={wp.id} wp={wp} isEditing={editingWpId === wp.id} onToggleEdit={() => setEditingWpId((id) => id === wp.id ? null : wp.id)} onNameChange={(n) => setWpName(wp.id, n)} onRadiusChange={(r) => setWpRadius(wp.id, r)} onDelete={() => removeWaypoint(wp.id)} disabled={!isOwner} />
                   ))}
+                </div>
+              )}
+
+              {/* 거리 요약 — 포인트 리스트 하단 */}
+              {task.waypoints.length >= 2 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(0,0,0,0.07)" }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,0,0,0.4)", marginBottom: 4 }}>전체 길이 <span style={{ fontWeight: 500, color: "rgba(0,0,0,0.3)" }}>(중심간)</span></p>
+                    <p style={{ fontSize: 20, fontWeight: 700, color: "#636366", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                      {centerKm != null ? centerKm.toFixed(1) : "—"}<span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>km</span>
+                    </p>
+                  </div>
+                  <div style={{ width: 1, background: "rgba(0,0,0,0.08)", alignSelf: "stretch" }} />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,0,0,0.4)", marginBottom: 4 }}>최적화 경로 <span style={{ fontWeight: 500, color: "rgba(0,0,0,0.3)" }}>(최단)</span></p>
+                    <p style={{ fontSize: 20, fontWeight: 700, color: "#0071e3", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                      {optimumKm != null ? optimumKm.toFixed(1) : "—"}<span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>km</span>
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
