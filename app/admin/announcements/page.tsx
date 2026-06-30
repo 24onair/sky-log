@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getUser } from "@/lib/supabase/auth";
+import { checkIsAdmin } from "@/lib/auth/isAdmin";
 import {
   getAllAnnouncements, createAnnouncement, updateAnnouncement,
   deleteAnnouncement, uploadAnnouncementImage,
@@ -11,7 +12,6 @@ import {
 import { Announcement } from "@/lib/schemas/announcement";
 import { ChevronLeft, Trash2, Plus, Eye, EyeOff, Upload, Image } from "lucide-react";
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com";
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const label = { fontSize: 12, fontWeight: 500, color: "rgba(0,0,0,0.48)", display: "block", marginBottom: 5 } as React.CSSProperties;
 const secHead = { fontSize: 10, fontWeight: 700, letterSpacing: "0.10em", color: "rgba(0,0,0,0.3)", textTransform: "uppercase" as const, marginBottom: 10 };
@@ -33,7 +33,7 @@ export default function AdminAnnouncementsPage() {
     const init = async () => {
       const user = await getUser();
       if (!user) { router.push("/auth/login"); return; }
-      if (user.email !== ADMIN_EMAIL) { router.push("/"); return; }
+      if (!(await checkIsAdmin(user))) { router.push("/"); return; }
       try {
         setItems(await getAllAnnouncements());
       } catch (e) {

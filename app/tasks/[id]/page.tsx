@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { v4 as uuid } from "uuid";
 import { getUser } from "@/lib/supabase/auth";
+import { checkIsAdmin } from "@/lib/auth/isAdmin";
 import { getTaskById, updateTask, deleteTask, copyTask } from "@/lib/supabase/tasks";
 import { Task, Waypoint, TaskType, TaskInsert } from "@/lib/schemas/task";
 import {
@@ -63,10 +64,9 @@ export default function TaskDetailPage({ params }: PageProps) {
       const user = await getUser();
       if (!user) { router.push("/auth/login"); return; }
       setUserId(user.id);
-      const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com";
       try {
         let loaded = await getTaskById(user.id, p.id);
-        if (!loaded && user.email === ADMIN_EMAIL) {
+        if (!loaded && (await checkIsAdmin(user))) {
           const res = await fetch(`/api/admin/tasks/${p.id}`);
           if (res.ok) loaded = await res.json();
         }

@@ -11,6 +11,7 @@ import {
 } from "@/lib/supabase/logbook";
 import { FlightLog, FlightLogInsert } from "@/lib/schemas/logbook";
 import { getUser } from "@/lib/supabase/auth";
+import { checkIsAdmin } from "@/lib/auth/isAdmin";
 import { FlightLogForm } from "@/components/FlightLogForm";
 import { formatDate, formatTime, formatDuration } from "@/lib/utils/format";
 import { ChevronLeft, Clock, Navigation, MoveUp, Wind, AlertCircle, Pencil, Trash2 } from "lucide-react";
@@ -75,7 +76,7 @@ export default function FlightDetailPage({ params }: PageProps) {
         if (!user) { router.push("/auth/login"); return; }
         setCurrentUserId(user.id);
         let data = await getFlightLogById(user.id, p.id);
-        if (!data && user.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com")) {
+        if (!data && (await checkIsAdmin(user))) {
           // Admin viewing another member's log — fetch via service role API
           const res = await fetch(`/api/admin/logs/${p.id}`);
           if (res.ok) data = await res.json();

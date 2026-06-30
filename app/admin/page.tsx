@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getUser } from "@/lib/supabase/auth";
+import { checkIsAdmin } from "@/lib/auth/isAdmin";
 import { ChevronLeft, Image, Users, MapPin, Bell, BookOpen } from "lucide-react";
-
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "24onair@gmail.com";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -19,7 +18,7 @@ export default function AdminPage() {
     const init = async () => {
       const user = await getUser();
       if (!user) { router.push("/auth/login"); return; }
-      if (user.email !== ADMIN_EMAIL) { router.push("/"); return; }
+      if (!(await checkIsAdmin(user))) { router.push("/"); return; }
       setLoading(false);
       // 미승인 회원 수 조회
       try {

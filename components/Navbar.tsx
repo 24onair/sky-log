@@ -4,17 +4,22 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { getUser, signOut } from "@/lib/supabase/auth";
+import { checkIsAdmin } from "@/lib/auth/isAdmin";
 import { hasUnsavedChanges, getUnsavedMessage } from "@/lib/unsavedChanges";
 import { Wind, LogOut, BookOpen, Navigation, Plus, Shield, Users, MapPin, Layers, FileText } from "lucide-react";
 
 export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<{ email?: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [confirmNav, setConfirmNav] = useState<string | null>(null); // pending href
 
   useEffect(() => {
-    getUser().then(setUser);
+    getUser().then(async (u) => {
+      setUser(u);
+      setIsAdmin(await checkIsAdmin(u));
+    });
   }, [pathname]);
 
   const handleSignOut = async () => {
@@ -22,8 +27,6 @@ export function Navbar() {
     router.push("/auth/login");
   };
 
-  const ADMIN_EMAIL = "24onair@gmail.com";
-  const isAdmin = user?.email === ADMIN_EMAIL;
   const isAuth = pathname?.startsWith("/auth");
   const onLogbook = pathname?.startsWith("/logbook");
   const onTasks = pathname?.startsWith("/tasks");
