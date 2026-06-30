@@ -86,3 +86,19 @@ SQL Editor에서 직접 `create table`/`alter table` 하면 운영 DB와 git이 
 테이블이 마이그레이션 없이 운영 DB에만 존재했었다(2026-06-30 역기록 완료).
 스키마를 바꾸면 **반드시** `supabase/migrations/`에 멱등(`if not exists`,
 `drop policy if exists`, `create or replace`) 마이그레이션 파일을 추가할 것.
+
+---
+
+## [V-World] 국토부 API는 해외 IP를 막는다 — Vercel 함수는 서울 리전에서 실행할 것
+
+V-World(`api.vworld.kr`)는 해외 IP의 요청을 **502 Bad Gateway / fetch failed** 로
+거부한다. Vercel 기본 함수 리전은 `iad1`(US)라, V-World를 호출하는 서버 라우트
+(`/api/geocode`, `/api/airspace`)가 프로덕션에서만 조용히 실패한다(로컬 한국 IP에선 정상).
+
+**원인은 키가 아니라 리전이다** — 두 키 모두 US에서 실패, 서울에서 둘 다 성공 확인.
+`preferredRegion` per-route export는 이 플랜에서 **무시됨**. 반드시 `vercel.json` 에:
+```json
+{ "regions": ["icn1"] }
+```
+국내 지명 검색은 Mapbox 대신 V-World(`type=place`)를 쓴다. 지오코딩 키는
+`VWORLD_API_KEY ?? NEXT_PUBLIC_VWORLD_API_KEY` 순으로 읽는다(둘 다 prod에 존재).
