@@ -32,6 +32,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={spaceGrotesk.variable} style={{ minHeight: "100%" }}>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css"
+        />
+      </head>
       <body style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#FFFFFF" }}>
         <Navbar />
         <AnnouncementPopup />

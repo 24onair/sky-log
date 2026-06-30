@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "mapbox-gl/dist/mapbox-gl.css";
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css");
+/* Pretendard(본문 서체)는 app/layout.tsx 의 <link>로 로드 — 원격 @import는
+   Tailwind 인라인 후 순서가 밀려 무시되므로 CSS에 두지 않는다. */
 
 :root {
   /* ── Soarline Brand Palette ─────────────────────────────────────── */
