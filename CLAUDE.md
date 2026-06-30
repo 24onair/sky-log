@@ -56,4 +56,33 @@ const res = await sbFetch(`flight_logs?id=eq.${id}&limit=1`);
 **체크리스트:** 어드민 기능 추가 시
 - [ ] `/admin/page.tsx` — 메뉴 카드
 - [ ] `components/Navbar.tsx` — ADMIN 섹션 navLink
-- [ ] `app/api/admin/[기능]/route.ts` — service role API
+- [ ] `app/api/admin/[기능]/route.ts` — service role API + **`requireAdmin()` 가드**
+
+---
+
+## [보안] service role API 라우트엔 반드시 `requireAdmin()` 가드를 걸어라
+
+service role 키는 RLS를 우회한다. `app/api/admin/**` 라우트는 클라이언트 페이지의
+이메일 체크(`router.push("/")`)만으로는 못 막는다 — URL만 알면 누구나 직접 호출 가능.
+모든 핸들러 최상단에 가드를 넣어라:
+
+```ts
+import { requireAdmin } from "@/lib/supabase/adminGuard";
+export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+  // ...
+}
+```
+
+---
+
+## [Supabase] 테이블/컬럼을 대시보드에서 손으로 만들지 마 — 마이그레이션으로 남겨라
+
+SQL Editor에서 직접 `create table`/`alter table` 하면 운영 DB와 git이 어긋난다
+(스키마 드리프트). 새 환경에서 `supabase/migrations/`만 돌리면 기능이 깨진다.
+
+실제로 `profiles.is_active`, `flight_logs.track_points`, `announcements`/`banners`
+테이블이 마이그레이션 없이 운영 DB에만 존재했었다(2026-06-30 역기록 완료).
+스키마를 바꾸면 **반드시** `supabase/migrations/`에 멱등(`if not exists`,
+`drop policy if exists`, `create or replace`) 마이그레이션 파일을 추가할 것.
