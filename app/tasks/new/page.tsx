@@ -190,15 +190,10 @@ export default function NewTaskPage() {
     searchTimerRef.current = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${token}&language=ko&limit=5&proximity=128.0,36.5`;
-        const res = await fetch(url);
+        // 국내 지명 검색 — V-World 프록시(/api/geocode). Mapbox는 한국 커버리지가 약해 대체.
+        const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
         const data = await res.json();
-        const results: GeoResult[] = (data.features ?? []).map((f: { id: string; place_name: string; center: [number, number] }) => ({
-          id: f.id,
-          place_name: f.place_name,
-          center: f.center,
-        }));
+        const results: GeoResult[] = data.results ?? [];
         setSearchResults(results);
         if (results.length === 1 && wpMatches.length === 0) {
           setFlyToTarget({ center: results[0].center, zoom: 13 });
