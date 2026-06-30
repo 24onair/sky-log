@@ -20,6 +20,8 @@ export interface Task {
   is_public: boolean;
   waypoints: Waypoint[];
   distance_km: number | null;
+  start_time: string | null; // 스타트 시간 (KST "HH:MM", SSS time gate)
+  deadline: string | null;   // 종료 시간 (KST "HH:MM", goal deadline)
   created_at: string;
   updated_at: string;
 }

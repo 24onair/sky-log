@@ -66,6 +66,8 @@ const blankTask = (): TaskInsert => ({
   is_public: false,
   waypoints: [],
   distance_km: null,
+  start_time: null,
+  deadline: null,
 });
 
 export default function NewTaskPage() {
@@ -797,6 +799,26 @@ export default function NewTaskPage() {
                     >
                       {TASK_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div>
+                    <label style={label}>스타트 시간 (KST)</label>
+                    <input
+                      type="time"
+                      value={task.start_time ?? ""}
+                      onChange={(e) => setTask((p) => ({ ...p, start_time: e.target.value || null }))}
+                      className="sk-input"
+                    />
+                  </div>
+                  <div>
+                    <label style={label}>종료 시간 (KST)</label>
+                    <input
+                      type="time"
+                      value={task.deadline ?? ""}
+                      onChange={(e) => setTask((p) => ({ ...p, deadline: e.target.value || null }))}
+                      className="sk-input"
+                    />
                   </div>
                 </div>
 

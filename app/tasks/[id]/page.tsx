@@ -75,6 +75,7 @@ export default function TaskDetailPage({ params }: PageProps) {
         setTask({
           name: loaded.name, task_date: loaded.task_date, task_type: loaded.task_type,
           is_public: loaded.is_public, waypoints: loaded.waypoints, distance_km: loaded.distance_km,
+          start_time: loaded.start_time ?? null, deadline: loaded.deadline ?? null,
         });
         setIsDirty(false);
       } catch { router.push("/tasks"); }
@@ -275,6 +276,16 @@ export default function TaskDetailPage({ params }: PageProps) {
                     <select value={task.task_type} onChange={(e) => updateField("task_type", e.target.value as TaskType)} className="sk-input" style={{ cursor: "pointer" }} disabled={!isOwner}>
                       {TASK_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div>
+                    <label style={label}>스타트 시간 (KST)</label>
+                    <input type="time" value={task.start_time ?? ""} onChange={(e) => updateField("start_time", e.target.value || null)} className="sk-input" disabled={!isOwner} />
+                  </div>
+                  <div>
+                    <label style={label}>종료 시간 (KST)</label>
+                    <input type="time" value={task.deadline ?? ""} onChange={(e) => updateField("deadline", e.target.value || null)} className="sk-input" disabled={!isOwner} />
                   </div>
                 </div>
                 {isOwner && (

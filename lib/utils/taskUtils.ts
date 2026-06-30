@@ -272,9 +272,20 @@ function qrTurnpointType(index: number, total: number): number {
 }
 
 /** pretty=true for .xctsk file download, false for QR code (XCTSK: compact format) */
+// 한국시간(KST, UTC+9, DST 없음) "HH:MM" → XCTrack용 UTC "HH:MM:00Z"
+function kstToUtcGate(hhmm: string | null | undefined): string | null {
+  if (!hhmm) return null;
+  const m = /^(\d{1,2}):(\d{2})/.exec(hhmm.trim());
+  if (!m) return null;
+  const h = (parseInt(m[1], 10) - 9 + 24) % 24;
+  return `${String(h).padStart(2, "0")}:${m[2]}:00Z`;
+}
+
 export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string {
   const n = task.waypoints.length;
   const sssType = task.task_type === "CLASSIC" ? "ELAPSED-TIME" : "RACE";
+  const startGate = kstToUtcGate(task.start_time) ?? "10:00:00Z";
+  const deadlineGate = kstToUtcGate(task.deadline) ?? "20:00:00Z";
 
   if (!pretty) {
     // go-xctrack QR spec: XCTSK: prefix + version 2 + polyline-encoded "z" per turnpoint
@@ -294,11 +305,11 @@ export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string 
     };
     if (n >= 3) {
       qr.s = {
-        g: ["10:00:00Z"],
+        g: [startGate],
         d: 1, // ENTER
         t: sssType === "RACE" ? 1 : 2,
       };
-      qr.g = { t: 2 }; // CYLINDER, no deadline
+      qr.g = { t: 2, d: deadlineGate }; // CYLINDER + deadline
     }
     return "XCTSK:" + JSON.stringify(qr);
   }
@@ -321,8 +332,8 @@ export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string 
     })),
   };
   if (n >= 3) {
-    payload.sss = { type: sssType, direction: "ENTER", timeGates: ["10:00:00Z"] };
-    payload.goal = { type: "CYLINDER", deadline: "20:00:00Z" };
+    payload.sss = { type: sssType, direction: "ENTER", timeGates: [startGate] };
+    payload.goal = { type: "CYLINDER", deadline: deadlineGate };
   }
   return JSON.stringify(payload, null, 2);
 }

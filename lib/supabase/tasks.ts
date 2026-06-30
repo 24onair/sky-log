@@ -74,6 +74,8 @@ export async function copyTask(userId: string, taskId: string): Promise<Task> {
     is_public: false,
     waypoints: source.waypoints.map((wp) => ({ ...wp, id: uuid() })),
     distance_km: source.distance_km,
+    start_time: source.start_time,
+    deadline: source.deadline,
   };
   return createTask(userId, newTask);
 }
