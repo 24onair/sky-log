@@ -458,7 +458,7 @@ export default function NewTaskPage() {
 
         {/* Mobile-only banner strip above map */}
         <div className="mobile-map-banner" style={{ padding: "6px 10px", background: "#000" }}>
-          <BannerAd />
+          <BannerAd slot="task_new" />
         </div>
 
         {/* ══ MAP AREA ══════════════════════════════════════════════════ */}
@@ -787,7 +787,7 @@ export default function NewTaskPage() {
 
           <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
 
-            <div className="sidebar-banner"><BannerAd /></div>
+            <div className="sidebar-banner"><BannerAd slot="task_new" /></div>
 
             {/* ── Task meta ─────────────────────────────────────────── */}
             <div className="sk-card" style={{ padding: "14px 16px" }}>

@@ -19,16 +19,19 @@ export async function POST(req: Request) {
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  const { image_url, link_url, is_active, sort_order } = await req.json();
-  const res = await sbFetch("rpc/admin_insert_banner", "POST", {
-    p_image_url: image_url,
-    p_link_url: link_url,
-    p_is_active: is_active,
-    p_sort_order: sort_order,
+  const { image_url, link_url, is_active, sort_order, slot } = await req.json();
+  const res = await sbFetch("banners", "POST", {
+    image_url,
+    link_url,
+    is_active: is_active ?? true,
+    sort_order: sort_order ?? 0,
+    slot: slot ?? "all",
   });
   const text = await res.text();
   if (!res.ok) return NextResponse.json({ error: text }, { status: 500 });
-  return NextResponse.json(JSON.parse(text));
+  // return=representation → 삽입된 행 배열. 첫 행만 반환(라우트가 Banner로 사용)
+  const rows = JSON.parse(text);
+  return NextResponse.json(Array.isArray(rows) ? rows[0] : rows);
 }
 
 export async function PATCH(req: Request) {

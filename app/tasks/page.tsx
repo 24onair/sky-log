@@ -7,6 +7,7 @@ import { getTasks, deleteTask } from "@/lib/supabase/tasks";
 import { getUser } from "@/lib/supabase/auth";
 import { Task } from "@/lib/schemas/task";
 import { waypointColor } from "@/lib/utils/taskUtils";
+import { BannerAd } from "@/components/BannerAd";
 import { Plus, Navigation, Trash2, Lock, Globe, ChevronRight } from "lucide-react";
 
 export default function TasksPage() {
@@ -91,6 +92,9 @@ export default function TasksPage() {
                 </div>
               </section>
             )}
+
+            {/* Banner ad */}
+            <div style={{ marginBottom: 36 }}><BannerAd slot="tasks" /></div>
 
             {/* Public tasks from others */}
             {publicTasks.length > 0 && (

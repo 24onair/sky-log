@@ -9,7 +9,7 @@ import {
   getAllBanners, createBanner, updateBanner,
   deleteBanner, uploadBannerImage,
 } from "@/lib/supabase/banners";
-import { Banner } from "@/lib/schemas/banner";
+import { Banner, BANNER_SLOTS } from "@/lib/schemas/banner";
 import { ChevronLeft, Trash2, Plus, Eye, EyeOff, Upload, ExternalLink } from "lucide-react";
 const ALLOWED_TYPES = ["image/jpeg", "image/gif"];
 const label = { fontSize: 12, fontWeight: 500, color: "rgba(0,0,0,0.48)", display: "block", marginBottom: 5 } as React.CSSProperties;
@@ -25,6 +25,7 @@ export default function AdminBannersPage() {
   // form state
   const [linkUrl, setLinkUrl] = useState("");
   const [sortOrder, setSortOrder] = useState(0);
+  const [slot, setSlot] = useState<string>("all");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -59,9 +60,6 @@ export default function AdminBannersPage() {
   const handleAdd = async () => {
     if (!file) { setError("이미지를 선택하세요"); return; }
     if (!linkUrl.trim()) { setError("링크 URL을 입력하세요"); return; }
-    if (banners.filter((b) => b.is_active).length >= 4 && banners.length >= 4) {
-      setError("배너는 최대 4개까지 등록할 수 있습니다"); return;
-    }
     setIsSubmitting(true); setError(null);
     try {
       const imageUrl = await uploadBannerImage(file);
@@ -70,9 +68,10 @@ export default function AdminBannersPage() {
         link_url: linkUrl.trim(),
         is_active: true,
         sort_order: sortOrder,
+        slot,
       });
       setBanners((prev) => [...prev, created].sort((a, b) => a.sort_order - b.sort_order));
-      setLinkUrl(""); setSortOrder(0); setFile(null); setPreview(null);
+      setLinkUrl(""); setSortOrder(0); setSlot("all"); setFile(null); setPreview(null);
       if (fileRef.current) fileRef.current.value = "";
     } catch (e) {
       setError(e instanceof Error ? e.message : "등록 실패");
@@ -97,6 +96,15 @@ export default function AdminBannersPage() {
         prev.map((b) => b.id === banner.id ? { ...b, sort_order: order } : b)
           .sort((a, b) => a.sort_order - b.sort_order)
       );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "업데이트 실패");
+    }
+  };
+
+  const handleSlot = async (banner: Banner, nextSlot: string) => {
+    try {
+      await updateBanner(banner.id, { slot: nextSlot });
+      setBanners((prev) => prev.map((b) => b.id === banner.id ? { ...b, slot: nextSlot } : b));
     } catch (e) {
       setError(e instanceof Error ? e.message : "업데이트 실패");
     }
@@ -132,7 +140,7 @@ export default function AdminBannersPage() {
           </Link>
           <span style={{ color: "rgba(0,0,0,0.2)", fontSize: 13 }}>/</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: "#1d1d1f" }}>배너 광고 관리</span>
-          <span style={{ marginLeft: "auto", fontSize: 12, color: "rgba(0,0,0,0.4)" }}>활성 {activeBanners.length} / 4</span>
+          <span style={{ marginLeft: "auto", fontSize: 12, color: "rgba(0,0,0,0.4)" }}>활성 {activeBanners.length}개</span>
         </div>
 
         {/* Add Form */}
@@ -179,6 +187,24 @@ export default function AdminBannersPage() {
               placeholder="https://example.com"
               className="sk-input"
             />
+          </div>
+
+          {/* Slot (노출 위치) */}
+          <div style={{ marginBottom: 12 }}>
+            <label style={label}>노출 슬롯 (위치)</label>
+            <select
+              value={slot}
+              onChange={(e) => setSlot(e.target.value)}
+              className="sk-input"
+              style={{ width: "100%", cursor: "pointer" }}
+            >
+              {BANNER_SLOTS.map((s) => (
+                <option key={s.key} value={s.key}>{s.label}</option>
+              ))}
+            </select>
+            <p style={{ fontSize: 11, color: "rgba(0,0,0,0.36)", marginTop: 5 }}>
+              한 슬롯에 여러 배너를 등록하면 자동으로 롤링됩니다. &apos;모든 슬롯&apos;은 전 페이지에 노출.
+            </p>
           </div>
 
           {/* Sort order */}
@@ -234,17 +260,29 @@ export default function AdminBannersPage() {
                   </div>
 
                   {/* Controls */}
-                  <div style={{ padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     {/* Link */}
                     <a
                       href={b.link_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ flex: 1, fontSize: 12, color: "#2F77C2", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}
+                      style={{ flex: 1, minWidth: 140, fontSize: 12, color: "#2F77C2", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}
                     >
                       <ExternalLink size={11} strokeWidth={1.5} />
                       {b.link_url}
                     </a>
+
+                    {/* Slot */}
+                    <select
+                      value={b.slot}
+                      onChange={(e) => handleSlot(b, e.target.value)}
+                      title="노출 슬롯"
+                      style={{ fontSize: 11, padding: "4px 6px", borderRadius: 6, border: "1px solid rgba(0,0,0,0.12)", cursor: "pointer", background: "#fff", color: "#1d1d1f", maxWidth: 130 }}
+                    >
+                      {BANNER_SLOTS.map((s) => (
+                        <option key={s.key} value={s.key}>{s.label}</option>
+                      ))}
+                    </select>
 
                     {/* Sort order */}
                     <input
@@ -294,13 +332,18 @@ export default function AdminBannersPage() {
   link_url text not null,
   is_active boolean default true,
   sort_order smallint default 0,
+  slot text not null default 'all',
   created_at timestamptz default now()
 );
 alter table public.banners enable row level security;
 create policy "public_read" on public.banners
   for select using (is_active = true);
 create policy "auth_all" on public.banners
-  for all using (auth.role() = 'authenticated');`}
+  for all using (auth.role() = 'authenticated');
+
+-- 이미 banners 테이블이 있다면 슬롯 컬럼만 추가:
+alter table public.banners
+  add column if not exists slot text not null default 'all';`}
           </pre>
         </div>
 

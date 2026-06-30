@@ -8,6 +8,7 @@ import { getUser } from "@/lib/supabase/auth";
 import { FlightLog } from "@/lib/schemas/logbook";
 import { FlightLogCard } from "@/components/FlightLogCard";
 import { StatisticsSummary } from "@/components/StatisticsSummary";
+import { BannerAd } from "@/components/BannerAd";
 import { Plus, Wind, CalendarDays } from "lucide-react";
 
 type PeriodFilter = "all" | "year" | "month" | "custom";
@@ -88,6 +89,9 @@ export default function LogbookPage() {
 
         {/* Stats */}
         {stats && !loading && <StatisticsSummary stats={stats} />}
+
+        {/* Banner ad */}
+        <div style={{ marginBottom: 24 }}><BannerAd slot="logbook" /></div>
 
         {/* Period filter */}
         <div style={{ marginBottom: 24 }}>

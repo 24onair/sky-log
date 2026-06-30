@@ -6,14 +6,15 @@ import { Banner } from "@/lib/schemas/banner";
 
 const INTERVAL_MS = 4000;
 
-export function BannerAd() {
+export function BannerAd({ slot }: { slot?: string }) {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [index, setIndex] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    getActiveBanners().then(setBanners).catch(() => {});
-  }, []);
+    setIndex(0);
+    getActiveBanners(slot).then(setBanners).catch(() => {});
+  }, [slot]);
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);

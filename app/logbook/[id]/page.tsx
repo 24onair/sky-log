@@ -13,6 +13,7 @@ import { FlightLog, FlightLogInsert } from "@/lib/schemas/logbook";
 import { getUser } from "@/lib/supabase/auth";
 import { checkIsAdmin } from "@/lib/auth/isAdmin";
 import { FlightLogForm } from "@/components/FlightLogForm";
+import { BannerAd } from "@/components/BannerAd";
 import { formatDate, formatTime, formatDuration } from "@/lib/utils/format";
 import { ChevronLeft, Clock, Navigation, MoveUp, Wind, AlertCircle, Pencil, Trash2 } from "lucide-react";
 
@@ -264,6 +265,9 @@ export default function FlightDetailPage({ params }: PageProps) {
               durationSec={log.duration_sec}
             />
           )}
+
+          {/* Banner ad */}
+          <BannerAd slot="flight_detail" />
 
           <div className="ld-grid">
 

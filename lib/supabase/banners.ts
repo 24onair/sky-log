@@ -3,14 +3,17 @@ import { Banner, BannerInsert, BannerUpdate } from "@/lib/schemas/banner";
 
 const BUCKET = "banners";
 
-export async function getActiveBanners(): Promise<Banner[]> {
+export async function getActiveBanners(slot?: string): Promise<Banner[]> {
   const supabase = createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("banners")
     .select("*")
-    .eq("is_active", true)
+    .eq("is_active", true);
+  // 특정 슬롯 요청 시 해당 슬롯 + 'all'(모든 슬롯) 배너만 노출
+  if (slot) query = query.in("slot", [slot, "all"]);
+  const { data, error } = await query
     .order("sort_order", { ascending: true })
-    .limit(4);
+    .limit(8);
   if (error) return [];
   return data as Banner[];
 }

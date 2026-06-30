@@ -7,6 +7,7 @@ import { getUser } from "@/lib/supabase/auth";
 import { getWaypointSets, deleteWaypointSet } from "@/lib/supabase/waypointSets";
 import { waypointsToCUP } from "@/lib/utils/parseCUP";
 import { WaypointSet } from "@/lib/schemas/waypointSet";
+import { BannerAd } from "@/components/BannerAd";
 import { Globe, Lock, Plus, Trash2, Map, Download, Navigation } from "lucide-react";
 
 const secHead = { fontSize: 10, fontWeight: 700, letterSpacing: "0.10em", color: "rgba(0,0,0,0.3)", textTransform: "uppercase" as const, marginBottom: 10 };
@@ -113,6 +114,9 @@ export default function WaypointsPage() {
             </div>
           )}
         </div>
+
+        {/* Banner ad */}
+        <BannerAd slot="waypoints" />
 
         {/* Public sets by others */}
         {others.length > 0 && (
