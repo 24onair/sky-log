@@ -231,12 +231,14 @@ export function exportToCUP(task: Task | TaskInsert): string {
 
 // ── Export: XCTrack (.xctsk) ──────────────────────────────────────────────────
 
+// XCTrack 유효 turnpoint type은 TAKEOFF / SSS / ESS 뿐. 일반 턴포인트와 골은
+// type 필드를 생략해야 한다("" 반환 → 호출부에서 키 자체를 넣지 않음).
+// "TURNPOINT"/"GOAL" 같은 값을 넣으면 XCTrack·Naviter 파서가 에러를 낸다.
 function xctrackTurnpointType(index: number, total: number): string {
   if (index === 0) return "TAKEOFF";
   if (total > 2 && index === 1) return "SSS";
   if (total >= 4 && index === total - 2) return "ESS";
-  if (index === total - 1) return "GOAL";
-  return "TURNPOINT";
+  return "";
 }
 
 // 한국시간(KST, UTC+9, DST 없음) "HH:MM" → XCTrack용 UTC "HH:MM:00Z"
@@ -267,17 +269,21 @@ export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string 
     taskType: "CLASSIC",
     version: 1,
     earthModel: "WGS84",
-    turnpoints: task.waypoints.map((wp, i) => ({
-      radius: wp.radius,
-      type: xctrackTurnpointType(i, n),
-      waypoint: {
-        name: wp.name,
-        description: "",
-        lat: wp.lat,
-        lon: wp.lon,
-        altSmoothed: wp.altitude ?? 0,
-      },
-    })),
+    turnpoints: task.waypoints.map((wp, i) => {
+      const t = xctrackTurnpointType(i, n);
+      const tp: Record<string, unknown> = {
+        radius: wp.radius,
+        waypoint: {
+          name: wp.name,
+          description: "",
+          lat: wp.lat,
+          lon: wp.lon,
+          altSmoothed: wp.altitude ?? 0,
+        },
+      };
+      if (t) tp.type = t; // TAKEOFF/SSS/ESS 일 때만 포함
+      return tp;
+    }),
   };
   if (n >= 3) {
     payload.sss = { type: sssType, direction: "ENTER", timeGates: [startGate] };
