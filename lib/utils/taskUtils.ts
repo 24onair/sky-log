@@ -241,6 +241,36 @@ function xctrackTurnpointType(index: number, total: number): string {
   return "";
 }
 
+// QR v2 turnpoint type 숫자: SSS=2, ESS=3, 나머지(TAKEOFF/일반/골)=0(생략)
+function qrTurnpointType(index: number, total: number): number {
+  if (total > 2 && index === 1) return 2;
+  if (total >= 4 && index === total - 2) return 3;
+  return 0;
+}
+
+// Google polyline EncodeInt (go-polyline과 동일 알고리즘). 값을 독립적으로 인코딩.
+function polylineEncodeInt(value: number): string {
+  let v = Math.round(value) * 2;
+  if (v < 0) v = ~v;
+  let s = "";
+  while (v >= 0x20) {
+    s += String.fromCharCode(((v & 0x1f) | 0x20) + 63);
+    v = Math.floor(v / 32);
+  }
+  s += String.fromCharCode(v + 63);
+  return s;
+}
+
+// QR "z" 필드: lon, lat, alt, radius 순서로 polyline 인코딩 (XCTrack MarshalJSON과 동일)
+function encodeQRZ(lon: number, lat: number, alt: number, radius: number): string {
+  return (
+    polylineEncodeInt(Math.round(lon * 1e5)) +
+    polylineEncodeInt(Math.round(lat * 1e5)) +
+    polylineEncodeInt(Math.round(alt)) +
+    polylineEncodeInt(Math.round(radius))
+  );
+}
+
 // 한국시간(KST, UTC+9, DST 없음) "HH:MM" → XCTrack용 UTC "HH:MM:00Z"
 function kstToUtcGate(hhmm: string | null | undefined): string | null {
   if (!hhmm) return null;
@@ -252,12 +282,14 @@ function kstToUtcGate(hhmm: string | null | undefined): string | null {
 
 /**
  * XCTrack 태스크를 생성한다.
- *  - pretty=true : .xctsk 파일 다운로드용 (들여쓰기 JSON)
- *  - pretty=false: QR 코드용 ("XCTSK:" 접두어 + 압축 없는 JSON)
+ *  - pretty=true : .xctsk 파일 다운로드용 → version 1 전체 JSON (들여쓰기)
+ *  - pretty=false: QR 코드용 → version 2 compact JSON ("XCTSK:" 접두어)
  *
- * QR도 **version 1 전체 JSON**(파일과 동일 구조)을 쓴다. 과거의 version 2
- * polyline 압축 포맷은 XCTrack만 읽고 Naviter(SeeYou Navigator)는 인식하지
- * 못했다. version 1은 XCTrack·Naviter 양쪽 모두 파싱한다.
+ * QR(v2)은 XCTrack이 "Share task → QR"로 실제 내보내는 형태와 **바이트 단위로
+ * 동일**하게 맞춘다: 최상위 순서 version→taskType→t→s→g, earthModel(e) 필드
+ * 생략, s는 {t,d,g} 순서에 방향 d=2(EXIT). 이렇게 해야 XCTrack뿐 아니라 엄격한
+ * Naviter(SeeYou Navigator)도 인식한다. (과거 우리 v2는 e:0 추가 필드/방향이
+ * 달라 Naviter가 거부, v1 전체 JSON은 Naviter가 "지난 포맷"으로 거부했음.)
  */
 export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string {
   const n = task.waypoints.length;
@@ -265,6 +297,29 @@ export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string 
   const startGate = kstToUtcGate(task.start_time) ?? "10:00:00Z";
   const deadlineGate = kstToUtcGate(task.deadline) ?? "20:00:00Z";
 
+  if (!pretty) {
+    // ── QR: XCTrack 네이티브 v2 포맷과 동일 ──
+    const qr: Record<string, unknown> = {
+      version: 2,
+      taskType: "CLASSIC",
+      t: task.waypoints.map((wp, i) => {
+        const typeNum = qrTurnpointType(i, n);
+        const tp: Record<string, unknown> = {
+          z: encodeQRZ(wp.lon, wp.lat, wp.altitude ?? 0, wp.radius),
+          n: wp.name,
+        };
+        if (typeNum) tp.t = typeNum; // SSS=2, ESS=3 일 때만
+        return tp;
+      }),
+    };
+    if (n >= 3) {
+      qr.s = { t: sssType === "RACE" ? 1 : 2, d: 2, g: [startGate] }; // d=2 EXIT
+      qr.g = { t: 2, d: deadlineGate }; // t=2 CYLINDER
+    }
+    return "XCTSK:" + JSON.stringify(qr);
+  }
+
+  // ── 파일 다운로드: version 1 전체 JSON ──
   const payload: Record<string, unknown> = {
     taskType: "CLASSIC",
     version: 1,
@@ -286,11 +341,9 @@ export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string 
     }),
   };
   if (n >= 3) {
-    payload.sss = { type: sssType, direction: "ENTER", timeGates: [startGate] };
+    payload.sss = { type: sssType, direction: "EXIT", timeGates: [startGate] };
     payload.goal = { type: "CYLINDER", deadline: deadlineGate };
   }
-
-  if (!pretty) return "XCTSK:" + JSON.stringify(payload);
   return JSON.stringify(payload, null, 2);
 }
 
