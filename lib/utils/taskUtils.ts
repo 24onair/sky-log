@@ -239,39 +239,6 @@ function xctrackTurnpointType(index: number, total: number): string {
   return "TURNPOINT";
 }
 
-// ── Polyline encoding (go-polyline EncodeInt) ────────────────────────────────
-// Encodes a single integer using Google's polyline algorithm.
-// Each value is independent (not delta-encoded).
-function polylineEncodeInt(value: number): string {
-  let v = Math.round(value) * 2;
-  if (v < 0) v = ~v;
-  let s = "";
-  while (v >= 0x20) {
-    s += String.fromCharCode(((v & 0x1f) | 0x20) + 63);
-    v = Math.floor(v / 32);
-  }
-  s += String.fromCharCode(v + 63);
-  return s;
-}
-
-// Encodes [lon, lat, alt, radius] into a polyline string for the QR "z" field.
-function encodeQRZ(lon: number, lat: number, alt: number, radius: number): string {
-  return (
-    polylineEncodeInt(Math.round(lon * 1e5)) +
-    polylineEncodeInt(Math.round(lat * 1e5)) +
-    polylineEncodeInt(Math.round(alt)) +
-    polylineEncodeInt(Math.round(radius))
-  );
-}
-
-// Numeric turnpoint type for QR format: SSS=2, ESS=3 (0/omit for others)
-function qrTurnpointType(index: number, total: number): number {
-  if (total > 2 && index === 1) return 2;           // SSS
-  if (total >= 4 && index === total - 2) return 3;  // ESS
-  return 0;
-}
-
-/** pretty=true for .xctsk file download, false for QR code (XCTSK: compact format) */
 // 한국시간(KST, UTC+9, DST 없음) "HH:MM" → XCTrack용 UTC "HH:MM:00Z"
 function kstToUtcGate(hhmm: string | null | undefined): string | null {
   if (!hhmm) return null;
@@ -281,40 +248,21 @@ function kstToUtcGate(hhmm: string | null | undefined): string | null {
   return `${String(h).padStart(2, "0")}:${m[2]}:00Z`;
 }
 
+/**
+ * XCTrack 태스크를 생성한다.
+ *  - pretty=true : .xctsk 파일 다운로드용 (들여쓰기 JSON)
+ *  - pretty=false: QR 코드용 ("XCTSK:" 접두어 + 압축 없는 JSON)
+ *
+ * QR도 **version 1 전체 JSON**(파일과 동일 구조)을 쓴다. 과거의 version 2
+ * polyline 압축 포맷은 XCTrack만 읽고 Naviter(SeeYou Navigator)는 인식하지
+ * 못했다. version 1은 XCTrack·Naviter 양쪽 모두 파싱한다.
+ */
 export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string {
   const n = task.waypoints.length;
   const sssType = task.task_type === "CLASSIC" ? "ELAPSED-TIME" : "RACE";
   const startGate = kstToUtcGate(task.start_time) ?? "10:00:00Z";
   const deadlineGate = kstToUtcGate(task.deadline) ?? "20:00:00Z";
 
-  if (!pretty) {
-    // go-xctrack QR spec: XCTSK: prefix + version 2 + polyline-encoded "z" per turnpoint
-    const qr: Record<string, unknown> = {
-      taskType: "CLASSIC",
-      version: 2,
-      t: task.waypoints.map((wp, i) => {
-        const typeNum = qrTurnpointType(i, n);
-        const tp: Record<string, unknown> = {
-          z: encodeQRZ(wp.lon, wp.lat, wp.altitude ?? 0, wp.radius),
-          n: wp.name,
-        };
-        if (typeNum !== 0) tp.t = typeNum;
-        return tp;
-      }),
-      e: 0, // WGS84
-    };
-    if (n >= 3) {
-      qr.s = {
-        g: [startGate],
-        d: 1, // ENTER
-        t: sssType === "RACE" ? 1 : 2,
-      };
-      qr.g = { t: 2, d: deadlineGate }; // CYLINDER + deadline
-    }
-    return "XCTSK:" + JSON.stringify(qr);
-  }
-
-  // Full format for .xctsk file download
   const payload: Record<string, unknown> = {
     taskType: "CLASSIC",
     version: 1,
@@ -335,6 +283,8 @@ export function exportToXCTrack(task: Task | TaskInsert, pretty = true): string 
     payload.sss = { type: sssType, direction: "ENTER", timeGates: [startGate] };
     payload.goal = { type: "CYLINDER", deadline: deadlineGate };
   }
+
+  if (!pretty) return "XCTSK:" + JSON.stringify(payload);
   return JSON.stringify(payload, null, 2);
 }
 
